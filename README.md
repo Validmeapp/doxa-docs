@@ -1147,7 +1147,16 @@ Response:
 ### Community
 - **Issues**: Report bugs and request features via GitHub Issues
 - **Discussions**: Join community discussions for questions and ideas
-- **Contributing**: See contributor guidelines above
+- **Contributing**: See our [Contributing Guidelines](CONTRIBUTING.md)
+
+### Commercial Support & Licensing
+
+For commercial licensing, enterprise support, or custom development:
+
+**Validme LLC**  
+📧 Email: [contacto@validme.tech](mailto:contacto@validme.tech)  
+🌐 Website: [https://validme.tech](https://validme.tech)  
+📍 Address: 254 Chapman Rd, Ste 208#19266, Newark, Delaware 19702, US
 
 ### External Resources
 - [Next.js Documentation](https://nextjs.org/docs)
@@ -1157,9 +1166,38 @@ Response:
 
 ---
 
+## 🤝 Contributing
+
+We welcome contributions from the community! Please read our [Contributing Guidelines](CONTRIBUTING.md) to get started.
+
+### Quick Contribution Steps
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes following our guidelines
+4. Submit a pull request
+
+For detailed information about:
+- Development setup and workflow
+- Code style and standards  
+- Content creation guidelines
+- Legal requirements and licensing
+
+Please see our [CONTRIBUTING.md](CONTRIBUTING.md) file.
+
 ## 📄 License
 
-MIT License - see [LICENSE](LICENSE) file for details.
+This project is licensed under **Commons Clause + Apache 2.0**. See the [LICENSE](LICENSE) file for complete details.
+
+### License Summary
+
+- ✅ **Use, modify, and distribute** for non-commercial purposes
+- ✅ **Create derivative works** and contribute improvements  
+- ✅ **Use for internal business** purposes
+- ❌ **Cannot sell** the software or offer as commercial service
+- ❌ **Cannot charge fees** for hosting, consulting, or support services
+
+For commercial licensing inquiries, please contact us.
 
 ---
 
