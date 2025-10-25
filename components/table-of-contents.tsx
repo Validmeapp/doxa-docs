@@ -32,51 +32,59 @@ export function TableOfContents({ items = [], className = '' }: TableOfContentsP
 
   // Auto-generate TOC from page headings if no items provided
   useEffect(() => {
-    if (items.length === 0) {
-      const headings = document.querySelectorAll('h2, h3, h4');
-      const generatedItems: TOCItem[] = [];
+    const generateTOC = () => {
+      if (items.length === 0) {
+        const headings = document.querySelectorAll('h2, h3, h4');
+        const generatedItems: TOCItem[] = [];
 
-      headings.forEach((heading) => {
-        const title = heading.textContent || '';
-        const level = parseInt(heading.tagName.charAt(1));
-        let id = heading.id;
+        headings.forEach((heading) => {
+          const title = heading.textContent || '';
+          const level = parseInt(heading.tagName.charAt(1));
+          let id = heading.id;
 
-        // Generate ID if not present
-        if (!id && title) {
-          id = generateId(title);
-          heading.id = id;
-        }
-
-        if (id && title) {
-          generatedItems.push({
-            id,
-            title,
-            level,
-          });
-        }
-      });
-
-      setTocItems(generatedItems);
-      headingElementsRef.current = Array.from(headings);
-    } else {
-      // If items are provided, ensure corresponding headings have IDs
-      const headings = document.querySelectorAll('h2, h3, h4');
-      headingElementsRef.current = Array.from(headings);
-      
-      items.forEach((item) => {
-        const heading = document.getElementById(item.id);
-        if (!heading) {
-          // Try to find heading by text content
-          const matchingHeading = Array.from(headings).find(
-            (h) => h.textContent?.trim() === item.title.trim()
-          );
-          if (matchingHeading && !matchingHeading.id) {
-            matchingHeading.id = item.id;
+          // Generate ID if not present
+          if (!id && title) {
+            id = generateId(title);
+            heading.id = id;
           }
-        }
-      });
-    }
-  }, [items, generateId]);
+
+          if (id && title) {
+            generatedItems.push({
+              id,
+              title,
+              level,
+            });
+          }
+        });
+
+        setTocItems(generatedItems);
+        headingElementsRef.current = Array.from(headings);
+      } else {
+        // If items are provided, ensure corresponding headings have IDs
+        const headings = document.querySelectorAll('h2, h3, h4');
+        headingElementsRef.current = Array.from(headings);
+        
+        items.forEach((item) => {
+          const heading = document.getElementById(item.id);
+          if (!heading) {
+            // Try to find heading by text content
+            const matchingHeading = Array.from(headings).find(
+              (h) => h.textContent?.trim() === item.title.trim()
+            );
+            if (matchingHeading && !matchingHeading.id) {
+              matchingHeading.id = item.id;
+            }
+          }
+        });
+        setTocItems(items);
+      }
+    };
+
+    // Use a timeout to ensure DOM is ready
+    const timeoutId = setTimeout(generateTOC, 100);
+    
+    return () => clearTimeout(timeoutId);
+  }, [generateId]);
 
   // Enhanced scroll spy with better active heading detection
   useEffect(() => {
@@ -147,7 +155,7 @@ export function TableOfContents({ items = [], className = '' }: TableOfContentsP
       observer.disconnect();
       window.removeEventListener('scroll', handleScroll);
     };
-  }, [tocItems, activeId]);
+  }, [tocItems]);
 
   // Enhanced smooth scroll to heading with offset
   const scrollToHeading = useCallback((id: string, event?: React.MouseEvent) => {

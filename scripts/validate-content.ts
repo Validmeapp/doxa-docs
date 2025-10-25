@@ -60,24 +60,31 @@ class ContentValidator {
 
   private buildValidPaths(): void {
     for (const file of this.contentFiles) {
-      // Convert file path to URL path
+      // Convert file path to URL path using the same logic as content loader
       const relativePath = path.relative('content', file);
+      
+      // Generate slug using the same logic as ContentLoader.generateSlug
+      let slug = relativePath.replace(/\.(mdx?|md)$/, '');
+      slug = slug.replace(/\\/g, '/');
+      slug = slug.replace(/\/index$/, '');
+      
+      // Extract just the filename part for the slug (without locale/version path)
+      const parts = slug.split('/');
+      if (parts.length >= 3) {
+        // Return just the filename part (last segment)
+        const filename = parts[parts.length - 1];
+        const locale = parts[0];
+        
+        // Add the actual route paths that will work
+        this.validPaths.add(`/${locale}/docs/${filename}`);
+        this.validPaths.add(`/docs/${filename}`);
+      }
+      
+      // Also add the original file-based path for backwards compatibility
       const urlPath = '/' + relativePath
         .replace(/\.mdx$/, '')
         .replace(/\\/g, '/');
-      
       this.validPaths.add(urlPath);
-      
-      // Add locale-prefixed paths
-      const parts = relativePath.split(path.sep);
-      if (parts.length >= 2) {
-        const locale = parts[0];
-        const pathWithoutLocale = parts.slice(1).join('/').replace(/\.mdx$/, '');
-        this.validPaths.add(`/${locale}/docs/${pathWithoutLocale}`);
-        
-        // Add common documentation paths
-        this.validPaths.add(`/docs/${pathWithoutLocale}`);
-      }
     }
 
     // Add known API paths
@@ -85,6 +92,11 @@ class ContentValidator {
     this.validPaths.add('/api/health');
     this.validPaths.add('/api/search/metadata');
     this.validPaths.add('/api/redirects');
+    
+    // Add base documentation paths
+    this.validPaths.add('/en/docs');
+    this.validPaths.add('/es/docs');
+    this.validPaths.add('/docs');
   }
 
   private async validateFile(filePath: string): Promise<void> {
@@ -129,7 +141,7 @@ class ContentValidator {
     }
 
     // Validate locale format
-    if (frontmatter.locale && !['en', 'es', 'pt'].includes(frontmatter.locale)) {
+    if (frontmatter.locale && !['en', 'es'].includes(frontmatter.locale)) {
       this.addError(filePath, 'frontmatter', `Invalid locale: ${frontmatter.locale}`);
     }
 
@@ -222,7 +234,8 @@ class ContentValidator {
 
     // Check for code blocks without language specification
     // Allow plain text blocks for URLs and simple examples
-    const codeBlockRegex = /^```\s*\n([\s\S]*?)\n```/gm;
+    // Fixed regex to avoid matching across multiple code blocks
+    const codeBlockRegex = /^```\s*\n((?:(?!^```)[\s\S])*?)\n```/gm;
     let match;
     while ((match = codeBlockRegex.exec(content)) !== null) {
       const blockContent = match[1].trim();

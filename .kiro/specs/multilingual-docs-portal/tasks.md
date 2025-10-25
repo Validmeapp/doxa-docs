@@ -218,7 +218,7 @@
 
 - [x] 12. Create sample content and finalize build process
   - [x] 12.1 Create sample documentation content
-    - Write sample MDX files for English, Spanish, and Portuguese
+    - Write sample MDX files for English and Spanish
     - Create API reference examples with proper frontmatter
     - Add code examples and multi-language content
     - _Requirements: 1.1, 2.1, 3.1_

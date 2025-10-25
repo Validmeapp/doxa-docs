@@ -25,6 +25,12 @@ export async function generateStaticParams() {
           slug: slug.split('/').filter(Boolean),
         });
       }
+      
+      // Add the v1 route for version-specific access
+      params.push({
+        locale,
+        slug: ['v1'],
+      });
     } catch (error) {
       // Content might not exist for this locale yet
       console.warn(`No content found for locale: ${locale}`);
@@ -67,6 +73,27 @@ export default async function DocumentationPage({
 }: PageProps) {
   const { locale, slug } = await params;
   if (!locales.includes(locale as Locale)) {
+    notFound();
+  }
+
+  // Handle special case where slug is just ['v1'] - redirect to docs overview
+  if (slug.length === 1 && slug[0] === 'v1') {
+    // In development, we can't use redirect() with static export, so we'll show a message
+    if (process.env.NODE_ENV === 'development') {
+      return (
+        <div className="space-y-4">
+          <h1 className="text-4xl font-bold">Documentation v1</h1>
+          <p className="text-muted-foreground">
+            You're viewing the v1 documentation. Navigate to specific pages:
+          </p>
+          <ul className="space-y-2">
+            <li><a href={`/${locale}/docs/overview`} className="text-primary hover:underline">Overview</a></li>
+            <li><a href={`/${locale}/docs/authentication`} className="text-primary hover:underline">Authentication</a></li>
+            <li><a href={`/${locale}/docs/getting-started`} className="text-primary hover:underline">Getting Started</a></li>
+          </ul>
+        </div>
+      );
+    }
     notFound();
   }
 

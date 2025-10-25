@@ -8,7 +8,7 @@ This feature implements a modern, multilingual documentation portal for a decent
 
 ### Requirement 1
 
-**User Story:** As a developer, I want to access documentation in my preferred language (English, Spanish, Portuguese), so that I can understand the API and platform features in my native language.
+**User Story:** As a developer, I want to access documentation in my preferred language (English, Spanish), so that I can understand the API and platform features in my native language.
 
 #### Acceptance Criteria
 

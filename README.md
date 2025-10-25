@@ -4,7 +4,7 @@ A modern, enterprise-grade multilingual documentation portal built with Next.js 
 
 ## 🌟 Features
 
-- 🌍 **Multilingual Support**: English, Spanish, Portuguese with automatic language detection
+- 🌍 **Multilingual Support**: English, Spanish with automatic language detection
 - 📚 **API Versioning**: Support for multiple API versions with seamless navigation
 - 🔍 **Static Search**: Fast, client-side search with Pagefind integration
 - 🎨 **Theme Support**: Dark/Light mode with system preference detection
@@ -95,10 +95,7 @@ content/
 │   └── v1/                # Same structure as English
 │       ├── overview.mdx
 │       └── ...
-└── pt/                     # Portuguese content
-    └── v1/                # Same structure as English
-        ├── overview.mdx
-        └── ...
+
 ```
 
 ### Creating New Content
@@ -161,7 +158,7 @@ npm run content:create es v1 overview "Descripción General"
 | `title` | string | ✅ | Page title (used in navigation and SEO) |
 | `description` | string | ✅ | Brief description for SEO and previews |
 | `version` | string | ✅ | API version (e.g., "v1", "v2") |
-| `locale` | string | ✅ | Language code ("en", "es", "pt") |
+| `locale` | string | ✅ | Language code ("en", "es") |
 | `order` | number | ✅ | Sort order in navigation |
 | `tags` | string[] | ✅ | Tags for categorization and search |
 | `lastModified` | string | ❌ | Last update date (ISO format) |
@@ -230,13 +227,12 @@ npm run lint:content:report
 |----------|------|-------------|--------|
 | English | `en` | English | ✅ Primary |
 | Spanish | `es` | Español | ✅ Active |
-| Portuguese | `pt` | Português | ✅ Active |
 
 ### Adding a New Language
 
 1. **Update locale configuration** in `lib/locale-config.ts`:
    ```typescript
-   export const locales = ['en', 'es', 'pt', 'fr'] as const; // Add 'fr'
+   export const locales = ['en', 'es', 'fr'] as const; // Add 'fr'
    
    export const localeConfig = {
      // ... existing locales
@@ -576,7 +572,7 @@ npm run performance:lighthouse
 1. **Create version directory structure:**
    ```bash
    # Create v2 directories for all languages
-   mkdir -p content/{en,es,pt}/v2/{guides,api-reference}
+   mkdir -p content/{en,es}/v2/{guides,api-reference}
    ```
 
 2. **Copy and update content from previous version:**
@@ -667,7 +663,7 @@ Search behavior is configured in `lib/search-indexer.ts`:
 
 ```typescript
 const searchConfig = {
-  languages: ['en', 'es', 'pt'],
+  languages: ['en', 'es'],
   indexFields: ['title', 'description', 'content'],
   excludeSelectors: ['.no-search', 'nav', 'footer'],
   boostFields: {
@@ -1126,7 +1122,7 @@ GET /api/config
 Response:
 ```json
 {
-  "locales": ["en", "es", "pt"],
+  "locales": ["en", "es"],
   "versions": ["v1"],
   "features": {
     "search": true,

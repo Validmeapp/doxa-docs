@@ -1,0 +1,28 @@
+{
+  "timestamp": "2025-10-25T20:43:20.369Z",
+  "server": {
+    "port": 3000,
+    "url": "http://localhost:3000"
+  },
+  "content": {
+    "totalFiles": 12,
+    "byLocale": {
+      "pt": 4,
+      "es": 3,
+      "en": 5
+    },
+    "byType": {
+      "other": 6,
+      "guides": 2,
+      "api-reference": 4
+    }
+  },
+  "codebase": {
+    "components": 18,
+    "libraries": 20
+  },
+  "features": {
+    "contentWatching": true,
+    "searchRebuild": true
+  }
+}

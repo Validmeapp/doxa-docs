@@ -63,6 +63,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "commander": "^14.0.1",
+    "critters": "^0.0.23",
     "glob": "^11.0.3",
     "gray-matter": "^4.0.3",
     "lucide-react": "^0.546.0",

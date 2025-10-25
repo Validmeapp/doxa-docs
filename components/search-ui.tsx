@@ -48,9 +48,10 @@ export function SearchUI({
   useEffect(() => {
     const initPagefind = async () => {
       try {
-        // Create script element to load Pagefind
+        // Create script element to load Pagefind as a module
         const script = document.createElement('script');
         script.src = `/search/${locale}/${version}/pagefind.js`;
+        script.type = 'module';
         script.onload = () => {
           // @ts-ignore - Pagefind is loaded globally
           if (window.pagefind) {

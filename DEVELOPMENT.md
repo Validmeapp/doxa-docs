@@ -81,9 +81,7 @@ content/
 ├── es/                 # Spanish content
 │   └── v1/
 │       └── ...
-└── pt/                 # Portuguese content
-    └── v1/
-        └── ...
+
 ```
 
 ### Frontmatter Requirements

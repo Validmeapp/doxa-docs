@@ -66,13 +66,13 @@ Para aplicaciones que necesitan actuar en nombre de los usuarios, soportamos OAu
 
 ```javascript
 // Paso 1: Redirigir al servidor de autorización
-const authUrl = `https://auth.example.com/oauth/authorize?` +
-  `client_id=${clientId}&` +
-  `redirect_uri=${redirectUri}&` +
-  `response_type=code&` +
-  `scope=read:users write:users&` +
-  `code_challenge=${codeChallenge}&` +
-  `code_challenge_method=S256`;
+const authUrl = 'https://auth.example.com/oauth/authorize?' +
+  'client_id=${clientId}&' +
+  'redirect_uri=${redirectUri}&' +
+  'response_type=code&' +
+  'scope=read:users write:users&' +
+  'code_challenge=${codeChallenge}&' +
+  'code_challenge_method=S256';
 
 window.location.href = authUrl;
 ```

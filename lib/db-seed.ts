@@ -35,7 +35,7 @@ const defaultSeedData: SeedData = {
     },
     {
       key: 'available_locales',
-      value: JSON.stringify(['en', 'es', 'pt']),
+      value: JSON.stringify(['en', 'es']),
       description: 'List of available locales'
     },
     {

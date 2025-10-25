@@ -285,9 +285,9 @@ export function Sidebar({ navigation, locale, version, isCollapsed, onToggle }: 
         role="tree" 
         aria-label="Documentation structure"
       >
-        {navigation.map((item) => (
+        {navigation.map((item, index) => (
           <SidebarItem
-            key={item.path}
+            key={item.path || `nav-item-${index}`}
             item={item}
             locale={locale}
             version={version}

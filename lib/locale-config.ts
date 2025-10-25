@@ -1,5 +1,5 @@
 // Supported locales
-export const locales = ['en', 'es', 'pt'] as const;
+export const locales = ['en', 'es'] as const;
 export type Locale = (typeof locales)[number];
 
 // Locale configuration
@@ -12,11 +12,6 @@ export const localeConfig = {
   es: {
     name: 'Spanish',
     nativeName: 'Español',
-    direction: 'ltr',
-  },
-  pt: {
-    name: 'Portuguese',
-    nativeName: 'Português',
     direction: 'ltr',
   },
 } as const;

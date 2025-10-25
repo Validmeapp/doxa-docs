@@ -23,13 +23,11 @@ export async function generateMetadata({
   const localizedTitles: Record<Locale, string> = {
     en: 'Documentation',
     es: 'Documentación',
-    pt: 'Documentação',
   };
 
   const localizedDescriptions: Record<Locale, string> = {
     en: 'Comprehensive API documentation and developer guides.',
     es: 'Documentación completa de API y guías para desarrolladores.',
-    pt: 'Documentação abrangente da API e guias para desenvolvedores.',
   };
 
   return generateSectionMetadata(

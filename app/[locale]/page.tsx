@@ -31,11 +31,6 @@ export default async function LocaleHomePage({
       subtitle: 'Documentación multilingüe moderna con UX de nivel empresarial',
       description: 'Bienvenido a nuestro portal de documentación integral. Encuentra referencias de API, guías y recursos en tu idioma preferido.',
     },
-    pt: {
-      title: 'Portal de Documentação',
-      subtitle: 'Documentação multilíngue moderna com UX de nível empresarial',
-      description: 'Bem-vindo ao nosso portal de documentação abrangente. Encontre referências de API, guias e recursos no seu idioma preferido.',
-    },
   };
 
   const localizedContent = content[locale];

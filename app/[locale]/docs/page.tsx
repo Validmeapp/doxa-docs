@@ -13,13 +13,11 @@ export async function generateMetadata({
   const localizedTitles: Record<Locale, string> = {
     en: 'Documentation Overview',
     es: 'Resumen de Documentación',
-    pt: 'Visão Geral da Documentação',
   };
 
   const localizedDescriptions: Record<Locale, string> = {
     en: 'Welcome to the documentation portal. Find comprehensive guides and API references.',
     es: 'Bienvenido al portal de documentación. Encuentra guías completas y referencias de API.',
-    pt: 'Bem-vindo ao portal de documentação. Encontre guias abrangentes e referências de API.',
   };
 
   return generateSectionMetadata(
@@ -75,27 +73,6 @@ export default async function DocsHomePage({
           title: 'Guías',
           description: 'Tutoriales detallados y mejores prácticas.',
           items: ['Guía de Integración', 'Mejores Prácticas de Seguridad', 'Manejo de Errores'],
-        },
-      ],
-    },
-    pt: {
-      title: 'Visão Geral da Documentação',
-      subtitle: 'Tudo que você precisa para integrar com nossa plataforma',
-      sections: [
-        {
-          title: 'Primeiros Passos',
-          description: 'Guias de início rápido para começar em minutos.',
-          items: ['Instalação', 'Autenticação', 'Primeira Chamada API'],
-        },
-        {
-          title: 'Referência da API',
-          description: 'Referência completa para todos os endpoints da API com exemplos.',
-          items: ['API de Usuários', 'Webhooks', 'Autenticação'],
-        },
-        {
-          title: 'Guias',
-          description: 'Tutoriais detalhados e melhores práticas.',
-          items: ['Guia de Integração', 'Melhores Práticas de Segurança', 'Tratamento de Erros'],
         },
       ],
     },

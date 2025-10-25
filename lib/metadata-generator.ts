@@ -154,7 +154,6 @@ function getOpenGraphLocale(locale: Locale): string {
   const localeMap: Record<Locale, string> = {
     en: 'en_US',
     es: 'es_ES',
-    pt: 'pt_BR',
   };
   return localeMap[locale];
 }
@@ -211,13 +210,11 @@ export function generateHomeMetadata(locale: Locale): Metadata {
   const localizedTitles: Record<Locale, string> = {
     en: 'Documentation Portal',
     es: 'Portal de Documentación',
-    pt: 'Portal de Documentação',
   };
 
   const localizedDescriptions: Record<Locale, string> = {
     en: 'Modern multilingual documentation portal with enterprise-grade UX for API documentation and knowledge base content.',
     es: 'Portal de documentación multilingüe moderno con UX de nivel empresarial para documentación de API y contenido de base de conocimientos.',
-    pt: 'Portal de documentação multilíngue moderno com UX de nível empresarial para documentação de API e conteúdo de base de conhecimento.',
   };
 
   return generatePageMetadata({
@@ -322,13 +319,11 @@ export function generateWebsiteJsonLd(locale: Locale) {
   const localizedNames: Record<Locale, string> = {
     en: 'Documentation Portal',
     es: 'Portal de Documentación',
-    pt: 'Portal de Documentação',
   };
 
   const localizedDescriptions: Record<Locale, string> = {
     en: 'Modern multilingual documentation portal with enterprise-grade UX for API documentation and knowledge base content.',
     es: 'Portal de documentación multilingüe moderno con UX de nivel empresarial para documentación de API y contenido de base de conocimientos.',
-    pt: 'Portal de documentação multilíngue moderno com UX de nível empresarial para documentação de API e conteúdo de base de conhecimento.',
   };
 
   return {
@@ -412,13 +407,11 @@ export function generateSoftwareApplicationJsonLd(locale: Locale) {
   const localizedNames: Record<Locale, string> = {
     en: 'Digital Identity API',
     es: 'API de Identidad Digital',
-    pt: 'API de Identidade Digital',
   };
 
   const localizedDescriptions: Record<Locale, string> = {
     en: 'Decentralized digital identity platform API for secure authentication and identity management.',
     es: 'API de plataforma de identidad digital descentralizada para autenticación segura y gestión de identidad.',
-    pt: 'API de plataforma de identidade digital descentralizada para autenticação segura e gerenciamento de identidade.',
   };
 
   return {

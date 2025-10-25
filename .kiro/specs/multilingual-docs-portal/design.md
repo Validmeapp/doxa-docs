@@ -361,9 +361,7 @@ content/
 │   └── v1/
 │       ├── overview.mdx
 │       └── authentication.mdx
-└── pt/
-    └── v1/
-        ├── overview.mdx
+
         └── authentication.mdx
 ```
 
