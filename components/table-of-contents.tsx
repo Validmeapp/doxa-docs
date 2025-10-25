@@ -20,14 +20,25 @@ export function TableOfContents({ items = [], className = '' }: TableOfContentsP
   const observerRef = useRef<IntersectionObserver | null>(null);
   const headingElementsRef = useRef<Element[]>([]);
 
-  // Generate a clean ID from text
-  const generateId = useCallback((text: string): string => {
-    return text
+  // Generate a clean ID from text with uniqueness
+  const generateId = useCallback((text: string, existingIds: Set<string> = new Set()): string => {
+    let baseId = text
       .toLowerCase()
       .replace(/[^\w\s-]/g, '') // Remove special characters
       .replace(/\s+/g, '-') // Replace spaces with hyphens
       .replace(/-+/g, '-') // Replace multiple hyphens with single
       .trim();
+    
+    // Ensure uniqueness by adding a counter if needed
+    let id = baseId;
+    let counter = 1;
+    while (existingIds.has(id)) {
+      id = `${baseId}-${counter}`;
+      counter++;
+    }
+    
+    existingIds.add(id);
+    return id;
   }, []);
 
   // Auto-generate TOC from page headings if no items provided
@@ -36,6 +47,7 @@ export function TableOfContents({ items = [], className = '' }: TableOfContentsP
       if (items.length === 0) {
         const headings = document.querySelectorAll('h2, h3, h4');
         const generatedItems: TOCItem[] = [];
+        const existingIds = new Set<string>();
 
         headings.forEach((heading) => {
           const title = heading.textContent || '';
@@ -44,8 +56,10 @@ export function TableOfContents({ items = [], className = '' }: TableOfContentsP
 
           // Generate ID if not present
           if (!id && title) {
-            id = generateId(title);
+            id = generateId(title, existingIds);
             heading.id = id;
+          } else if (id) {
+            existingIds.add(id);
           }
 
           if (id && title) {
@@ -84,7 +98,7 @@ export function TableOfContents({ items = [], className = '' }: TableOfContentsP
     const timeoutId = setTimeout(generateTOC, 100);
     
     return () => clearTimeout(timeoutId);
-  }, [generateId]);
+  }, [generateId, items]);
 
   // Enhanced scroll spy with better active heading detection
   useEffect(() => {

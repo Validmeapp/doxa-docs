@@ -160,7 +160,7 @@ export class ContentLoader {
       const slug = this.generateSlug(relativePath);
 
       // Process content with MDX processor
-      const { tableOfContents, linkValidationErrors } = await mdxProcessor.processMarkdown(content);
+      const { processedContent, tableOfContents, linkValidationErrors } = await mdxProcessor.processMarkdown(content);
       
       // Log link validation errors
       if (linkValidationErrors.length > 0) {
@@ -169,7 +169,7 @@ export class ContentLoader {
 
       return {
         frontmatter: frontmatter as PageFrontmatter,
-        content,
+        content: processedContent, // Use processed HTML instead of raw markdown
         slug,
         filePath,
         tableOfContents,
@@ -334,6 +334,9 @@ export class ContentLoader {
    * Gets content by slug for a specific locale and version
    */
   public async getContentBySlug(locale: string, version: string, slug: string): Promise<ContentPage | null> {
+    console.log(`Looking for content: locale=${locale}, version=${version}, slug=${slug}`);
+    const allContent = await this.loadAllContent();
+    console.log('Available content:', allContent.map(p => ({ slug: p.slug, locale: p.frontmatter.locale, version: p.frontmatter.version })));
     return this.findContentBySlug(slug, locale, version);
   }
 

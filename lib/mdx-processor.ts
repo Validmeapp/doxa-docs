@@ -1,52 +1,53 @@
 import { remark } from 'remark';
-import { rehype } from 'rehype';
 import remarkGfm from 'remark-gfm';
 import remarkFrontmatter from 'remark-frontmatter';
-import rehypeSlug from 'rehype-slug';
-import rehypeAutolinkHeadings from 'rehype-autolink-headings';
-import rehypeHighlight from 'rehype-highlight';
+import remarkHtml from 'remark-html';
 import { visit } from 'unist-util-visit';
 import { TOCItem } from './content-types';
 
 /**
- * Custom remark plugin to extract table of contents
+ * Custom remark plugin to extract table of contents and add IDs to headings
  */
 function remarkToc() {
   return (tree: any, file: any) => {
     const toc: TOCItem[] = [];
     const headingStack: TOCItem[] = [];
+    const existingIds = new Set<string>();
 
     visit(tree, 'heading', (node: any) => {
-      if (node.depth >= 2 && node.depth <= 4) {
+      if (node.depth >= 1 && node.depth <= 6) {
         const title = extractTextFromNode(node);
-        const id = generateHeadingId(title);
+        const id = generateHeadingId(title, existingIds);
         
-        const tocItem: TOCItem = {
-          id,
-          title,
-          level: node.depth,
-          children: []
-        };
-
-        // Add id to the heading node for later processing
+        // Add id attribute to the heading for HTML output
         if (!node.data) node.data = {};
         if (!node.data.hProperties) node.data.hProperties = {};
         node.data.hProperties.id = id;
 
-        // Build hierarchical structure
-        while (headingStack.length > 0 && headingStack[headingStack.length - 1].level >= node.depth) {
-          headingStack.pop();
-        }
+        // Only include h2-h4 in TOC
+        if (node.depth >= 2 && node.depth <= 4) {
+          const tocItem: TOCItem = {
+            id,
+            title,
+            level: node.depth,
+            children: []
+          };
 
-        if (headingStack.length === 0) {
-          toc.push(tocItem);
-        } else {
-          const parent = headingStack[headingStack.length - 1];
-          if (!parent.children) parent.children = [];
-          parent.children.push(tocItem);
-        }
+          // Build hierarchical structure
+          while (headingStack.length > 0 && headingStack[headingStack.length - 1].level >= node.depth) {
+            headingStack.pop();
+          }
 
-        headingStack.push(tocItem);
+          if (headingStack.length === 0) {
+            toc.push(tocItem);
+          } else {
+            const parent = headingStack[headingStack.length - 1];
+            if (!parent.children) parent.children = [];
+            parent.children.push(tocItem);
+          }
+
+          headingStack.push(tocItem);
+        }
       }
     });
 
@@ -105,15 +106,26 @@ function extractTextFromNode(node: any): string {
 }
 
 /**
- * Generate a URL-safe ID from heading text
+ * Generate a URL-safe ID from heading text with uniqueness tracking
  */
-function generateHeadingId(text: string): string {
-  return text
+function generateHeadingId(text: string, existingIds: Set<string> = new Set()): string {
+  let baseId = text
     .toLowerCase()
     .replace(/[^\w\s-]/g, '') // Remove special characters
     .replace(/\s+/g, '-') // Replace spaces with hyphens
     .replace(/-+/g, '-') // Replace multiple hyphens with single
     .replace(/^-|-$/g, ''); // Remove leading/trailing hyphens
+  
+  // Ensure uniqueness by adding a counter if needed
+  let id = baseId;
+  let counter = 1;
+  while (existingIds.has(id)) {
+    id = `${baseId}-${counter}`;
+    counter++;
+  }
+  
+  existingIds.add(id);
+  return id;
 }
 
 /**
@@ -121,7 +133,6 @@ function generateHeadingId(text: string): string {
  */
 export class MDXProcessor {
   private remarkProcessor: any;
-  private rehypeProcessor: any;
   private contentPages: Map<string, string> = new Map();
 
   constructor() {
@@ -129,25 +140,15 @@ export class MDXProcessor {
   }
 
   /**
-   * Initialize remark and rehype processors with plugins
+   * Initialize remark processor with plugins
    */
   private initializeProcessors() {
     this.remarkProcessor = remark()
       .use(remarkGfm) // GitHub Flavored Markdown
       .use(remarkFrontmatter) // Parse frontmatter
       .use(remarkToc) // Extract table of contents
-      .use(remarkLinkValidator, this.contentPages); // Validate internal links
-
-    this.rehypeProcessor = rehype()
-      .use(rehypeSlug) // Add IDs to headings
-      .use(rehypeAutolinkHeadings, {
-        behavior: 'wrap',
-        properties: {
-          className: ['heading-link'],
-          ariaLabel: 'Link to this heading'
-        }
-      }); // Add links to headings
-      // Note: rehype-highlight removed temporarily due to dependency issues
+      .use(remarkLinkValidator, this.contentPages) // Validate internal links
+      .use(remarkHtml); // Convert to HTML
   }
 
   /**
@@ -168,18 +169,15 @@ export class MDXProcessor {
     linkValidationErrors: string[];
   }> {
     try {
-      // Process with remark
-      const remarkResult = await this.remarkProcessor.process(content);
+      // Process with remark to HTML
+      const result = await this.remarkProcessor.process(content);
       
       // Extract TOC and validation errors from file data
-      const toc = remarkResult.data?.toc || [];
-      const linkValidationErrors = remarkResult.data?.linkValidationErrors || [];
-
-      // Convert to HTML with rehype
-      const rehypeResult = await this.rehypeProcessor.process(remarkResult.toString());
+      const toc = result.data?.toc || [];
+      const linkValidationErrors = result.data?.linkValidationErrors || [];
       
       return {
-        processedContent: rehypeResult.toString(),
+        processedContent: result.toString(),
         tableOfContents: toc,
         linkValidationErrors
       };
