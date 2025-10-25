@@ -1,0 +1,142 @@
+# Caddyfile for multilingual documentation portal
+# Replace 'your-domain.com' with your actual domain
+
+{
+    # Global options
+    admin off
+    auto_https on
+    
+    # Enable HTTP/3
+    servers {
+        protocol {
+            experimental_http3
+        }
+    }
+}
+
+# Main site configuration
+your-domain.com {
+    # Reverse proxy to Next.js app
+    reverse_proxy app:3000 {
+        # Health check
+        health_uri /api/health
+        health_interval 30s
+        health_timeout 10s
+        
+        # Load balancing (for future scaling)
+        lb_policy round_robin
+        
+        # Headers for better performance
+        header_up Host {host}
+        header_up X-Real-IP {remote}
+        header_up X-Forwarded-For {remote}
+        header_up X-Forwarded-Proto {scheme}
+    }
+    
+    # Security headers
+    header {
+        # HSTS
+        Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+        
+        # Content Security Policy
+        Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self'; frame-ancestors 'none';"
+        
+        # Additional security headers
+        X-Content-Type-Options "nosniff"
+        X-Frame-Options "DENY"
+        X-XSS-Protection "1; mode=block"
+        Referrer-Policy "strict-origin-when-cross-origin"
+        Permissions-Policy "camera=(), microphone=(), geolocation=()"
+        
+        # Remove server information
+        -Server
+    }
+    
+    # Caching for static assets
+    @static {
+        path /_next/static/* /favicon.ico /robots.txt /sitemap*.xml
+    }
+    header @static {
+        Cache-Control "public, max-age=31536000, immutable"
+    }
+    
+    # Caching for search index files
+    @search {
+        path /search/*
+    }
+    header @search {
+        Cache-Control "public, max-age=3600"
+    }
+    
+    # Compression
+    encode {
+        gzip 6
+        zstd
+        minimum_length 1000
+        match {
+            header Content-Type text/*
+            header Content-Type application/json*
+            header Content-Type application/javascript*
+            header Content-Type application/xml*
+            header Content-Type application/rss+xml*
+            header Content-Type application/atom+xml*
+            header Content-Type image/svg+xml*
+        }
+    }
+    
+    # Rate limiting
+    rate_limit {
+        zone static {
+            key {remote}
+            events 100
+            window 1m
+        }
+        zone api {
+            key {remote}
+            events 30
+            window 1m
+        }
+    }
+    
+    # Apply rate limiting
+    @api {
+        path /api/*
+    }
+    rate_limit @api api
+    rate_limit static
+    
+    # Logging
+    log {
+        output file /var/log/caddy/access.log {
+            roll_size 100mb
+            roll_keep 5
+            roll_keep_for 720h
+        }
+        format json
+        level INFO
+    }
+    
+    # Error handling
+    handle_errors {
+        @5xx expression `{http.error.status_code} >= 500`
+        respond @5xx "Service temporarily unavailable" 503
+        
+        @4xx expression `{http.error.status_code} >= 400 && {http.error.status_code} < 500`
+        respond @4xx "Page not found" 404
+    }
+}
+
+# Redirect www to non-www
+www.your-domain.com {
+    redir https://your-domain.com{uri} permanent
+}
+
+# Health check endpoint for load balancers
+:8080 {
+    respond /health "OK" 200
+    
+    # Metrics endpoint (optional)
+    handle /metrics {
+        metrics
+    }
+}

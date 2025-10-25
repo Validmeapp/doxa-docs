@@ -1,0 +1,512 @@
+---
+title: "API de Usuarios"
+description: "Gestiona cuentas de usuario y perfiles con operaciones CRUD completas"
+version: "v1"
+locale: "es"
+order: 1
+tags: ["api", "usuarios", "crud"]
+---
+
+# API de Usuarios
+
+La API de Usuarios te permite gestionar cuentas de usuario y perfiles en tu aplicación. Esta API proporciona operaciones CRUD completas con capacidades avanzadas de filtrado, paginación y búsqueda.
+
+## URL Base
+
+```
+https://api.example.com/v1/users
+```
+
+## Autenticación
+
+Todos los endpoints requieren autenticación vía clave de API o token OAuth 2.0.
+
+```bash
+Authorization: Bearer TU_CLAVE_API
+```
+
+## Endpoints
+
+### GET /users
+
+Obtiene una lista paginada de usuarios con filtrado opcional.
+
+#### Parámetros
+
+| Parámetro | Tipo | Requerido | Descripción |
+|-----------|------|-----------|-------------|
+| `page` | integer | No | Número de página (por defecto: 1) |
+| `limit` | integer | No | Elementos por página (por defecto: 20, máx: 100) |
+| `search` | string | No | Buscar usuarios por nombre o email |
+| `status` | string | No | Filtrar por estado: `active`, `inactive`, `pending` |
+| `created_after` | string | No | Filtro de fecha ISO 8601 |
+
+#### Ejemplo de Solicitud
+
+```bash
+curl -X GET "https://api.example.com/v1/users?page=1&limit=10&status=active" \
+  -H "Authorization: Bearer TU_CLAVE_API" \
+  -H "Content-Type: application/json"
+```
+
+#### Ejemplo de Respuesta
+
+```json
+{
+  "data": [
+    {
+      "id": "usr_1234567890",
+      "email": "juan.perez@ejemplo.com",
+      "first_name": "Juan",
+      "last_name": "Pérez",
+      "status": "active",
+      "created_at": "2024-01-15T10:30:00Z",
+      "updated_at": "2024-01-15T10:30:00Z",
+      "profile": {
+        "avatar_url": "https://ejemplo.com/avatars/juan.jpg",
+        "phone": "+34123456789",
+        "timezone": "Europe/Madrid"
+      }
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 10,
+    "total": 150,
+    "total_pages": 15
+  }
+}
+```
+
+### POST /users
+
+Crea una nueva cuenta de usuario con verificación por email.
+
+#### Cuerpo de la Solicitud
+
+```json
+{
+  "email": "maria.garcia@ejemplo.com",
+  "first_name": "María",
+  "last_name": "García",
+  "password": "ContraseñaSegura123!",
+  "profile": {
+    "phone": "+34987654321",
+    "timezone": "Europe/Madrid"
+  },
+  "send_welcome_email": true
+}
+```
+
+#### Ejemplo de Solicitud
+
+```javascript
+const response = await fetch('https://api.example.com/v1/users', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer TU_CLAVE_API',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    email: 'maria.garcia@ejemplo.com',
+    first_name: 'María',
+    last_name: 'García',
+    password: 'ContraseñaSegura123!',
+    profile: {
+      phone: '+34987654321',
+      timezone: 'Europe/Madrid'
+    },
+    send_welcome_email: true
+  })
+});
+
+const usuario = await response.json();
+```
+
+#### Ejemplo de Respuesta
+
+```json
+{
+  "id": "usr_0987654321",
+  "email": "maria.garcia@ejemplo.com",
+  "first_name": "María",
+  "last_name": "García",
+  "status": "pending",
+  "created_at": "2024-01-15T14:22:00Z",
+  "updated_at": "2024-01-15T14:22:00Z",
+  "profile": {
+    "phone": "+34987654321",
+    "timezone": "Europe/Madrid"
+  },
+  "verification": {
+    "email_verified": false,
+    "verification_sent": true
+  }
+}
+```
+
+### GET /users/{id}
+
+Obtiene un usuario específico por su identificador único.
+
+#### Parámetros de Ruta
+
+| Parámetro | Tipo | Requerido | Descripción |
+|-----------|------|-----------|-------------|
+| `id` | string | Sí | ID del usuario (formato: `usr_*`) |
+
+#### Ejemplo de Solicitud
+
+```python
+import requests
+
+headers = {
+    'Authorization': 'Bearer TU_CLAVE_API',
+    'Content-Type': 'application/json'
+}
+
+response = requests.get(
+    'https://api.example.com/v1/users/usr_1234567890',
+    headers=headers
+)
+
+usuario = response.json()
+```
+
+#### Ejemplo de Respuesta
+
+```json
+{
+  "id": "usr_1234567890",
+  "email": "juan.perez@ejemplo.com",
+  "first_name": "Juan",
+  "last_name": "Pérez",
+  "status": "active",
+  "created_at": "2024-01-15T10:30:00Z",
+  "updated_at": "2024-01-15T10:30:00Z",
+  "last_login": "2024-01-20T09:15:00Z",
+  "profile": {
+    "avatar_url": "https://ejemplo.com/avatars/juan.jpg",
+    "phone": "+34123456789",
+    "timezone": "Europe/Madrid",
+    "preferences": {
+      "notifications": true,
+      "marketing_emails": false
+    }
+  },
+  "verification": {
+    "email_verified": true,
+    "phone_verified": true,
+    "identity_verified": false
+  }
+}
+```
+
+### PUT /users/{id}
+
+Actualiza la información de un usuario. Solo se actualizarán los campos proporcionados.
+
+#### Cuerpo de la Solicitud
+
+```json
+{
+  "first_name": "Juan Carlos",
+  "profile": {
+    "timezone": "America/Mexico_City",
+    "preferences": {
+      "notifications": false
+    }
+  }
+}
+```
+
+#### Ejemplo de Solicitud
+
+```bash
+curl -X PUT "https://api.example.com/v1/users/usr_1234567890" \
+  -H "Authorization: Bearer TU_CLAVE_API" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "first_name": "Juan Carlos",
+    "profile": {
+      "timezone": "America/Mexico_City"
+    }
+  }'
+```
+
+### DELETE /users/{id}
+
+Elimina permanentemente una cuenta de usuario. Esta acción no se puede deshacer.
+
+#### Parámetros de Consulta
+
+| Parámetro | Tipo | Requerido | Descripción |
+|-----------|------|-----------|-------------|
+| `force` | boolean | No | Omitir eliminación suave y remover permanentemente |
+
+#### Ejemplo de Solicitud
+
+```javascript
+const response = await fetch('https://api.example.com/v1/users/usr_1234567890', {
+  method: 'DELETE',
+  headers: {
+    'Authorization': 'Bearer TU_CLAVE_API'
+  }
+});
+
+if (response.ok) {
+  console.log('Usuario eliminado exitosamente');
+}
+```
+
+#### Respuesta
+
+```json
+{
+  "message": "Usuario eliminado exitosamente",
+  "deleted_at": "2024-01-20T15:30:00Z"
+}
+```
+
+## Respuestas de Error
+
+Todos los endpoints devuelven respuestas de error consistentes:
+
+```json
+{
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "La dirección de email proporcionada ya está en uso",
+    "details": {
+      "field": "email",
+      "value": "juan.perez@ejemplo.com"
+    }
+  }
+}
+```
+
+### Códigos de Error Comunes
+
+- `VALIDATION_ERROR` - Datos de entrada inválidos
+- `NOT_FOUND` - Usuario no encontrado
+- `UNAUTHORIZED` - Autenticación inválida o faltante
+- `FORBIDDEN` - Permisos insuficientes
+- `RATE_LIMITED` - Demasiadas solicitudes
+
+## Ejemplos de Integración
+
+### Crear y Verificar Usuario
+
+```javascript
+async function crearYVerificarUsuario(datosUsuario) {
+  try {
+    // Paso 1: Crear usuario
+    const response = await fetch('https://api.example.com/v1/users', {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer TU_CLAVE_API',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(datosUsuario)
+    });
+    
+    if (!response.ok) {
+      throw new Error('Error al crear usuario');
+    }
+    
+    const usuario = await response.json();
+    console.log('Usuario creado:', usuario.id);
+    
+    // Paso 2: Configurar webhook para verificación
+    const webhook = await fetch('https://api.example.com/v1/webhooks', {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer TU_CLAVE_API',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        url: 'https://tu-app.com/webhooks/verificacion',
+        events: ['user.verified'],
+        description: 'Webhook para verificación de usuarios'
+      })
+    });
+    
+    return usuario;
+  } catch (error) {
+    console.error('Error:', error.message);
+    throw error;
+  }
+}
+```
+
+### Búsqueda y Filtrado
+
+```python
+import requests
+
+def buscar_usuarios(termino_busqueda, estado=None, pagina=1):
+    """
+    Busca usuarios con filtros opcionales
+    """
+    params = {
+        'search': termino_busqueda,
+        'page': pagina,
+        'limit': 20
+    }
+    
+    if estado:
+        params['status'] = estado
+    
+    response = requests.get(
+        'https://api.example.com/v1/users',
+        headers={
+            'Authorization': 'Bearer TU_CLAVE_API',
+            'Content-Type': 'application/json'
+        },
+        params=params
+    )
+    
+    if response.status_code == 200:
+        return response.json()
+    else:
+        raise Exception(f'Error en búsqueda: {response.status_code}')
+
+# Ejemplo de uso
+usuarios_activos = buscar_usuarios('juan', estado='active')
+print(f'Encontrados {len(usuarios_activos["data"])} usuarios')
+```
+
+### Actualización en Lote
+
+```javascript
+async function actualizarUsuariosEnLote(actualizaciones) {
+  const resultados = [];
+  
+  for (const actualizacion of actualizaciones) {
+    try {
+      const response = await fetch(`https://api.example.com/v1/users/${actualizacion.id}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': 'Bearer TU_CLAVE_API',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(actualizacion.data)
+      });
+      
+      if (response.ok) {
+        const usuario = await response.json();
+        resultados.push({ id: actualizacion.id, success: true, data: usuario });
+      } else {
+        const error = await response.json();
+        resultados.push({ id: actualizacion.id, success: false, error });
+      }
+    } catch (error) {
+      resultados.push({ id: actualizacion.id, success: false, error: error.message });
+    }
+    
+    // Pausa para evitar límites de velocidad
+    await new Promise(resolve => setTimeout(resolve, 100));
+  }
+  
+  return resultados;
+}
+```
+
+## Mejores Prácticas
+
+### Paginación Eficiente
+
+```javascript
+async function obtenerTodosLosUsuarios() {
+  const todosLosUsuarios = [];
+  let pagina = 1;
+  let tieneMasPaginas = true;
+  
+  while (tieneMasPaginas) {
+    const response = await fetch(`https://api.example.com/v1/users?page=${pagina}&limit=100`, {
+      headers: {
+        'Authorization': 'Bearer TU_CLAVE_API',
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    const data = await response.json();
+    todosLosUsuarios.push(...data.data);
+    
+    tieneMasPaginas = pagina < data.pagination.total_pages;
+    pagina++;
+  }
+  
+  return todosLosUsuarios;
+}
+```
+
+### Caché de Datos
+
+```javascript
+const cache = new Map();
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutos
+
+async function obtenerUsuarioConCache(userId) {
+  const cacheKey = `user_${userId}`;
+  const cached = cache.get(cacheKey);
+  
+  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+    return cached.data;
+  }
+  
+  const response = await fetch(`https://api.example.com/v1/users/${userId}`, {
+    headers: {
+      'Authorization': 'Bearer TU_CLAVE_API',
+      'Content-Type': 'application/json'
+    }
+  });
+  
+  const usuario = await response.json();
+  
+  cache.set(cacheKey, {
+    data: usuario,
+    timestamp: Date.now()
+  });
+  
+  return usuario;
+}
+```
+
+## Webhooks Relacionados
+
+Configura webhooks para recibir notificaciones sobre eventos de usuarios:
+
+```javascript
+const eventosUsuario = [
+  'user.created',    // Usuario creado
+  'user.updated',    // Usuario actualizado
+  'user.deleted',    // Usuario eliminado
+  'user.verified',   // Usuario verificado
+  'user.suspended'   // Usuario suspendido
+];
+
+const webhook = await fetch('https://api.example.com/v1/webhooks', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer TU_CLAVE_API',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    url: 'https://tu-app.com/webhooks/usuarios',
+    events: eventosUsuario,
+    description: 'Webhook para todos los eventos de usuarios'
+  })
+});
+```
+
+## Soporte
+
+¿Necesitas ayuda con la API de Usuarios?
+
+- **Documentación**: Consulta nuestra guía completa
+- **Ejemplos de Código**: Repositorio en GitHub
+- **Soporte Técnico**: support@example.com
+- **Foro de Desarrolladores**: community.example.com
+
+¡Gestiona usuarios de forma eficiente! 👥

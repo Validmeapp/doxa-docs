@@ -1,0 +1,239 @@
+# Implementation Plan
+
+- [ ] 1. Initialize Next.js project with TypeScript and core dependencies
+  - Set up Next.js 14+ with App Router and TypeScript in strict mode
+  - Install and configure Tailwind CSS with shadcn/ui components
+  - Configure ESLint, Prettier, and TypeScript strict settings
+  - Set up basic project structure with app/, lib/, components/, and content/ directories
+  - _Requirements: 3.1, 3.2, 9.1, 9.2_
+
+- [x] 2. Set up database layer and schema
+  - [x] 2.1 Install and configure better-sqlite3 with TypeScript bindings
+    - Create database client with connection management
+    - Implement database initialization and connection utilities
+    - _Requirements: 12.1, 12.4_
+  - [x] 2.2 Create database schema and migration system
+    - Write SQL schema for config, redirects, page_analytics, search_metadata, and search_queries tables
+    - Implement versioned migration system with timestamps
+    - Create database seeding utilities for development
+    - _Requirements: 12.2, 12.4, 12.5_
+  - [ ]\* 2.3 Write unit tests for database operations
+    - Test database initialization and schema creation
+    - Test CRUD operations for all tables
+    - Test migration system functionality
+    - _Requirements: 12.1, 12.5_
+
+- [-] 3. Implement content processing pipeline
+  - [x] 3.1 Create MDX content loader with frontmatter parsing
+    - Install and configure gray-matter for frontmatter parsing
+    - Implement content file discovery and loading utilities
+    - Add frontmatter validation for required fields (title, description, version, locale, order)
+    - _Requirements: 3.1, 3.2, 3.3_
+  - [x] 3.2 Build navigation tree generator from file system
+    - Create navigation builder that scans content directories
+    - Generate hierarchical navigation structure with proper ordering
+    - Implement locale and version-specific navigation filtering
+    - _Requirements: 5.1, 3.4_
+  - [x] 3.3 Set up MDX processing pipeline with remark/rehype
+    - Configure remark and rehype plugins for enhanced markdown processing
+    - Implement table of contents generation from headings
+    - Add link validation and internal reference checking
+    - _Requirements: 3.1, 3.3, 5.3_
+  - [ ]\* 3.4 Write unit tests for content processing
+    - Test MDX parsing and frontmatter validation
+    - Test navigation tree generation logic
+    - Test link validation and TOC generation
+    - _Requirements: 3.1, 3.2, 3.3_
+
+- [x] 4. Implement core layout components
+  - [x] 4.1 Create root layout with theme provider and metadata
+    - Implement RootLayout component with theme detection and persistence
+    - Add global metadata configuration and SEO setup
+    - Configure font loading and CSS variables for theming
+    - _Requirements: 7.1, 7.2, 11.3_
+  - [x] 4.2 Build locale layout with i18n routing
+    - Create LocaleLayout component for language-specific routing
+    - Implement language detection from Accept-Language header
+    - Add language switcher component with path preservation
+    - _Requirements: 1.1, 1.2, 1.3, 1.5_
+  - [x] 4.3 Implement docs layout with three-column structure
+    - Create DocsLayout component with sidebar, content, and TOC areas
+    - Implement responsive breakpoints and mobile drawer functionality
+    - Add version switcher component with version-specific navigation
+    - _Requirements: 2.1, 2.2, 2.4, 5.1, 5.5_
+  - [ ]\* 4.4 Write component tests for layouts
+    - Test theme switching and persistence
+    - Test language switching and routing
+    - Test responsive layout behavior
+    - _Requirements: 7.3, 1.2, 5.5_
+
+- [x] 5. Build navigation components
+  - [x] 5.1 Create collapsible sidebar component
+    - Implement Sidebar component with multi-level collapsible sections
+    - Add keyboard navigation support (arrow keys, Enter, Esc)
+    - Implement active page highlighting and state persistence
+    - _Requirements: 5.1, 5.2, 5.4_
+  - [x] 5.2 Implement table of contents component
+    - Create TOC component with sticky positioning and scroll spy
+    - Add smooth scrolling to anchor links
+    - Implement auto-generation from h2, h3, h4 headings
+    - _Requirements: 5.3_
+  - [x] 5.3 Add breadcrumb navigation component
+    - Create Breadcrumbs component showing current page hierarchy
+    - Implement locale and version-aware breadcrumb generation
+    - Add structured data markup for SEO
+    - _Requirements: 11.1, 11.5_
+  - [ ]\* 5.4 Write tests for navigation components
+    - Test sidebar collapse/expand functionality
+    - Test keyboard navigation behavior
+    - Test TOC scroll spy and smooth scrolling
+    - _Requirements: 5.1, 5.2, 5.3_
+
+- [x] 6. Implement enhanced code block component
+  - [x] 6.1 Create code block component with syntax highlighting
+    - Install and configure Shiki for syntax highlighting
+    - Implement CodeBlock component with language detection
+    - Add copy-to-clipboard functionality with visual feedback
+    - _Requirements: 6.1, 6.2_
+  - [x] 6.2 Add multi-tab support for code examples
+    - Extend CodeBlock to support tabbed interfaces
+    - Implement request/response example tabs
+    - Add language badges and filename display
+    - _Requirements: 6.3, 6.4_
+  - [ ]\* 6.3 Write tests for code block functionality
+    - Test syntax highlighting with various languages
+    - Test copy-to-clipboard functionality
+    - Test multi-tab interface behavior
+    - _Requirements: 6.1, 6.2, 6.3_
+
+- [x] 7. Implement search functionality
+  - [x] 7.1 Set up Pagefind search integration
+    - Install and configure Pagefind for static search indexing
+    - Create search indexer that runs during build process
+    - Implement search index generation with locale/version filtering
+    - _Requirements: 4.1, 4.3, 4.5_
+  - [x] 7.2 Build search interface component
+    - Create SearchUI component with instant search results
+    - Implement keyboard shortcuts (⌘K/Ctrl+K) for search activation
+    - Add search result highlighting and context display
+    - _Requirements: 4.2, 4.4_
+  - [x] 7.3 Add search analytics and metadata tracking
+    - Implement search query logging to database
+    - Track popular searches and clicked results
+    - Store search index metadata for monitoring
+    - _Requirements: 4.1, 12.2_
+  - [ ]\* 7.4 Write tests for search functionality
+    - Test search index generation and filtering
+    - Test search UI keyboard shortcuts and interactions
+    - Test search analytics tracking
+    - _Requirements: 4.1, 4.2, 4.4_
+
+- [x] 8. Create API routes for configuration and health
+  - [x] 8.1 Implement configuration API endpoint
+    - Create /api/config route returning available locales, versions, and feature flags
+    - Add configuration caching and validation
+    - Implement feature flag management through database
+    - _Requirements: 2.1, 12.1, 12.2_
+  - [x] 8.2 Build health check API endpoint
+    - Create /api/health route with service status monitoring
+    - Implement database, filesystem, and search index health checks
+    - Add response time monitoring and alerting thresholds
+    - _Requirements: 8.3, 12.5_
+  - [x] 8.3 Add redirect management API
+    - Create API endpoints for managing URL redirects
+    - Implement redirect rule validation and conflict detection
+    - Add bulk redirect import/export functionality
+    - _Requirements: 12.2_
+  - [ ]\* 8.4 Write integration tests for API routes
+    - Test configuration API with various scenarios
+    - Test health check endpoint reliability
+    - Test redirect management functionality
+    - _Requirements: 8.1, 8.2, 8.3_
+
+- [x] 9. Implement theme system and accessibility
+  - [x] 9.1 Create theme toggle component and persistence
+    - Implement ThemeToggle component with smooth transitions
+    - Add system theme detection and localStorage persistence
+    - Configure SSR-compatible theme loading to prevent flashing
+    - _Requirements: 7.1, 7.2, 7.4_
+  - [x] 9.2 Add accessibility features and ARIA labels
+    - Implement semantic HTML5 landmarks throughout components
+    - Add comprehensive ARIA labels and descriptions
+    - Create skip-to-content links and focus management
+    - _Requirements: 10.1, 10.3, 10.4_
+  - [x] 9.3 Ensure color contrast and keyboard navigation
+    - Validate WCAG 2.1 AA color contrast ratios for all themes
+    - Implement comprehensive keyboard navigation support
+    - Add focus indicators and visual feedback
+    - _Requirements: 10.2, 10.5_
+  - [ ]\* 9.4 Write accessibility tests
+    - Test keyboard navigation flows
+    - Test screen reader compatibility
+    - Test color contrast compliance
+    - _Requirements: 10.1, 10.2, 10.4, 10.5_
+
+- [x] 10. Set up Docker containerization and deployment
+  - [x] 10.1 Create multi-stage Dockerfile for production
+    - Write optimized Dockerfile with dependency caching
+    - Implement multi-stage build for minimal production image
+    - Configure non-root user and security best practices
+    - _Requirements: 8.1, 8.4_
+  - [x] 10.2 Configure Docker Compose with Caddy reverse proxy
+    - Create docker-compose.yml with app and proxy services
+    - Configure Caddy for automatic HTTPS with Let's Encrypt
+    - Add security headers and caching configuration
+    - _Requirements: 8.1, 8.2, 8.4_
+  - [x] 10.3 Add health checks and monitoring
+    - Implement Docker health checks for all services
+    - Configure service dependencies and restart policies
+    - Add logging and monitoring configuration
+    - _Requirements: 8.3_
+  - [ ]\* 10.4 Write deployment tests
+    - Test Docker build and container startup
+    - Test health check endpoints
+    - Test SSL certificate generation
+    - _Requirements: 8.1, 8.2, 8.3_
+
+- [x] 11. Implement SEO optimization and metadata
+  - [x] 11.1 Add comprehensive metadata generation
+    - Implement dynamic meta tag generation for all pages
+    - Add OpenGraph and Twitter Card metadata
+    - Configure canonical URLs and hreflang tags
+    - _Requirements: 11.3, 11.4_
+  - [x] 11.2 Create sitemap generation
+    - Implement automatic sitemap generation per locale/version
+    - Add sitemap index for multiple sitemaps
+    - Configure robots.txt with proper directives
+    - _Requirements: 11.2, 11.5_
+  - [x] 11.3 Add structured data and JSON-LD
+    - Implement JSON-LD structured data for documentation pages
+    - Add breadcrumb and organization markup
+    - Configure rich snippets for search results
+    - _Requirements: 11.5_
+  - [ ]\* 11.4 Write SEO tests
+    - Test metadata generation for various page types
+    - Test sitemap generation and validation
+    - Test structured data markup
+    - _Requirements: 11.1, 11.2, 11.3, 11.5_
+
+- [x] 12. Create sample content and finalize build process
+  - [x] 12.1 Create sample documentation content
+    - Write sample MDX files for English, Spanish, and Portuguese
+    - Create API reference examples with proper frontmatter
+    - Add code examples and multi-language content
+    - _Requirements: 1.1, 2.1, 3.1_
+  - [x] 12.2 Optimize build process and static export
+    - Configure Next.js static export with proper optimization
+    - Implement build-time content validation and link checking
+    - Add bundle analysis and performance monitoring
+    - _Requirements: 9.1, 9.2, 9.4_
+  - [x] 12.3 Add development tooling and scripts
+    - Create development scripts for content authoring
+    - Add hot reload configuration for content changes
+    - Implement content validation and linting tools
+    - _Requirements: 3.4_
+  - [ ]\* 12.4 Write end-to-end tests
+    - Test complete user workflows (navigation, search, language switching)
+    - Test performance benchmarks with Lighthouse
+    - Test mobile responsiveness and touch interactions
+    - _Requirements: 9.1, 5.5, 1.2, 4.2_

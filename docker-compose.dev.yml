@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  # Development version with hot reload
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+      target: development
+    container_name: docs-portal-app-dev
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+      - HOSTNAME=0.0.0.0
+    volumes:
+      # Mount source code for hot reload
+      - .:/app:cached
+      - /app/node_modules
+      - /app/.next
+    ports:
+      - "3000:3000"
+    networks:
+      - docs-network-dev
+    command: npm run dev
+
+  # Caddy for development (optional)
+  caddy:
+    image: caddy:2-alpine
+    container_name: docs-portal-caddy-dev
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    volumes:
+      - ./Caddyfile.dev:/etc/caddy/Caddyfile:ro
+    networks:
+      - docs-network-dev
+    depends_on:
+      - app
+
+networks:
+  docs-network-dev:
+    driver: bridge
+    name: docs-network-dev

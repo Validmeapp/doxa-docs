@@ -1,0 +1,303 @@
+---
+title: "Webhooks API"
+description: "Configure and manage webhook endpoints for real-time event notifications"
+version: "v1"
+locale: "en"
+order: 2
+tags: ["api", "webhooks", "events"]
+---
+
+# Webhooks API
+
+Configure webhook endpoints to receive real-time notifications about events in your application. Webhooks allow your application to be notified immediately when specific events occur, rather than having to poll our API.
+
+## Base URL
+
+```
+https://api.example.com/v1/webhooks
+```
+
+## Event Types
+
+| Event | Description |
+|-------|-------------|
+| `user.created` | A new user account was created |
+| `user.updated` | User information was modified |
+| `user.deleted` | A user account was deleted |
+| `user.verified` | User completed email or phone verification |
+| `auth.login` | User successfully logged in |
+| `auth.failed` | Authentication attempt failed |
+| `identity.verified` | Identity document verification completed |
+| `identity.failed` | Identity verification failed |
+
+## Webhook Security
+
+All webhook payloads are signed using HMAC-SHA256. Verify the signature using the `X-Webhook-Signature` header.
+
+```javascript
+const crypto = require('crypto');
+
+function verifyWebhookSignature(payload, signature, secret) {
+  const expectedSignature = crypto
+    .createHmac('sha256', secret)
+    .update(payload, 'utf8')
+    .digest('hex');
+  
+  return `sha256=${expectedSignature}` === signature;
+}
+```
+
+## Endpoints
+
+### GET /webhooks
+
+Retrieve all configured webhook endpoints.
+
+#### Request Example
+
+```bash
+curl -X GET "https://api.example.com/v1/webhooks" \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+#### Response Example
+
+```json
+{
+  "data": [
+    {
+      "id": "wh_1234567890",
+      "url": "https://your-app.com/webhooks/identity",
+      "events": ["user.created", "user.verified"],
+      "status": "active",
+      "created_at": "2024-01-15T10:30:00Z",
+      "last_delivery": "2024-01-20T14:22:00Z",
+      "delivery_stats": {
+        "total_deliveries": 150,
+        "successful_deliveries": 148,
+        "failed_deliveries": 2
+      }
+    }
+  ]
+}
+```
+
+### POST /webhooks
+
+Create a new webhook endpoint.
+
+#### Request Body
+
+```json
+{
+  "url": "https://your-app.com/webhooks/identity",
+  "events": ["user.created", "user.verified", "identity.verified"],
+  "description": "User and identity events webhook",
+  "active": true
+}
+```
+
+#### Request Example
+
+```python
+import requests
+
+webhook_data = {
+    'url': 'https://your-app.com/webhooks/identity',
+    'events': ['user.created', 'user.verified', 'identity.verified'],
+    'description': 'User and identity events webhook',
+    'active': True
+}
+
+response = requests.post(
+    'https://api.example.com/v1/webhooks',
+    headers={
+        'Authorization': 'Bearer YOUR_API_KEY',
+        'Content-Type': 'application/json'
+    },
+    json=webhook_data
+)
+```
+
+#### Response Example
+
+```json
+{
+  "id": "wh_0987654321",
+  "url": "https://your-app.com/webhooks/identity",
+  "events": ["user.created", "user.verified", "identity.verified"],
+  "description": "User and identity events webhook",
+  "status": "active",
+  "secret": "whsec_1234567890abcdef",
+  "created_at": "2024-01-20T15:30:00Z"
+}
+```
+
+### GET /webhooks/{id}
+
+Retrieve a specific webhook endpoint.
+
+#### Response Example
+
+```json
+{
+  "id": "wh_1234567890",
+  "url": "https://your-app.com/webhooks/identity",
+  "events": ["user.created", "user.verified"],
+  "description": "User and identity events webhook",
+  "status": "active",
+  "created_at": "2024-01-15T10:30:00Z",
+  "updated_at": "2024-01-15T10:30:00Z",
+  "delivery_stats": {
+    "total_deliveries": 150,
+    "successful_deliveries": 148,
+    "failed_deliveries": 2,
+    "last_success": "2024-01-20T14:22:00Z",
+    "last_failure": "2024-01-19T09:15:00Z"
+  }
+}
+```
+
+### PUT /webhooks/{id}
+
+Update a webhook endpoint configuration.
+
+#### Request Example
+
+```javascript
+const response = await fetch('https://api.example.com/v1/webhooks/wh_1234567890', {
+  method: 'PUT',
+  headers: {
+    'Authorization': 'Bearer YOUR_API_KEY',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    events: ['user.created', 'user.verified', 'user.deleted'],
+    active: true
+  })
+});
+```
+
+### DELETE /webhooks/{id}
+
+Delete a webhook endpoint.
+
+#### Request Example
+
+```bash
+curl -X DELETE "https://api.example.com/v1/webhooks/wh_1234567890" \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+## Webhook Payload Examples
+
+### User Created Event
+
+```json
+{
+  "id": "evt_1234567890",
+  "type": "user.created",
+  "created_at": "2024-01-20T15:30:00Z",
+  "data": {
+    "user": {
+      "id": "usr_0987654321",
+      "email": "jane.smith@example.com",
+      "first_name": "Jane",
+      "last_name": "Smith",
+      "status": "pending",
+      "created_at": "2024-01-20T15:30:00Z"
+    }
+  }
+}
+```
+
+### Identity Verified Event
+
+```json
+{
+  "id": "evt_2345678901",
+  "type": "identity.verified",
+  "created_at": "2024-01-20T16:45:00Z",
+  "data": {
+    "user_id": "usr_1234567890",
+    "verification": {
+      "id": "ver_3456789012",
+      "type": "government_id",
+      "status": "verified",
+      "confidence_score": 0.98,
+      "document_type": "drivers_license",
+      "verified_at": "2024-01-20T16:45:00Z"
+    }
+  }
+}
+```
+
+## Testing Webhooks
+
+### Webhook Testing Endpoint
+
+Use our testing endpoint to validate your webhook implementation:
+
+```bash
+curl -X POST "https://api.example.com/v1/webhooks/wh_1234567890/test" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -d '{"event_type": "user.created"}'
+```
+
+### Handling Webhook Deliveries
+
+```javascript
+const express = require('express');
+const crypto = require('crypto');
+const app = express();
+
+app.use(express.raw({ type: 'application/json' }));
+
+app.post('/webhooks/identity', (req, res) => {
+  const signature = req.headers['x-webhook-signature'];
+  const payload = req.body;
+  
+  // Verify signature
+  if (!verifyWebhookSignature(payload, signature, process.env.WEBHOOK_SECRET)) {
+    return res.status(401).send('Invalid signature');
+  }
+  
+  const event = JSON.parse(payload);
+  
+  // Handle different event types
+  switch (event.type) {
+    case 'user.created':
+      handleUserCreated(event.data.user);
+      break;
+    case 'identity.verified':
+      handleIdentityVerified(event.data);
+      break;
+    default:
+      console.log(`Unhandled event type: ${event.type}`);
+  }
+  
+  res.status(200).send('OK');
+});
+
+function handleUserCreated(user) {
+  console.log(`New user created: ${user.email}`);
+  // Add your business logic here
+}
+
+function handleIdentityVerified(data) {
+  console.log(`Identity verified for user: ${data.user_id}`);
+  // Add your business logic here
+}
+```
+
+## Retry Policy
+
+Failed webhook deliveries are automatically retried with exponential backoff:
+
+- **Immediate retry**: 1 second
+- **Second retry**: 5 seconds  
+- **Third retry**: 25 seconds
+- **Fourth retry**: 125 seconds
+- **Final retry**: 625 seconds
+
+After 5 failed attempts, the webhook will be marked as failed and no further retries will be attempted for that event.

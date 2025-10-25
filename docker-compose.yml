@@ -1,0 +1,64 @@
+version: '3.8'
+
+services:
+  # Next.js application
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runner
+    container_name: docs-portal-app
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - HOSTNAME=0.0.0.0
+    volumes:
+      # Persist database
+      - ./data:/app/data:rw
+      # Persist search index
+      - ./public/search:/app/public/search:ro
+    networks:
+      - docs-network
+    depends_on:
+      - caddy
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/api/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Caddy reverse proxy with automatic HTTPS
+  caddy:
+    image: caddy:2-alpine
+    container_name: docs-portal-caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp" # HTTP/3
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - docs-network
+    environment:
+      - CADDY_INGRESS_NETWORKS=docs-network
+    healthcheck:
+      test: ["CMD", "caddy", "version"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  docs-network:
+    driver: bridge
+    name: docs-network
+
+volumes:
+  caddy_data:
+    name: caddy_data
+  caddy_config:
+    name: caddy_config

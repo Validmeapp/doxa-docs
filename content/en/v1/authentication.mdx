@@ -1,0 +1,89 @@
+---
+title: "Authentication"
+description: "Learn how to authenticate with our API using various methods"
+version: "v1"
+locale: "en"
+order: 2
+tags: ["authentication", "security"]
+---
+
+# Authentication
+
+Our API supports multiple authentication methods to secure your applications and protect user data.
+
+## API Keys
+
+The primary authentication method uses API keys that you can generate in your developer dashboard.
+
+### Obtaining API Keys
+
+1. Log in to your developer dashboard
+2. Navigate to the API Keys section
+3. Click "Generate New Key"
+4. Copy and securely store your key
+
+### Using API Keys
+
+Include your API key in the Authorization header:
+
+```bash
+curl -H "Authorization: Bearer YOUR_API_KEY" \
+  https://api.example.com/v1/users
+```
+
+## OAuth 2.0
+
+For applications that need to act on behalf of users, we support OAuth 2.0 with PKCE.
+
+### Authorization Flow
+
+1. **Authorization Request**: Redirect users to our authorization server
+2. **User Consent**: Users grant permission to your application
+3. **Authorization Code**: Receive an authorization code
+4. **Token Exchange**: Exchange the code for access tokens
+
+### Example Implementation
+
+```javascript
+// Step 1: Redirect to authorization server
+const authUrl = `https://auth.example.com/oauth/authorize?` +
+  `client_id=${clientId}&` +
+  `redirect_uri=${redirectUri}&` +
+  `response_type=code&` +
+  `scope=read:users write:users&` +
+  `code_challenge=${codeChallenge}&` +
+  `code_challenge_method=S256`;
+
+window.location.href = authUrl;
+```
+
+## JWT Tokens
+
+For server-to-server communication, we support JWT tokens with RS256 signing.
+
+### Token Structure
+
+```json
+{
+  "header": {
+    "alg": "RS256",
+    "typ": "JWT"
+  },
+  "payload": {
+    "iss": "https://api.example.com",
+    "sub": "user_id",
+    "aud": "your_client_id",
+    "exp": 1234567890,
+    "iat": 1234567890,
+    "scope": "read:users"
+  }
+}
+```
+
+## Security Best Practices
+
+- **Never expose API keys** in client-side code
+- **Use HTTPS** for all API requests
+- **Rotate keys regularly** for enhanced security
+- **Implement proper error handling** to avoid information leakage
+- **Use least privilege principle** when requesting scopes
