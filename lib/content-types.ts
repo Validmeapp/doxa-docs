@@ -8,6 +8,8 @@ export interface PageFrontmatter {
   version: string;
   locale: string;
   order: number;
+  sidebar_position?: number;  // New: explicit sidebar ordering
+  sidebar_label?: string;     // New: custom sidebar label
   tags?: string[];
   lastModified?: string;
   deprecated?: boolean;
@@ -21,6 +23,9 @@ export interface NavigationItem {
   children?: NavigationItem[];
   isExternal?: boolean;
   badge?: 'new' | 'deprecated' | 'beta';
+  isDirectory?: boolean;      // New: indicates directory vs file
+  originalPath?: string;      // New: original filesystem path
+  customLabel?: boolean;      // New: indicates custom vs generated label
 }
 
 export type NavigationTree = NavigationItem[];
@@ -44,4 +49,18 @@ export interface ContentValidationError {
   field: string;
   message: string;
   filePath: string;
+}
+
+// New: Sidebar configuration interfaces
+export interface SidebarConfig {
+  order?: string[];           // Custom ordering of items
+  hidden?: string[];          // Items to hide from navigation
+  labels?: Record<string, string>; // Custom labels for directories
+  groups?: Record<string, SidebarGroup>;
+}
+
+export interface SidebarGroup {
+  title: string;
+  order?: number;
+  collapsed?: boolean;
 }

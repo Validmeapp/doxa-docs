@@ -1,0 +1,530 @@
+---
+title: "Getting Started - Desarrolladores"
+description: "Tu primer request en ValidMe en 10 minutos"
+version: "v1"
+locale: "es"
+order: 1
+category: "developer-guide"
+lastUpdated: "2025-10-26"
+readTime: "10 min"
+icon: "code"
+difficulty: "Beginner"
+---
+
+# Getting Started: Tu Primer Request
+
+Bienvenido desarrollador. En esta guía crearás tu **primera validación en 10 minutos**.
+
+---
+
+## 📋 Requisitos Previos
+
+Antes de comenzar, asegúrate de tener:
+
+```
+✅ Cuenta en ValidMe completada (ver Onboarding)
+✅ API Token generado (sk_live_...)
+✅ Claves RSA descargadas y guardadas
+✅ Webhook URL configurada
+✅ NodeJS/Python/Go instalado (opcional)
+✅ Herramienta HTTP (cURL, Postman, etc)
+```
+
+---
+
+## 🎯 Diagrama de Flujo
+
+```
+Tu App              ValidMe API         Usuario
+   │                     │                 │
+   ├─ Crear Request ────→│                 │
+   │                     │                 │
+   │                     ├─ Generar Link ──┤
+   │                     │                 │
+   │                     │ ← Usuario recibe SMS/Link
+   │                     │                 │
+   │← Webhook ──────────│← Upload Docs ──│
+   │  (encriptado)       │   + Selfie     │
+   │                     │                 │
+   ├─ Desencriptar       │                 │
+   │                     │                 │
+   └─ Otorgar acceso     │                 │
+```
+
+---
+
+## Paso 1: Obtener Credenciales
+
+### Tu API Token
+
+Debería verse así:
+```
+sk_live_aBcDeFgHiJkLmNoPqRsT
+```
+
+### Tu Clave Privada RSA
+
+Debería verse así:
+```
+-----BEGIN PRIVATE KEY-----
+MIIEvQIBADANBgkqhkiG9w0BAQEFAASCA...
+[muchas líneas de caracteres]
+-----END PRIVATE KEY-----
+```
+
+### URLs de Endpoint
+
+```
+Desarrollo: https://dev.api.validme.tech
+Producción: https://api.validme.tech
+```
+
+### Guardar Credenciales
+
+**Archivo: `.env` (NO COMMITS)**
+
+```bash
+# ValidMe Credentials
+VALIDME_API_TOKEN=sk_live_aBcDeFgHiJkLmNoPqRsT
+VALIDME_PRIVATE_KEY_PATH=./keys/private-key.pem
+VALIDME_API_URL=https://api.validme.tech
+VALIDME_WEBHOOK_URL=https://tuapi.com/webhooks/validme
+```
+
+---
+
+## Paso 2: Tu Primer Request con cURL
+
+### Request Básico
+
+Crear una solicitud de validación:
+
+```bash
+curl -X POST https://api.validme.tech/requests \
+  -H "x-vm-authorization: Bearer sk_live_aBcDeFgHiJkLmNoPqRsT" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "verificationTypes": ["NATIONAL_ID", "SELFIE"],
+    "phoneNumber": "+59165890904",
+    "description": "Validación KYC - Nuevo usuario",
+    "category": "DOCUMENT_VALIDATION",
+    "acceptanceMode": "BUTTON",
+    "callbackUrls": ["https://tuapi.com/webhooks/validme"],
+    "metadata": {
+      "customerId": "user-123",
+      "reference": "KYC-2025-001"
+    }
+  }'
+```
+
+### Response (Éxito)
+
+```json
+{
+  "success": true,
+  "data": {
+    "_id": "68f41f9221765dd7a4102dd6",
+    "organizationId": "68d85ee81c623d111e303c5e",
+    "status": "PENDING",
+    "code": "ABC123",
+    "verifications": [
+      {
+        "status": "PENDING",
+        "type": "NATIONAL_ID"
+      },
+      {
+        "status": "PENDING",
+        "type": "SELFIE"
+      }
+    ],
+    "createdAt": "2025-10-26T15:30:00.000Z",
+    "metadata": {
+      "customerId": "user-123",
+      "reference": "KYC-2025-001"
+    }
+  }
+}
+```
+
+### Qué Significan los Campos
+
+| Campo | Significado |
+|-------|-------------|
+| `_id` | ID único del request (guárdalo) |
+| `code` | Código de 6 dígitos para usuario |
+| `status` | Estado actual (PENDING = esperando usuario) |
+| `verifications` | Tipos de verificación requeridos |
+
+---
+
+## Paso 3: Usuario Recibe Link
+
+### SMS Enviado Automáticamente
+
+```
+¡ValidMe aquí! 🔐
+
+Por favor, valida tu identidad:
+https://app.validme.tech/v/ABC123
+
+Código: 123456
+```
+
+### Qué Hace el Usuario
+
+1. Haz clic en el link
+2. Carga documento (frontal + dorso)
+3. Toma selfie
+4. ValidMe procesa datos
+
+---
+
+## Paso 4: Recibir Webhook
+
+Cuando el usuario completa, recibirás un webhook POST.
+
+### Endpoint tu Servidor
+
+```
+POST /webhooks/validme HTTP/1.1
+Host: tuapi.com
+Content-Type: application/json
+Content-Length: 2847
+
+{
+  "eventType": "request.document.submitted",
+  "eventPayload": {
+    "request": { ... },
+    "verificationType": "NATIONAL_ID",
+    "payload": "MIIBIjANBgkqhkiG9w0BAQEFAAO...ENCRIPTADO...",
+    "files": [
+      {
+        "fileName": "NATIONAL_ID_FRONT.jpg",
+        "contentType": "image/jpeg",
+        "fileUrl": "https://storage.googleapis.com/..."
+      }
+    ]
+  }
+}
+```
+
+### Entendiendo el Webhook
+
+- `eventType`: Tipo de evento (`request.document.submitted`, etc)
+- `eventPayload.payload`: **Datos encriptados** con tu clave pública
+- `eventPayload.files`: **URLs a los archivos** (también encriptados en la URL)
+
+---
+
+## Paso 5: Desencriptar Datos
+
+El payload está encriptado con tu **clave pública**. Debes desencriptarlo con tu **clave privada**.
+
+### Desencriptar con JavaScript/Node.js
+
+```javascript
+const crypto = require('crypto');
+const fs = require('fs');
+
+function decrypt(encryptedBuffer, privateKeyPath) {
+  // Leer clave privada
+  const privateKey = fs.readFileSync(privateKeyPath, 'utf8');
+  
+  // El buffer viene en bloques de 256 bytes (RSA 2048)
+  const blockSize = 256;
+  const blocks = [];
+  
+  for (let i = 0; i < encryptedBuffer.length; i += blockSize) {
+    blocks.push(encryptedBuffer.subarray(i, i + blockSize));
+  }
+  
+  // Desencriptar cada bloque
+  const decryptedBlocks = blocks.map(block => {
+    return crypto.privateDecrypt(
+      {
+        key: privateKey,
+        padding: crypto.constants.RSA_PKCS1_OAEP_PADDING,
+      },
+      block
+    );
+  });
+  
+  return Buffer.concat(decryptedBlocks);
+}
+
+// Uso
+const encryptedPayload = Buffer.from(webhookEvent.payload, 'base64');
+const decryptedBuffer = decrypt(encryptedPayload, './keys/private-key.pem');
+const decryptedData = JSON.parse(decryptedBuffer.toString('utf8'));
+
+console.log(decryptedData);
+// {
+//   "firstName": "Juan",
+//   "lastName": "García",
+//   "documentNumber": "1234567",
+//   "birthDate": "1990-01-15",
+//   ...
+// }
+```
+
+### Desencriptar con Python
+
+```python
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric import padding
+from cryptography.hazmat.backends import default_backend
+import base64
+import json
+
+def decrypt(encrypted_payload, private_key_path):
+    # Cargar clave privada
+    with open(private_key_path, 'rb') as f:
+        private_key = serialization.load_pem_private_key(
+            f.read(),
+            password=None,
+            backend=default_backend()
+        )
+    
+    # Convertir payload de base64 a bytes
+    encrypted_data = base64.b64decode(encrypted_payload)
+    
+    # Desencriptar (256 bytes por bloque RSA 2048)
+    block_size = 256
+    decrypted_blocks = []
+    
+    for i in range(0, len(encrypted_data), block_size):
+        block = encrypted_data[i:i + block_size]
+        decrypted_block = private_key.decrypt(
+            block,
+            padding.OAEP(
+                mgf=padding.MGF1(algorithm=hashes.SHA256()),
+                algorithm=hashes.SHA256(),
+                label=None
+            )
+        )
+        decrypted_blocks.append(decrypted_block)
+    
+    # Combinar bloques
+    decrypted_data = b''.join(decrypted_blocks)
+    return json.loads(decrypted_data.decode('utf-8'))
+
+# Uso
+decrypted = decrypt(webhook_event['payload'], './keys/private-key.pem')
+print(decrypted)
+```
+
+---
+
+## Paso 6: Procesar Resultado
+
+Una vez desencriptado, tienes acceso a los datos:
+
+```javascript
+{
+  "firstName": "Juan",
+  "lastName": "García López",
+  "documentNumber": "12345678",
+  "documentType": "CEDULA_IDENTIDAD",
+  "birthDate": "1990-01-15",
+  "expirationDate": "2027-12-31",
+  "country": "BO",
+  "issuingAuthority": "Servicio de Identidad",
+  "confidence": 0.98,  // 98% confianza
+  "validations": {
+    "documentAuthenticity": "PASSED",
+    "biometricMatch": "PASSED",
+    "livenessCheck": "PASSED"
+  }
+}
+```
+
+### Validar Confianza
+
+```javascript
+if (decrypted.confidence >= 0.95) {
+  // ✅ Documento válido
+  grantAccess(decrypted.documentNumber);
+} else {
+  // ⚠️ Requerir reintento
+  requestRetry();
+}
+```
+
+---
+
+## Paso 7: Otorgar Acceso
+
+Basado en el resultado, otorga o deniega acceso.
+
+```javascript
+// Ejemplo: Crear usuario después de validación exitosa
+async function processValidation(decryptedData) {
+  // 1. Validar confianza
+  if (decryptedData.confidence < 0.95) {
+    throw new Error('Confianza baja');
+  }
+  
+  // 2. Verificar si usuario ya existe
+  const existingUser = await User.findOne({
+    documentNumber: decryptedData.documentNumber
+  });
+  
+  if (existingUser) {
+    return existingUser;
+  }
+  
+  // 3. Crear usuario
+  const user = await User.create({
+    firstName: decryptedData.firstName,
+    lastName: decryptedData.lastName,
+    documentNumber: decryptedData.documentNumber,
+    birthDate: decryptedData.birthDate,
+    country: decryptedData.country,
+    verified: true,
+    verifiedAt: new Date(),
+    validationId: requestId
+  });
+  
+  // 4. Generar token de acceso
+  const token = jwt.sign(
+    { userId: user.id },
+    process.env.JWT_SECRET,
+    { expiresIn: '7d' }
+  );
+  
+  return { user, token };
+}
+```
+
+---
+
+## 🎯 Flujo Completo en Resumen
+
+```
+1. Crear Request → Recibir código + ID
+   curl POST /requests
+
+2. Usuario recibe SMS → Accede a link
+   https://app.validme.tech/v/ABC123
+
+3. Usuario carga documento + selfie
+   App ValidMe procesa
+
+4. Tu servidor recibe Webhook
+   POST /webhooks/validme
+
+5. Desencriptar datos
+   decrypt(webhook.payload)
+
+6. Validar confianza
+   if (confidence >= 0.95)
+
+7. Crear usuario / Otorgar acceso
+   grantAccess(user)
+```
+
+---
+
+## 📚 Referencia Rápida
+
+### Parámetros del Request
+
+```javascript
+{
+  // REQUERIDO - Tipos de verificación
+  "verificationTypes": ["NATIONAL_ID", "SELFIE"],
+  // O REQUERIDO - ID de flujo predefinido
+  "flowId": "flow_123abc",
+  
+  // REQUERIDO - Teléfono del usuario
+  "phoneNumber": "+59165890904",
+  
+  // REQUERIDO - Descripción clara
+  "description": "Validación KYC",
+  
+  // Opcional - Categoría
+  "category": "DOCUMENT_VALIDATION",
+  
+  // Opcional - Modo de aceptación
+  "acceptanceMode": "BUTTON", // OTP, CHOICE, BUTTON
+  
+  // REQUERIDO - URLs de callback
+  "callbackUrls": ["https://tuapi.com/webhooks/validme"],
+  
+  // Opcional - Datos personalizados
+  "metadata": {
+    "customerId": "123",
+    "reference": "KYC-001"
+  }
+}
+```
+
+### Respuesta del Request
+
+```javascript
+{
+  "success": true,
+  "data": {
+    "_id": "request_id",
+    "status": "PENDING",
+    "code": "ABC123",
+    "verifications": [{ status, type }],
+    "metadata": {}
+  }
+}
+```
+
+---
+
+## ✅ Checklist
+
+- [ ] API Token guardado en `.env`
+- [ ] Clave privada descargada y guardada
+- [ ] Webhook URL configurada
+- [ ] Primer request creado exitosamente
+- [ ] SMS recibido por usuario
+- [ ] Webhook recibido en tu servidor
+- [ ] Datos desencriptados correctamente
+- [ ] Usuario creado en tu BD
+
+---
+
+## 🆘 Próximos Pasos
+
+### ¿Todo funciona?
+→ Lee [API Reference](/es/v1/developer-guide/api-reference/requests) para más opciones
+
+### ¿Problema con desencriptación?
+→ Ve [Guía de Encriptación](/es/v1/developer-guide/security/encryption)
+
+### ¿Necesitas más ejemplos?
+→ [Ver ejemplos en otros lenguajes](/es/v1/developer-guide/examples)
+
+### ¿Quieres entender Flows?
+→ [Guía de Flows](/es/v1/developer-guide/features/document-validation)
+
+---
+
+## 🐛 Problemas Comunes
+
+### "Error: 401 Unauthorized"
+Tu API Token es inválido o ha expirado.
+→ [Solución](/es/v1/support/troubleshooting#error-401)
+
+### "Webhook no se recibe"
+Tu URL no es accesible o hay error.
+→ [Debug Webhooks](/es/v1/developer-guide/webhooks#debug)
+
+### "No puedo desencriptar"
+Probablemente usas clave pública en lugar de privada.
+→ [Guía Encriptación](/es/v1/developer-guide/security/encryption)
+
+---
+
+## 📞 Necesitas Ayuda?
+
+- 📧 [support@validme.tech](mailto:support@validme.tech)
+- 📚 [FAQ Desarrolladores](/es/v1/support/faq)
+- 🐛 [Troubleshooting](/es/v1/support/troubleshooting)
+
+**¡Felicidades! 🎉 Tu integración está lista.**

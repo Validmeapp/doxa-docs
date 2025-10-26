@@ -1,0 +1,615 @@
+---
+title: "Webhooks - Real-Time Events"
+description: "Receive instant notifications of validation events"
+version: "v1"
+locale: "en"
+order: 3
+category: "developer-guide"
+subcategory: "webhooks"
+lastUpdated: "2025-10-26"
+icon: "webhook"
+readTime: "15 min"
+---
+
+# Webhooks: Real-Time Events
+
+Webhooks allow your server to receive instant notifications when important events occur in ValidMe.
+
+---
+
+## What are Webhooks?
+
+A webhook is an **HTTP POST** that ValidMe sends to your server when something important happens.
+
+### Basic Flow
+
+```
+Your Server                    ValidMe
+     │                            │
+     ├─ Creates Request ──────→  │
+     │                            │
+     │  User uploads docs        │
+     │  ← ← ← ← ← ← ← ← ← ← ← │
+     │                            │
+     │  POST /webhooks/validme ← ← ← (event)
+     │  ├─ eventType             │
+     │  └─ eventPayload          │
+     │                            │
+     ├─ Processes data ───────→  │
+     │                            │
+     └─ Grants access            │
+```
+
+---
+
+## Webhook Configuration
+
+### Access Webhooks
+
+1. **Backoffice** → **Settings** → **Webhooks**
+2. Click on **Add Webhook**
+
+### Create Webhook
+
+| Field | Description |
+|-------|-------------|
+| **URL** | `https://yourapi.com/webhooks/validme` |
+| **Events** | Select which events to receive |
+| **Active** | Enable/disable |
+
+### Endpoint Requirements
+
+Your server must:
+- ✓ Accept `POST` HTTP requests
+- ✓ Have `Content-Type: application/json` header
+- ✓ Respond with **status 200** in less than 30 seconds
+- ✓ Validate webhook authenticity
+
+### Endpoint Example
+
+```javascript
+const express = require('express');
+const app = express();
+
+app.post('/webhooks/validme', express.json(), (req, res) => {
+  const { eventType, eventPayload } = req.body;
+  
+  console.log(`Event received: ${eventType}`);
+  
+  // Process event
+  handleValidMeEvent(eventType, eventPayload);
+  
+  // Respond immediately
+  res.status(200).json({ received: true });
+});
+```
+
+---
+
+## Event Types
+
+### Status Events
+
+Triggered when the status of a request changes.
+
+#### request.status.pending
+**Request created**
+
+```json
+{
+  "eventType": "request.status.pending",
+  "eventPayload": {
+    "request": {
+      "_id": "68f41f9221765dd7a4102dd6",
+      "status": "PENDING",
+      "code": "ABC123",
+      "phoneNumber": "+59165890904",
+      "description": "KYC Validation"
+    },
+    "metadata": {
+      "customerId": "user_123"
+    }
+  }
+}
+```
+
+#### request.status.confirmed
+**User confirmed receiving the link/SMS**
+
+```json
+{
+  "eventType": "request.status.confirmed",
+  "eventPayload": {
+    "request": {
+      "_id": "68f41f9221765dd7a4102dd6",
+      "status": "CONFIRMED",
+      "code": "ABC123"
+    }
+  }
+}
+```
+
+#### request.status.sending
+**User started uploading documents**
+
+```json
+{
+  "eventType": "request.status.sending",
+  "eventPayload": {
+    "request": {
+      "_id": "68f41f9221765dd7a4102dd6",
+      "status": "SENDING"
+    }
+  }
+}
+```
+
+#### request.status.success
+**Validation completed successfully** ✅
+
+```json
+{
+  "eventType": "request.status.success",
+  "eventPayload": {
+    "request": {
+      "_id": "68f41f9221765dd7a4102dd6",
+      "status": "SUCCESS",
+      "verifications": [
+        {
+          "status": "SUCCESS",
+          "type": "NATIONAL_ID",
+          "confidence": 0.98
+        },
+        {
+          "status": "SUCCESS",
+          "type": "SELFIE",
+          "confidence": 0.96
+        }
+      ]
+    }
+  }
+}
+```
+
+### Rejection Events
+
+#### request.status.rejected
+**User rejected the request** ❌
+
+```json
+{
+  "eventType": "request.status.rejected",
+  "eventPayload": {
+    "request": {
+      "_id": "68f41f9221765dd7a4102dd6",
+      "status": "REJECTED",
+      "reason": "user_declined"
+    }
+  }
+}
+```
+
+#### request.status.failed
+**Validation failed (documents not valid)**
+
+```json
+{
+  "eventType": "request.status.failed",
+  "eventPayload": {
+    "request": {
+      "_id": "68f41f9221765dd7a4102dd6",
+      "status": "FAILED",
+      "verifications": [
+        {
+          "status": "FAILED",
+          "type": "NATIONAL_ID",
+          "failureReason": "Document expired",
+          "confidence": 0.45
+        }
+      ]
+    }
+  }
+}
+```
+
+#### request.status.expired
+**Request expired (24 hours without use)**
+
+```json
+{
+  "eventType": "request.status.expired",
+  "eventPayload": {
+    "request": {
+      "_id": "68f41f9221765dd7a4102dd6",
+      "status": "EXPIRED"
+    }
+  }
+}
+```
+
+### Document Events
+
+#### request.document.submitted
+**Document received** (encrypted data)
+
+```json
+{
+  "eventType": "request.document.submitted",
+  "eventPayload": {
+    "request": { ... },
+    "verificationType": "NATIONAL_ID",
+    "payload": "MIIBIjANBgkqhkiG9w0BAQEFAAO...[encrypted]",
+    "files": [
+      {
+        "fileName": "NATIONAL_ID_FRONT.jpg",
+        "contentType": "image/jpeg",
+        "fileUrl": "https://storage.googleapis.com/...jpg"
+      },
+      {
+        "fileName": "NATIONAL_ID_BACK.jpg",
+        "contentType": "image/jpeg",
+        "fileUrl": "https://storage.googleapis.com/...jpg"
+      }
+    ]
+  }
+}
+```
+
+---
+
+## Processing Webhooks
+
+### 1. Verify Authenticity
+
+All webhooks include a signature header:
+
+```
+X-Webhook-Signature: sha256=abcd1234efgh5678...
+```
+
+### Validate Signature
+
+```javascript
+const crypto = require('crypto');
+
+function verifyWebhookSignature(payload, signature, secret) {
+  const hash = crypto
+    .createHmac('sha256', secret)
+    .update(JSON.stringify(payload))
+    .digest('hex');
+  
+  return hash === signature;
+}
+
+app.post('/webhooks/validme', express.json(), (req, res) => {
+  const signature = req.headers['x-webhook-signature'];
+  const secret = process.env.VALIDME_WEBHOOK_SECRET;
+  
+  if (!verifyWebhookSignature(req.body, signature, secret)) {
+    return res.status(401).json({ error: 'Invalid signature' });
+  }
+  
+  // Webhook authenticated, process
+  handleWebhook(req.body);
+  res.status(200).json({ received: true });
+});
+```
+
+### 2. Process Event
+
+```javascript
+async function handleWebhook(event) {
+  const { eventType, eventPayload } = event;
+  
+  switch (eventType) {
+    case 'request.status.success':
+      await handleSuccess(eventPayload);
+      break;
+      
+    case 'request.status.failed':
+      await handleFailure(eventPayload);
+      break;
+      
+    case 'request.status.rejected':
+      await handleRejection(eventPayload);
+      break;
+      
+    case 'request.document.submitted':
+      await handleDocumentSubmitted(eventPayload);
+      break;
+      
+    default:
+      console.log(`Unknown event: ${eventType}`);
+  }
+}
+```
+
+### 3. Decrypt Data (if applicable)
+
+```javascript
+async function handleDocumentSubmitted(payload) {
+  const { payload: encryptedPayload, files } = payload;
+  
+  // Decrypt (see encryption guide)
+  const decryptedData = decrypt(encryptedPayload);
+  
+  // Save to database
+  await saveUserData(decryptedData);
+  
+  // Download files
+  for (const file of files) {
+    await downloadAndStore(file.fileUrl);
+  }
+}
+```
+
+---
+
+## Automatic Retries
+
+If your server does not respond with **200** in 30 seconds, ValidMe retries:
+
+```
+Attempt 1: Immediate
+   ↓ If fails
+Attempt 2: 5 minutes later
+   ↓ If fails
+Attempt 3: 30 minutes later
+   ↓ If fails
+Attempt 4: 2 hours later
+   ↓ If fails
+Attempt 5: 24 hours later
+   ↓ If fails
+❌ Webhook abandoned
+```
+
+### Check History
+
+In **Settings** → **Webhooks** → **Logs**:
+
+```
+┌──────────┬──────────────┬──────────────────┐
+│ Event    │ Status       │ Timestamp        │
+├──────────┼──────────────┼──────────────────┤
+│ Success  │ 200 OK ✅    │ 26/10/2025 15:45 │
+│ Failed   │ 504 Gateway  │ 26/10/2025 15:30 │
+│ Retry    │ 200 OK ✅    │ 26/10/2025 15:35 │
+└──────────┴──────────────┴──────────────────┘
+```
+
+---
+
+## Best Practices
+
+### ✅ DO
+
+```javascript
+// 1. Respond immediately
+app.post('/webhooks/validme', (req, res) => {
+  res.status(200).json({ received: true }); // Respond fast
+  
+  // Process in background
+  queueJob('process-webhook', req.body);
+});
+
+// 2. Idempotency
+const processedWebhooks = new Set();
+
+if (processedWebhooks.has(req.body._id)) {
+  return res.status(200).json({ duplicate: true });
+}
+
+// 3. Logging
+logger.info('Webhook received', {
+  eventType: req.body.eventType,
+  requestId: req.body.eventPayload.request._id,
+  timestamp: new Date()
+});
+
+// 4. Error handling
+try {
+  await handleWebhook(req.body);
+} catch (error) {
+  logger.error('Webhook processing failed', error);
+  // Still respond 200 to avoid retries
+  res.status(200).json({ error: true });
+}
+```
+
+### ❌ DON'T
+
+```javascript
+// ✗ Process in the same request (takes time)
+app.post('/webhooks/validme', async (req, res) => {
+  await processLongTask(); // May timeout
+  res.status(200).json({ done: true });
+});
+
+// ✗ Ignore errors
+app.post('/webhooks/validme', (req, res) => {
+  handleWebhook(req.body); // No try-catch
+});
+
+// ✗ Don't validate authenticity
+app.post('/webhooks/validme', (req, res) => {
+  // Anyone can send events
+  processPayment(req.body);
+});
+
+// ✗ Respond slowly
+app.post('/webhooks/validme', async (req, res) => {
+  const data = await fetchFromDB(); // Slow
+  const result = await externalAPI(); // Slow
+  res.status(200).json(result); // May timeout
+});
+```
+
+---
+
+## Testing Webhooks
+
+### 1. Webhook.site Tool
+
+Create a public webhook for testing:
+
+```
+1. Go to https://webhook.site
+2. Copy generated URL
+3. Add to Settings → Webhooks
+4. View events in real time
+```
+
+### 2. Use ngrok for Local Development
+
+```bash
+# Install ngrok
+brew install ngrok
+
+# Expose local port
+ngrok http 3000
+
+# Use ngrok URL in Settings → Webhooks
+# https://abc123.ngrok.io/webhooks/validme
+```
+
+### 3. Manual Test
+
+In **Settings** → **Webhooks** → **[Your Webhook]** → **Test**
+
+Send a test event to your server.
+
+### 4. Logging in Development
+
+```javascript
+const webhookLogger = (req, res, next) => {
+  console.log('=== WEBHOOK RECEIVED ===');
+  console.log('Event:', req.body.eventType);
+  console.log('Status:', req.body.eventPayload.request.status);
+  console.log('Data:', JSON.stringify(req.body, null, 2));
+  console.log('========================');
+  next();
+};
+
+app.use('/webhooks/validme', webhookLogger);
+```
+
+---
+
+## Troubleshooting
+
+### "My webhook doesn't execute"
+
+1. ✓ Verify that the URL is accessible from the internet
+2. ✓ Open port in firewall
+3. ✓ Use `ngrok` if developing locally
+4. ✓ Check logs in Settings → Webhooks
+
+### "My webhook receives 504 errors"
+
+1. ✓ Your server took more than 30 seconds
+2. ✓ Move processing to background
+3. ✓ Respond 200 immediately
+
+```javascript
+// ❌ Slow
+res.json(await longOperation());
+
+// ✅ Fast
+queueJob(longOperation);
+res.status(200).json({ received: true });
+```
+
+### "The data is encrypted"
+
+See [Encryption Guide](/en/v1/developer-guide/security/encryption)
+
+---
+
+## Event Payload Structure
+
+```typescript
+interface WebhookEvent {
+  eventType: string;
+  eventPayload: {
+    request: {
+      _id: string;
+      status: string;
+      code: string;
+      verifications: Array<{
+        status: string;
+        type: string;
+        confidence?: number;
+      }>;
+      metadata: Record<string, any>;
+      createdAt: string;
+      updatedAt: string;
+    };
+    // Specific to document.submitted
+    verificationType?: string;
+    payload?: string; // Encrypted
+    files?: Array<{
+      fileName: string;
+      contentType: string;
+      fileUrl: string;
+    }>;
+  };
+}
+```
+
+---
+
+## Next Steps
+
+- [API Reference - Requests](/en/v1/developer-guide/api-reference/requests)
+- [Security - Encryption](/en/v1/developer-guide/security/encryption)
+- [Error Codes](/en/v1/developer-guide/api-reference/errors)
+
+---
+
+## 📚 Complete Examples
+
+### Node.js Express
+
+```javascript
+const express = require('express');
+const crypto = require('crypto');
+const app = express();
+
+app.use(express.json());
+
+// Verify signature
+function verifySignature(body, signature) {
+  const hash = crypto
+    .createHmac('sha256', process.env.WEBHOOK_SECRET)
+    .update(JSON.stringify(body))
+    .digest('hex');
+  return hash === signature;
+}
+
+// Endpoint
+app.post('/webhooks/validme', (req, res) => {
+  // 1. Validate signature
+  const sig = req.headers['x-webhook-signature'];
+  if (!verifySignature(req.body, sig)) {
+    return res.status(401).send('Invalid');
+  }
+  
+  // 2. Respond immediately
+  res.status(200).json({ ok: true });
+  
+  // 3. Process in background
+  const { eventType, eventPayload } = req.body;
+  
+  switch (eventType) {
+    case 'request.status.success':
+      saveUserData(eventPayload.request);
+      break;
+  }
+});
+
+app.listen(3000);
+```
+
+---
+
+**Last updated**: October 26, 2025

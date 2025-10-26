@@ -1,0 +1,179 @@
+---
+title: "ValidMe Overview"
+description: "Introduction to the decentralized identity validation platform"
+version: "v1"
+locale: "en"
+order: 1
+lastUpdated: "2025-10-26"
+icon: "rocket"
+---
+
+# ValidMe: Decentralized Identity Validation
+
+Welcome to **ValidMe**, the modern platform for validating identities securely, quickly, and in a decentralized manner.
+
+## What is ValidMe?
+
+ValidMe is a SaaS platform that enables companies to verify the identity of their users through:
+
+- **Document Validation**: Capture and analysis of identifications
+- **Biometric Verification**: Face validation through selfies
+- **Decentralized Access**: Secure verifications without storing sensitive data
+- **Regulatory Compliance**: Complies with KYC/AML regulations
+
+### Main Features
+
+| Feature | Description |
+|---|---|
+| **E2E Encrypted** | End-to-end encryption with RSA |
+| **Real-time Webhooks** | Instant event notifications |
+| **Flexible Flows** | Create custom validation workflows |
+| **API First** | Complete programmatic integration |
+| **Multi-country Support** | Document validation from multiple countries |
+| **Intuitive Dashboard** | Full control over validations |
+
+## Use Cases
+
+### 1. **Fintech & Digital Banking**
+Validate identities in seconds for account opening.
+
+```
+User → ValidMe → Immediate Approval
+```
+
+### 2. **Marketplaces**
+Verify sellers before allowing them to list products.
+
+```
+Registration → Validation → Seller Access
+```
+
+### 3. **Travel Platforms**
+Mandatory KYC for international bookings.
+
+```
+Booking → Validation → Confirmation
+```
+
+### 4. **Casinos & Gaming**
+Required AML/KYC compliance.
+
+```
+Registration → Complete Validation → Access
+```
+
+## How Does It Work?
+
+### Basic Flow
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│ 1. Your app creates a validation request                    │
+├─────────────────────────────────────────────────────────────┤
+│ 2. User receives link/SMS with QR code                      │
+├─────────────────────────────────────────────────────────────┤
+│ 3. User uploads document + takes selfie in ValidMe app      │
+├─────────────────────────────────────────────────────────────┤
+│ 4. ValidMe processes and validates documents                │
+├─────────────────────────────────────────────────────────────┤
+│ 5. Your app receives webhook with result (encrypted)        │
+├─────────────────────────────────────────────────────────────┤
+│ 6. Your app decrypts data and grants access                 │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Benefits
+
+✅ **Fast**: Validation in less than 5 minutes  
+✅ **Secure**: E2E encryption, no data stored  
+✅ **Reliable**: 99.9% uptime  
+✅ **Scalable**: Processes millions of validations  
+✅ **Flexible**: Complete API or interactive dashboard  
+
+## Are You a Business User or Developer?
+
+### 👥 I'm a Business User
+
+I want to validate the identities of my customers directly.
+
+**Next Step**: [Onboarding Guide](/en/v1/user-guide/onboarding)
+- Set up your company in 15 minutes
+- Dashboard access
+- Create and manage requests
+
+### 👨‍💻 I'm a Developer
+
+I want to integrate ValidMe into my application.
+
+**Next Step**: [Developer Guide](/en/v1/developer-guide/getting-started)
+- Get your API credentials
+- Create your first request in 10 minutes
+- Implement webhooks to receive events
+
+---
+
+## Key Concepts
+
+### Request (Validation Request)
+An individual validation initiated by your company. Each request contains:
+- Unique ID
+- Required verifications (documents, selfie, etc)
+- Current status
+- Custom metadata
+
+### Flow (Validation Workflow)
+A reusable template that defines:
+- Which documents are required
+- Valid countries
+- Validation rules
+
+**Example**: "Bolivia KYC Flow" requires ID card + selfie
+
+### Verification
+A specific type of validation within a request:
+- NATIONAL_ID (National identity card)
+- SELFIE (Face validation)
+- SELFIE_VIDEO (Video with instructions)
+- Others (based on regional availability)
+
+### Webhook
+HTTP POST notification sent to your server when:
+- Request status changes
+- A document is uploaded
+- A verification is completed
+
+---
+
+## Statistics & Reliability
+
+- **Success Rate**: 95%+ of validations completed
+- **Average Time**: 3-5 minutes per validation
+- **Uptime**: 99.9% SLA
+- **Support**: 24/7 during business hours
+
+---
+
+## Next Steps
+
+**Recommended based on your role:**
+
+1. **Everyone**: 
+   - Review the [Key Concepts](#key-concepts)
+   - Read about [Security](/en/v1/developer-guide/security/encryption)
+
+2. **Business Users**:
+   - Start with [Onboarding](/en/v1/user-guide/onboarding)
+   - Understand [Billing Plans](/en/v1/user-guide/billing)
+
+3. **Developers**:
+   - Get [API Credentials](/en/v1/developer-guide/getting-started)
+   - See [Code Examples](/en/v1/developer-guide/examples/javascript)
+   - Implement [Webhooks](/en/v1/developer-guide/webhooks)
+
+---
+
+## Questions?
+
+Check our [FAQ](/en/v1/support/faq) or [contact support](/en/v1/support/contact).
+
+**Let's validate identities together! 🚀**
