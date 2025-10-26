@@ -314,7 +314,9 @@ function SingleCodeBlock({
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  console.log('SingleCodeBlock rendering:', { language, codeLength: code?.length, isLoading, error });
+  // Determine if this is a typed or untyped code block
+  const isTyped = language && language.trim().length > 0 && language !== 'text';
+  const isUntypedBlock = className.includes('untyped-code-block') || !isTyped;
 
   useEffect(() => {
     const highlightCode = async () => {
@@ -325,6 +327,14 @@ function SingleCodeBlock({
         // Validate inputs
         if (!code || typeof code !== 'string') {
           throw new Error('Invalid code content');
+        }
+
+        // Handle untyped code blocks - skip syntax highlighting
+        if (isUntypedBlock || language === 'text' || !language) {
+          const fallbackHtml = `<pre class="untyped-code-block" style="margin: 0; padding: 0; background: transparent; font-family: inherit; font-size: inherit; line-height: inherit; color: #374151; white-space: pre-wrap; word-wrap: break-word;"><code class="language-text">${escapeHtml(code)}</code></pre>`;
+          setHighlightedCode(fallbackHtml);
+          setIsLoading(false);
+          return;
         }
 
         const normalizedLanguage = normalizeLanguageForShiki(language);
@@ -353,8 +363,8 @@ function SingleCodeBlock({
         console.error('Failed to highlight code:', error);
         setError(error instanceof Error ? error.message : 'Unknown highlighting error');
         
-        // Enhanced fallback with better formatting
-        const fallbackHtml = `<pre class="fallback-code-block"><code class="language-${language}">${escapeHtml(code)}</code></pre>`;
+        // Enhanced fallback with better formatting - treat as untyped when highlighting fails
+        const fallbackHtml = `<pre class="fallback-code-block" style="margin: 0; padding: 0; background: transparent; font-family: inherit; font-size: inherit; line-height: inherit; color: #374151; white-space: pre-wrap; word-wrap: break-word;"><code class="language-${language}">${escapeHtml(code)}</code></pre>`;
         setHighlightedCode(fallbackHtml);
       } finally {
         setIsLoading(false);
@@ -362,7 +372,7 @@ function SingleCodeBlock({
     };
 
     highlightCode();
-  }, [code, language, highlightLines]);
+  }, [code, language, highlightLines, isUntypedBlock]);
 
   const handleCopy = async () => {
     try {
@@ -406,8 +416,7 @@ function SingleCodeBlock({
 
   if (isLoading) {
     return (
-      <div className={`relative rounded-lg border bg-muted/50 ${className}`} style={{ background: 'yellow', padding: '20px', margin: '10px 0' }}>
-        <div style={{ color: 'black', fontWeight: 'bold' }}>DEBUG: Loading state - Language: {language}</div>
+      <div className={`relative rounded-lg border bg-muted/50 ${className}`}>
         {!hideHeader && (
           <div className="flex items-center justify-between border-b bg-muted/30 px-4 py-2">
             <div className="flex items-center gap-2">
@@ -428,7 +437,7 @@ function SingleCodeBlock({
           </div>
           <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
             <div className="h-3 w-3 animate-spin rounded-full border border-primary border-t-transparent"></div>
-            Highlighting {getLanguageDisplayName(language)} code...
+            {isUntypedBlock ? 'Preparing plain text...' : `Highlighting ${getLanguageDisplayName(language)} code...`}
           </div>
         </div>
       </div>
@@ -436,10 +445,7 @@ function SingleCodeBlock({
   }
 
   return (
-    <div className={`group relative rounded-lg border bg-muted/50 ${className}`} style={{ background: 'lightblue', border: '2px solid blue', margin: '10px 0' }}>
-      <div style={{ background: 'blue', color: 'white', padding: '5px' }}>
-        DEBUG: CodeBlock rendered - Language: {language}, Error: {error || 'none'}
-      </div>
+    <div className={`group relative rounded-lg border bg-muted/50 ${className}`}>
       {/* Header with language badge and copy button */}
       {!hideHeader && (
         <div className="flex items-center justify-between border-b bg-muted/30 px-4 py-2">
@@ -447,7 +453,9 @@ function SingleCodeBlock({
             <span className={`rounded px-2 py-1 text-xs font-medium ${
               error 
                 ? 'bg-destructive/10 text-destructive' 
-                : 'bg-primary/10 text-primary'
+                : isUntypedBlock 
+                  ? 'bg-muted text-muted-foreground'
+                  : 'bg-primary/10 text-primary'
             }`}>
               {getLanguageDisplayName(language)}
               {error && ' (fallback)'}
@@ -455,7 +463,12 @@ function SingleCodeBlock({
             {filename && (
               <span className="text-xs text-muted-foreground">{filename}</span>
             )}
-            {error && (
+            {isUntypedBlock && (
+              <span className="text-xs text-muted-foreground italic">
+                No syntax highlighting
+              </span>
+            )}
+            {error && !isUntypedBlock && (
               <span className="text-xs text-destructive" title={error}>
                 ⚠️ Highlighting failed
               </span>
@@ -485,7 +498,17 @@ function SingleCodeBlock({
       {/* Code content */}
       <div className="relative overflow-x-auto" role="region" aria-label={`Code example in ${getLanguageDisplayName(language)}`}>
         <div
-          className={`code-block-content ${error ? 'fallback-highlighting' : ''}`}
+          className={`code-block-content ${error && !isUntypedBlock ? 'fallback-highlighting' : ''} ${isUntypedBlock ? 'untyped-code-content' : ''}`}
+          style={{
+            padding: '1rem',
+            fontFamily: 'SF Mono, Monaco, Cascadia Code, Roboto Mono, Consolas, Courier New, monospace',
+            fontSize: '0.875rem',
+            lineHeight: '1.5',
+            background: '#ffffff',
+            overflowX: 'auto',
+            whiteSpace: 'pre-wrap',
+            wordWrap: 'break-word'
+          }}
           dangerouslySetInnerHTML={{ __html: highlightedCode }}
           role="code"
           aria-label={`${getLanguageDisplayName(language)} code${filename ? ` from ${filename}` : ''}`}
