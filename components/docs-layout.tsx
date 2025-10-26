@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { Menu, X } from 'lucide-react';
 import { Sidebar } from '@/components/sidebar';
 import { TableOfContents } from '@/components/table-of-contents';
@@ -100,10 +101,15 @@ export function DocsLayout({
             )}
           </button>
 
-          {/* Logo/Title */}
-          <div className="flex items-center space-x-2 lg:space-x-0">
+          {/* Logo/Title - Hidden on desktop, shown on mobile */}
+          <div className="flex items-center space-x-2 lg:hidden">
             <h1 className="text-lg font-semibold">
-              Documentation
+              <Link 
+                href={`/${locale}/docs`}
+                className="hover:text-primary transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-sm px-1"
+              >
+                Documentation
+              </Link>
             </h1>
           </div>
 
@@ -137,9 +143,14 @@ export function DocsLayout({
         >
           <div className="flex h-full flex-col">
             {/* Sidebar header (mobile only) */}
-            <div className="flex h-14 items-center border-b px-4 lg:hidden">
+            <div className="flex h-14 items-center border-b px-6 lg:hidden">
               <h2 className="text-lg font-semibold" id="sidebar-title">
-                Navigation
+                <Link 
+                  href={`/${locale}/docs`}
+                  className="hover:text-primary transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-sm"
+                >
+                  Documentation
+                </Link>
               </h2>
               <button
                 onClick={() => setSidebarOpen(false)}
@@ -152,7 +163,7 @@ export function DocsLayout({
             </div>
 
             {/* Sidebar content */}
-            <div className="flex-1 overflow-y-auto py-4" role="tree" aria-label="Documentation sections">
+            <div className="flex-1 overflow-y-auto" role="tree" aria-label="Documentation sections">
               <Sidebar
                 navigation={navigation}
                 locale={locale}

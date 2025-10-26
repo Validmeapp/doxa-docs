@@ -159,17 +159,34 @@ function SidebarItem({ item, locale, version, level, currentPath, onFocus }: Sid
     }
   };
 
+  // Define indentation classes based on level
+  const getIndentationClass = (level: number) => {
+    switch (level) {
+      case 0: return '';
+      case 1: return 'ml-4';
+      case 2: return 'ml-8';
+      case 3: return 'ml-12';
+      default: return 'ml-16';
+    }
+  };
+
   const baseItemClasses = `
-    flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-all duration-200
+    flex items-center gap-2 rounded-md px-3 py-2.5 text-sm font-medium transition-all duration-200
     hover:bg-accent hover:text-accent-foreground
     focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2
     focus-visible:bg-accent focus-visible:text-accent-foreground
-    ${level > 0 ? `ml-${level * 4}` : ''}
+    ${getIndentationClass(level)}
+    ${level === 0 ? 'font-semibold' : 'font-normal'}
   `;
 
   const itemClasses = `
     ${baseItemClasses}
-    ${isActive ? 'bg-accent text-accent-foreground font-semibold border-l-2 border-primary' : 'text-muted-foreground'}
+    ${isActive 
+      ? 'bg-accent text-accent-foreground font-semibold border-l-2 border-primary' 
+      : level === 0 
+        ? 'text-foreground' 
+        : 'text-muted-foreground'
+    }
   `;
 
   return (
@@ -198,9 +215,9 @@ function SidebarItem({ item, locale, version, level, currentPath, onFocus }: Sid
           <span className="flex-1 text-left truncate">{item.title}</span>
           {item.badge && (
             <span className={`flex-shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${
-              item.badge === 'new' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
-              item.badge === 'deprecated' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' :
-              'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
+              item.badge === 'new' ? 'bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300' :
+              item.badge === 'deprecated' ? 'bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-300' :
+              'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300'
             }`}>
               {item.badge}
             </span>
@@ -223,9 +240,9 @@ function SidebarItem({ item, locale, version, level, currentPath, onFocus }: Sid
           <span className="flex-1 truncate">{item.title}</span>
           {item.badge && (
             <span className={`flex-shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${
-              item.badge === 'new' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
-              item.badge === 'deprecated' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' :
-              'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
+              item.badge === 'new' ? 'bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300' :
+              item.badge === 'deprecated' ? 'bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-300' :
+              'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300'
             }`}>
               {item.badge}
             </span>
@@ -234,7 +251,7 @@ function SidebarItem({ item, locale, version, level, currentPath, onFocus }: Sid
       )}
 
       {hasChildren && isExpanded && (
-        <div className="mt-1 space-y-1" role="group" aria-labelledby={`sidebar-${item.path}`}>
+        <div className="mt-1 space-y-0.5 border-l border-border ml-3 pl-3" role="group" aria-labelledby={`sidebar-${item.path}`}>
           {item.children!.map((child: NavigationItem) => (
             <SidebarItem
               key={child.path}
@@ -276,10 +293,20 @@ export function Sidebar({ navigation, locale, version, isCollapsed, onToggle }: 
 
   return (
     <nav 
-      className="px-4" 
+      className="px-6 py-6" 
       role="navigation" 
       aria-label="Documentation navigation"
     >
+      {/* Documentation Title */}
+      <div className="mb-8 pb-4 border-b border-border">
+        <Link
+          href={`/${locale}/docs`}
+          className="text-lg font-bold text-foreground hover:text-primary transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-sm block"
+        >
+          Documentation
+        </Link>
+      </div>
+      
       <div 
         className="space-y-1" 
         role="tree" 
