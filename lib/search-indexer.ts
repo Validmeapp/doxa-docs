@@ -145,17 +145,20 @@ export class SearchIndexer {
    */
   private convertMdxToSearchableHtml(content: string, frontmatter: any): string {
     // Remove MDX-specific syntax and convert to basic HTML
-    const htmlContent = content
+    let htmlContent = content
       // Remove import statements
       .replace(/^import\s+.*$/gm, '')
       // Remove export statements
       .replace(/^export\s+.*$/gm, '')
-      // Convert headers
+      // Remove frontmatter if it exists
+      .replace(/^---[\s\S]*?---/m, '')
+      // Convert headers (order matters - start with most specific)
+      .replace(/^#### (.*$)/gm, '<h4>$1</h4>')
       .replace(/^### (.*$)/gm, '<h3>$1</h3>')
       .replace(/^## (.*$)/gm, '<h2>$1</h2>')
       .replace(/^# (.*$)/gm, '<h1>$1</h1>')
-      // Convert code blocks
-      .replace(/```(\w+)?\n([\s\S]*?)```/g, '<pre><code>$2</code></pre>')
+      // Convert code blocks (preserve content for search)
+      .replace(/```(\w+)?\n([\s\S]*?)```/g, '<pre><code class="language-$1">$2</code></pre>')
       // Convert inline code
       .replace(/`([^`]+)`/g, '<code>$1</code>')
       // Convert bold text
@@ -164,10 +167,35 @@ export class SearchIndexer {
       .replace(/\*(.*?)\*/g, '<em>$1</em>')
       // Convert links
       .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>')
-      // Convert paragraphs (basic)
-      .split('\n\n')
-      .map(paragraph => paragraph.trim() ? `<p>${paragraph.replace(/\n/g, ' ')}</p>` : '')
-      .join('\n');
+      // Convert lists
+      .replace(/^- (.*$)/gm, '<li>$1</li>')
+      .replace(/^(\d+)\. (.*$)/gm, '<li>$1. $2</li>')
+      // Clean up extra whitespace
+      .replace(/\n\s*\n/g, '\n\n')
+      .trim();
+
+    // Convert paragraphs (split by double newlines)
+    const paragraphs = htmlContent.split('\n\n').map(paragraph => {
+      const trimmed = paragraph.trim();
+      if (!trimmed) return '';
+      
+      // Don't wrap if it's already an HTML element
+      if (trimmed.startsWith('<') && trimmed.endsWith('>')) {
+        return trimmed;
+      }
+      
+      // Don't wrap list items
+      if (trimmed.includes('<li>')) {
+        return `<ul>${trimmed}</ul>`;
+      }
+      
+      // Wrap in paragraph
+      return `<p>${trimmed.replace(/\n/g, ' ')}</p>`;
+    }).filter(p => p).join('\n');
+
+    // Generate URL for the page
+    const slug = frontmatter.slug || frontmatter.title?.toLowerCase().replace(/\s+/g, '-') || 'page';
+    const pageUrl = `/${frontmatter.locale}/docs/v1/${slug}`;
 
     // Create full HTML document
     return `<!DOCTYPE html>
@@ -180,11 +208,12 @@ export class SearchIndexer {
   <meta data-pagefind-meta="locale" content="${frontmatter.locale || 'en'}">
   <meta data-pagefind-meta="version" content="${frontmatter.version || 'v1'}">
   <meta data-pagefind-meta="tags" content="${(frontmatter.tags || []).join(', ')}">
+  <meta data-pagefind-url="${pageUrl}">
 </head>
 <body>
   <main data-pagefind-body>
     <h1>${frontmatter.title || 'Documentation'}</h1>
-    ${htmlContent}
+    ${paragraphs}
   </main>
 </body>
 </html>`;

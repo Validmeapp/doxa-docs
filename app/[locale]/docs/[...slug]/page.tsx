@@ -19,7 +19,6 @@ export async function generateStaticParams() {
   for (const locale of locales) {
     try {
       const slugs = await getAllContentSlugs(locale, 'v1');
-      console.log(`Generating static params for ${locale}:`, slugs);
       
       for (const slug of slugs) {
         // Add route with v1 prefix to match URL structure
@@ -40,7 +39,6 @@ export async function generateStaticParams() {
     }
   }
   
-  console.log('Generated static params:', params);
   return params;
 }
 
@@ -112,7 +110,6 @@ export default async function DocumentationPage({
 
   try {
     const slugPath = slug.join('/');
-    console.log(`Trying to load content for: ${locale}, v1, ${slugPath}`);
     
     // If the slug starts with 'v1', remove it since we're already specifying version
     let actualSlug = slugPath;
@@ -123,11 +120,9 @@ export default async function DocumentationPage({
       actualSlug = '';
     }
     
-    console.log(`Actual slug to search for: ${actualSlug}`);
     const content = await getContentBySlug(locale as Locale, 'v1', actualSlug);
     
     if (!content) {
-      console.log(`Content not found for: ${actualSlug}`);
       notFound();
     }
 

@@ -334,9 +334,6 @@ export class ContentLoader {
    * Gets content by slug for a specific locale and version
    */
   public async getContentBySlug(locale: string, version: string, slug: string): Promise<ContentPage | null> {
-    console.log(`Looking for content: locale=${locale}, version=${version}, slug=${slug}`);
-    const allContent = await this.loadAllContent();
-    console.log('Available content:', allContent.map(p => ({ slug: p.slug, locale: p.frontmatter.locale, version: p.frontmatter.version })));
     return this.findContentBySlug(slug, locale, version);
   }
 
