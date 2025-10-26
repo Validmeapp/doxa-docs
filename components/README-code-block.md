@@ -118,10 +118,10 @@ The component supports all languages supported by Shiki, with friendly display n
 
 ## Keyboard Navigation
 
-- **Tab**: Navigate between UI elements
-- **Arrow Left/Right**: Switch between tabs
-- **Home/End**: Jump to first/last tab
-- **Enter/Space**: Activate buttons
+- Tab**: Navigate between UI elements
+- Arrow Left/Right**: Switch between tabs
+- Home/End**: Jump to first/last tab
+- Enter/Space**: Activate buttons
 
 ## Accessibility Features
 

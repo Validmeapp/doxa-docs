@@ -283,9 +283,9 @@ Common HTTP status codes:
 
 ## Caching
 
-- **Configuration API**: 5 minutes cache with stale-while-revalidate
-- **Health API**: No caching (always fresh)
-- **Redirect API**: No caching for mutations, redirect rules cached internally for 5 minutes
+- Configuration API**: 5 minutes cache with stale-while-revalidate
+- Health API**: No caching (always fresh)
+- Redirect API**: No caching for mutations, redirect rules cached internally for 5 minutes
 
 ## Security Considerations
 

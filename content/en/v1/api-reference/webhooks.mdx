@@ -295,10 +295,10 @@ function handleIdentityVerified(data) {
 
 Failed webhook deliveries are automatically retried with exponential backoff:
 
-- **Immediate retry**: 1 second
-- **Second retry**: 5 seconds  
-- **Third retry**: 25 seconds
-- **Fourth retry**: 125 seconds
-- **Final retry**: 625 seconds
+- Immediate retry**: 1 second
+- Second retry**: 5 seconds  
+- Third retry**: 25 seconds
+- Fourth retry**: 125 seconds
+- Final retry**: 625 seconds
 
 After 5 failed attempts, the webhook will be marked as failed and no further retries will be attempted for that event.

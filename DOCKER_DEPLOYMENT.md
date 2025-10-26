@@ -135,9 +135,9 @@ Caddy automatically handles SSL certificates via Let's Encrypt:
 
 ### Built-in Health Checks
 
-- **Application:** `GET /api/health`
-- **Caddy:** `caddy version` command
-- **Docker:** Container health status
+- Application:** `GET /api/health`
+- Caddy:** `caddy version` command
+- Docker:** Container health status
 
 ### Monitoring Scripts
 
@@ -156,9 +156,9 @@ Caddy automatically handles SSL certificates via Let's Encrypt:
 
 ### Health Check Endpoints
 
-- **Application Health:** `https://your-domain.com/api/health`
-- **Caddy Health:** `https://your-domain.com:8080/health`
-- **Metrics:** `https://your-domain.com:8080/metrics`
+- Application Health:** `https://your-domain.com/api/health`
+- Caddy Health:** `https://your-domain.com:8080/health`
+- Metrics:** `https://your-domain.com:8080/metrics`
 
 ## Logging
 
@@ -180,9 +180,9 @@ docker-compose logs -f
 
 ### Log Configuration
 
-- **Rotation:** 100MB max size, 5 files retained
-- **Format:** JSON for structured logging
-- **Retention:** 720 hours (30 days)
+- Rotation:** 100MB max size, 5 files retained
+- Format:** JSON for structured logging
+- Retention:** 720 hours (30 days)
 
 ## Backup and Recovery
 
@@ -227,8 +227,8 @@ docker-compose up -d --scale app=3
 ### Resource Limits
 
 Production limits (in `docker-compose.prod.yml`):
-- **App:** 2 CPU cores, 1GB RAM
-- **Caddy:** 1 CPU core, 512MB RAM
+- App:** 2 CPU cores, 1GB RAM
+- Caddy:** 1 CPU core, 512MB RAM
 
 ### Performance Optimization
 

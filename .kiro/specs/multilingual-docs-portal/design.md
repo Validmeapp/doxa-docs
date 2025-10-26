@@ -6,11 +6,11 @@ The multilingual documentation portal will be built as a high-performance, stati
 
 ### Key Design Principles
 
-- **Static-First**: Content is pre-rendered at build time for maximum performance
-- **Database Minimalism**: SQLite stores only configuration/state, never content
-- **Progressive Enhancement**: Core functionality works without JavaScript
-- **Mobile-First**: Responsive design with touch-friendly interactions
-- **Accessibility-First**: WCAG 2.1 AA compliance built into every component
+- Static-First**: Content is pre-rendered at build time for maximum performance
+- Database Minimalism**: SQLite stores only configuration/state, never content
+- Progressive Enhancement**: Core functionality works without JavaScript
+- Mobile-First**: Responsive design with touch-friendly interactions
+- Accessibility-First**: WCAG 2.1 AA compliance built into every component
 
 ## Architecture
 

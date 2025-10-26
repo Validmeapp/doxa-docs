@@ -17,14 +17,14 @@ A modern, enterprise-grade multilingual documentation portal built with Next.js 
 
 ## 🛠 Tech Stack
 
-- **Framework**: Next.js 16 with App Router and Turbopack
-- **Language**: TypeScript (strict mode)
-- **Styling**: Tailwind CSS + shadcn/ui components
-- **Database**: SQLite with better-sqlite3
-- **Search**: Pagefind for static search indexing
-- **Content**: MDX with frontmatter for structured content
-- **Deployment**: Docker + Caddy with automatic SSL
-- **Monitoring**: Built-in health checks and performance monitoring
+- Framework**: Next.js 16 with App Router and Turbopack
+- Language**: TypeScript (strict mode)
+- Styling**: Tailwind CSS + shadcn/ui components
+- Database**: SQLite with better-sqlite3
+- Search**: Pagefind for static search indexing
+- Content**: MDX with frontmatter for structured content
+- Deployment**: Docker + Caddy with automatic SSL
+- Monitoring**: Built-in health checks and performance monitoring
 
 ---
 
@@ -322,9 +322,9 @@ The system automatically detects user language preference from:
 ### Navigation Structure
 
 Navigation is automatically generated from:
-- **File structure**: Directory hierarchy determines grouping
-- **Frontmatter**: `order` field determines sort order
-- **Content type**: Guides, API references, and overviews are grouped separately
+- File structure**: Directory hierarchy determines grouping
+- Frontmatter**: `order` field determines sort order
+- Content type**: Guides, API references, and overviews are grouped separately
 
 Example navigation configuration:
 ```yaml
@@ -525,10 +525,10 @@ ANALYTICS_ENABLED=true
 
 SSL certificates are automatically managed by Caddy:
 
-- **Automatic issuance** via Let's Encrypt
-- **Auto-renewal** before expiration
-- **HTTP to HTTPS** redirect
-- **Security headers** included
+- Automatic issuance** via Let's Encrypt
+- Auto-renewal** before expiration
+- HTTP to HTTPS** redirect
+- Security headers** included
 
 **Manual certificate operations:**
 ```bash
@@ -598,9 +598,9 @@ npm run performance:lighthouse
 ### Version Management
 
 #### URL Structure
-- **Current version**: `/en/docs/authentication`
-- **Specific version**: `/en/docs/v1/authentication`
-- **Version selector**: Automatically appears when multiple versions exist
+- Current version**: `/en/docs/authentication`
+- Specific version**: `/en/docs/v1/authentication`
+- Version selector**: Automatically appears when multiple versions exist
 
 #### Deprecation Workflow
 
@@ -637,10 +637,10 @@ npm run performance:lighthouse
 
 The search system uses Pagefind for static, client-side search:
 
-- **Index Generation**: Build-time indexing of all content
-- **Multi-language**: Separate indexes per language
-- **Performance**: Fast, client-side search with no server required
-- **Analytics**: Track search queries and popular content
+- Index Generation**: Build-time indexing of all content
+- Multi-language**: Separate indexes per language
+- Performance**: Fast, client-side search with no server required
+- Analytics**: Track search queries and popular content
 
 ### Managing Search Indexes
 
@@ -729,16 +729,16 @@ curl http://localhost:3000/api/search/popular
 ### Content Contribution Guidelines
 
 #### Writing Standards
-- **Tone**: Professional but approachable
-- **Structure**: Use clear headings and logical flow
-- **Examples**: Include practical, working code examples
-- **Consistency**: Follow established terminology and formatting
+- Tone**: Professional but approachable
+- Structure**: Use clear headings and logical flow
+- Examples**: Include practical, working code examples
+- Consistency**: Follow established terminology and formatting
 
 #### Documentation Standards
-- **Completeness**: Cover all parameters, responses, and edge cases
-- **Accuracy**: Test all code examples before publishing
-- **Clarity**: Write for developers of varying experience levels
-- **Maintenance**: Keep content up-to-date with API changes
+- Completeness**: Cover all parameters, responses, and edge cases
+- Accuracy**: Test all code examples before publishing
+- Clarity**: Write for developers of varying experience levels
+- Maintenance**: Keep content up-to-date with API changes
 
 #### Review Process
 1. **Content validation** passes all checks
@@ -933,10 +933,10 @@ npm run build:analyze
 #### Performance Budgets
 
 The system enforces performance budgets:
-- **JavaScript bundle**: < 300KB
-- **CSS bundle**: < 50KB  
-- **Total bundle (gzipped)**: < 500KB
-- **Lighthouse score**: > 95
+- JavaScript bundle**: < 300KB
+- CSS bundle**: < 50KB  
+- Total bundle (gzipped)**: < 500KB
+- Lighthouse score**: > 95
 
 ---
 
@@ -1141,9 +1141,9 @@ Response:
 - [API Endpoints](docs/api-endpoints.md) - Internal API reference
 
 ### Community
-- **Issues**: Report bugs and request features via GitHub Issues
-- **Discussions**: Join community discussions for questions and ideas
-- **Contributing**: See our [Contributing Guidelines](CONTRIBUTING.md)
+- Issues**: Report bugs and request features via GitHub Issues
+- Discussions**: Join community discussions for questions and ideas
+- Contributing**: See our [Contributing Guidelines](CONTRIBUTING.md)
 
 ### Commercial Support & Licensing
 
@@ -1220,11 +1220,11 @@ graph TB
 
 ### Key Components
 
-- **Content Layer**: MDX files with frontmatter metadata
-- **Application Layer**: Next.js with TypeScript and React
-- **Data Layer**: SQLite for configuration and analytics
-- **Search Layer**: Pagefind for static search indexing
-- **Deployment Layer**: Docker with Caddy proxy and SSL
+- Content Layer**: MDX files with frontmatter metadata
+- Application Layer**: Next.js with TypeScript and React
+- Data Layer**: SQLite for configuration and analytics
+- Search Layer**: Pagefind for static search indexing
+- Deployment Layer**: Docker with Caddy proxy and SSL
 
 ---
 

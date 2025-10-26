@@ -29,13 +29,13 @@ We are committed to providing a welcoming and inclusive environment. Please be r
 
 We welcome the following types of contributions:
 
-- **Bug fixes** - Help us identify and fix issues
-- **Feature enhancements** - Improve existing functionality
-- **Documentation improvements** - Better docs, examples, and guides
-- **Performance optimizations** - Make the portal faster and more efficient
-- **Accessibility improvements** - Ensure the portal works for everyone
-- **Internationalization** - Add support for new languages
-- **Testing** - Improve test coverage and quality
+- Bug fixes** - Help us identify and fix issues
+- Feature enhancements** - Improve existing functionality
+- Documentation improvements** - Better docs, examples, and guides
+- Performance optimizations** - Make the portal faster and more efficient
+- Accessibility improvements** - Ensure the portal works for everyone
+- Internationalization** - Add support for new languages
+- Testing** - Improve test coverage and quality
 
 ### 3. Getting Started
 
@@ -96,11 +96,11 @@ npm run type-check
 
 #### Code Quality Requirements
 
-- **Linting**: Code must pass ESLint checks (`npm run lint`)
-- **Type checking**: Code must pass TypeScript checks (`npm run type-check`)
-- **Formatting**: Use Prettier for consistent formatting (`npm run format`)
-- **Performance**: Ensure changes don't negatively impact performance
-- **Accessibility**: Follow WCAG 2.1 AA guidelines
+- Linting**: Code must pass ESLint checks (`npm run lint`)
+- Type checking**: Code must pass TypeScript checks (`npm run type-check`)
+- Formatting**: Use Prettier for consistent formatting (`npm run format`)
+- Performance**: Ensure changes don't negatively impact performance
+- Accessibility**: Follow WCAG 2.1 AA guidelines
 
 ### 5. Submitting Changes
 
@@ -203,9 +203,9 @@ Examples:
 
 ### Getting Help
 
-- **Issues**: Create an issue for bugs or feature requests
-- **Discussions**: Use GitHub Discussions for questions and ideas
-- **Email**: Contact maintainers at [contacto@validme.tech](mailto:contacto@validme.tech) for sensitive matters
+- Issues**: Create an issue for bugs or feature requests
+- Discussions**: Use GitHub Discussions for questions and ideas
+- Email**: Contact maintainers at [contacto@validme.tech](mailto:contacto@validme.tech) for sensitive matters
 
 ### Recognition
 
