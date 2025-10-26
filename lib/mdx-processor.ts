@@ -78,8 +78,20 @@ function remarkLinkValidator(contentPages: Map<string, string>) {
       }
 
       // Check if internal link exists
-      const cleanUrl = url.replace(/^\//, '').replace(/\/$/, '');
-      if (!contentPages.has(cleanUrl)) {
+      // Extract slug from URL pattern: /locale/docs/version/slug -> slug
+      const urlParts = url.replace(/^\//, '').replace(/\/$/, '').split('/');
+      let slug = '';
+      
+      // Handle different URL patterns
+      if (urlParts.length >= 4 && urlParts[1] === 'docs') {
+        // Pattern: /en/docs/v1/slug or /en/docs/v1/path/to/slug
+        slug = urlParts.slice(3).join('/');
+      } else {
+        // Fallback to original logic for other patterns
+        slug = urlParts.join('/');
+      }
+      
+      if (slug && !contentPages.has(slug)) {
         errors.push(`Broken internal link: ${url}`);
       }
     });
@@ -129,6 +141,49 @@ function generateHeadingId(text: string, existingIds: Set<string> = new Set()): 
 }
 
 /**
+ * Custom remark plugin for enhanced code blocks
+ */
+function remarkCodeBlocks() {
+  return (tree: any) => {
+    visit(tree, 'code', (node: any) => {
+      if (node.lang) {
+        // Create enhanced code block with language class
+        const escapedCode = escapeHtml(node.value);
+        const wrappedHtml = `
+          <div class="code-block-wrapper">
+            <pre class="language-${node.lang}"><code class="language-${node.lang}">${escapedCode}</code></pre>
+          </div>
+        `;
+
+        // Replace the code node with raw HTML
+        node.type = 'html';
+        node.value = wrappedHtml;
+        delete node.lang;
+        delete node.meta;
+      } else {
+        // No language specified, use plain code block
+        node.type = 'html';
+        node.value = `<div class="code-block-wrapper"><pre><code>${escapeHtml(node.value)}</code></pre></div>`;
+      }
+    });
+  };
+}
+
+/**
+ * Escape HTML characters
+ */
+function escapeHtml(text: string): string {
+  const map: { [key: string]: string } = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#039;'
+  };
+  return text.replace(/[&<>"']/g, (m) => map[m]);
+}
+
+/**
  * MDX processor with enhanced markdown processing
  */
 export class MDXProcessor {
@@ -148,6 +203,7 @@ export class MDXProcessor {
       .use(remarkFrontmatter) // Parse frontmatter
       .use(remarkToc) // Extract table of contents
       .use(remarkLinkValidator, this.contentPages) // Validate internal links
+      .use(remarkCodeBlocks) // Add enhanced code blocks
       .use(remarkHtml); // Convert to HTML
   }
 
@@ -227,8 +283,20 @@ export class MDXProcessor {
         }
         
         // Check if internal link exists
-        const cleanUrl = url.replace(/^\//, '').replace(/\/$/, '');
-        if (!contentMap.has(cleanUrl)) {
+        // Extract slug from URL pattern: /locale/docs/version/slug -> slug
+        const urlParts = url.replace(/^\//, '').replace(/\/$/, '').split('/');
+        let slug = '';
+        
+        // Handle different URL patterns
+        if (urlParts.length >= 4 && urlParts[1] === 'docs') {
+          // Pattern: /en/docs/v1/slug or /en/docs/v1/path/to/slug
+          slug = urlParts.slice(3).join('/');
+        } else {
+          // Fallback to original logic for other patterns
+          slug = urlParts.join('/');
+        }
+        
+        if (slug && !contentMap.has(slug)) {
           errors.push(`Broken internal link: ${url}`);
         }
       }

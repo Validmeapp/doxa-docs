@@ -155,9 +155,9 @@ export class ContentLoader {
         return null;
       }
 
-      // Generate slug from file path
+      // Generate slug from file path or use custom slug from frontmatter
       const relativePath = path.relative(this.contentDir, filePath);
-      const slug = this.generateSlug(relativePath);
+      const slug = frontmatter.slug || this.generateSlug(relativePath);
 
       // Process content with MDX processor
       const { processedContent, tableOfContents, linkValidationErrors } = await mdxProcessor.processMarkdown(content);
@@ -192,9 +192,9 @@ export class ContentLoader {
     for (const filePath of files) {
       try {
         const fileContent = fs.readFileSync(filePath, 'utf-8');
-        const { content: markdownContent } = matter(fileContent);
+        const { data: frontmatter, content: markdownContent } = matter(fileContent);
         const relativePath = path.relative(this.contentDir, filePath);
-        const slug = this.generateSlug(relativePath);
+        const slug = frontmatter.slug || this.generateSlug(relativePath);
         contentMap.set(slug, markdownContent);
       } catch (error) {
         console.error(`Error reading file for link validation ${filePath}:`, error);
@@ -255,11 +255,12 @@ export class ContentLoader {
     // Remove index from the end if present
     slug = slug.replace(/\/index$/, '');
     
-    // Extract just the filename part for the slug (without locale/version path)
+    // Extract the path after locale/version (e.g., "en/v1/api-reference/users" -> "api-reference/users")
     const parts = slug.split('/');
+    
     if (parts.length >= 3) {
-      // Return just the filename part (last segment)
-      return parts[parts.length - 1];
+      // Skip locale and version, return the rest of the path
+      return parts.slice(2).join('/');
     }
     
     return slug;
@@ -317,9 +318,9 @@ export class ContentLoader {
     for (const filePath of files) {
       try {
         const fileContent = fs.readFileSync(filePath, 'utf-8');
-        const { content } = matter(fileContent);
+        const { data: frontmatter, content } = matter(fileContent);
         const relativePath = path.relative(this.contentDir, filePath);
-        const slug = this.generateSlug(relativePath);
+        const slug = frontmatter.slug || this.generateSlug(relativePath);
         contentMap.set(slug, content);
       } catch (error) {
         console.error(`Error reading file for link validation ${filePath}:`, error);

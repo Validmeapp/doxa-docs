@@ -73,16 +73,8 @@ export class NavigationBuilder {
    * Generates the navigation path for a content page
    */
   private generateNavigationPath(page: ContentPage, pathParts: string[]): string {
-    const locale = page.frontmatter.locale;
-    const version = page.frontmatter.version;
-    
-    // Remove locale, version, and file extension from path
-    const contentPath = pathParts.slice(2).join('/').replace(/\.(mdx?|md)$/, '');
-    
-    // Remove 'index' from the end if present
-    const cleanPath = contentPath.replace(/\/index$/, '') || contentPath;
-    
-    return `/${locale}/${version}/${cleanPath}`;
+    // Use the page slug which already has the correct path structure
+    return `/v1/${page.slug}`;
   }
 
   /**
@@ -349,59 +341,5 @@ export const navigationBuilder = new NavigationBuilder();
  * Convenience function to get navigation tree for a locale and version
  */
 export async function getNavigationTree(locale: string, version: string): Promise<NavigationTree> {
-  // For now, return a mock navigation tree since content processing isn't fully implemented
-  // This will be replaced with actual content loading once the content pipeline is complete
-  const mockNavigation: NavigationTree = [
-    {
-      title: 'Overview',
-      path: '/',
-      order: 1,
-    },
-    {
-      title: 'Getting Started',
-      path: '/getting-started',
-      order: 2,
-    },
-    {
-      title: 'Authentication',
-      path: '/authentication',
-      order: 3,
-    },
-    {
-      title: 'API Reference',
-      path: '',
-      order: 4,
-      children: [
-        {
-          title: 'Users',
-          path: '/api-reference/users',
-          order: 1,
-        },
-        {
-          title: 'Webhooks',
-          path: '/api-reference/webhooks',
-          order: 2,
-        },
-      ],
-    },
-    {
-      title: 'Guides',
-      path: '',
-      order: 5,
-      children: [
-        {
-          title: 'Integration Guide',
-          path: '/guides/integration',
-          order: 1,
-        },
-        {
-          title: 'Best Practices',
-          path: '/guides/best-practices',
-          order: 2,
-        },
-      ],
-    },
-  ];
-
-  return mockNavigation;
+  return await navigationBuilder.buildNavigationTree(locale, version);
 }

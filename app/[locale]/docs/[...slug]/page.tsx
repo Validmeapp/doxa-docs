@@ -4,6 +4,7 @@ import { getContentBySlug, getAllContentSlugs } from '@/lib/content-loader';
 import { generateDocumentationMetadata, generateDocumentationJsonLd } from '@/lib/metadata-generator';
 import { generateContentStructuredData, generateRichSnippets } from '@/lib/structured-data-extractor';
 import { StructuredData } from '@/components/structured-data';
+import { SyntaxHighlighter } from '@/components/syntax-highlighter';
 import { type Locale, locales } from '@/lib/locale-config';
 
 interface PageProps {
@@ -110,7 +111,6 @@ export default async function DocumentationPage({
 
   try {
     const slugPath = slug.join('/');
-    
     // If the slug starts with 'v1', remove it since we're already specifying version
     let actualSlug = slugPath;
     if (slugPath.startsWith('v1/')) {
@@ -183,13 +183,14 @@ export default async function DocumentationPage({
     return (
       <>
         <StructuredData data={allStructuredData} />
-        <article className="prose prose-slate dark:prose-invert max-w-none">
+        <article className="prose dark:prose-invert max-w-none prose-gray">
+          <SyntaxHighlighter />
           <header className="space-y-4 not-prose mb-8">
-            <h1 className="text-4xl font-bold tracking-tight">
+            <h1 className="text-4xl font-bold tracking-tight text-gray-900 dark:text-gray-100">
               {content.frontmatter.title}
             </h1>
             {content.frontmatter.description && (
-              <p className="text-xl text-muted-foreground">
+              <p className="text-xl text-gray-600 dark:text-gray-400">
                 {content.frontmatter.description}
               </p>
             )}
@@ -217,7 +218,7 @@ export default async function DocumentationPage({
           <div dangerouslySetInnerHTML={{ __html: content.content }} />
           
           {content.frontmatter.lastModified && (
-            <footer className="mt-12 pt-8 border-t text-sm text-muted-foreground not-prose">
+            <footer className="mt-12 pt-8 border-t border-gray-200 dark:border-gray-700 text-sm text-gray-600 dark:text-gray-400 not-prose">
               Last updated: {new Date(content.frontmatter.lastModified).toLocaleDateString(locale, {
                 year: 'numeric',
                 month: 'long',
