@@ -67,7 +67,7 @@
   - Test code block rendering across different content types
   - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5_
 
-- [ ] 9. Create LinkAuditor class for comprehensive link validation
+- [x] 9. Create LinkAuditor class for comprehensive link validation
   - Implement `LinkAuditor` class with core link validation methods
   - Create `auditAllLinks` method to scan all markdown files for internal links
   - Implement `findPlausibleTarget` method to suggest fixes for broken links
@@ -76,7 +76,7 @@
   - Write comprehensive tests for link validation logic
   - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5_
 
-- [ ] 10. Implement automatic link fixing functionality
+- [x] 10. Implement automatic link fixing functionality
   - Create `fixBrokenLinks` method to automatically rewrite fixable links
   - Implement link stripping for unfixable links while preserving text
   - Add file backup functionality before making link modifications

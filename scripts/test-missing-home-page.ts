@@ -73,7 +73,7 @@ runner.test('renders basic structure with English locale', () => {
   renderAndCheck(props, [
     'Missing Home Document',
     'Welcome to the documentation for en/v1',
-    'content/en/v1/index.mdx',
+    'content/en/docs/v1/index.mdx',
     "What's Missing?",
     'Available Content',
     'How to Create a Home Page',
@@ -91,7 +91,7 @@ runner.test('renders with Spanish locale', () => {
   renderAndCheck(props, [
     'Documento de Inicio Faltante',
     'Bienvenido a la documentación para es/v1',
-    'content/es/v1/index.mdx',
+    'content/es/docs/v1/index.mdx',
     '¿Qué Falta?',
     'Contenido Disponible',
     'Cómo Crear una Página de Inicio',
@@ -113,13 +113,13 @@ runner.test('displays available content links', () => {
   ]);
 
   // Check that links have correct hrefs
-  if (!html.includes('href="/en/v1/docs/api-reference"')) {
+  if (!html.includes('href="/en/docs/v1/docs/api-reference"')) {
     throw new Error('Expected API reference link not found');
   }
-  if (!html.includes('href="/en/v1/docs/getting-started"')) {
+  if (!html.includes('href="/en/docs/v1/docs/getting-started"')) {
     throw new Error('Expected getting started link not found');
   }
-  if (!html.includes('href="/en/v1/docs/user-guide/billing"')) {
+  if (!html.includes('href="/en/docs/v1/docs/user-guide/billing"')) {
     throw new Error('Expected billing link not found');
   }
 });

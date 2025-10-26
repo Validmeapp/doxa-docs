@@ -519,7 +519,7 @@ Commands:
 Examples:
   tsx scripts/content-linter.ts check
   tsx scripts/content-linter.ts report
-  tsx scripts/content-linter.ts file content/en/v1/overview.mdx
+  tsx scripts/content-linter.ts file content/en/docs/v1/overview.mdx
 
 Rules checked:
   • Frontmatter completeness

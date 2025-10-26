@@ -53,8 +53,8 @@ async function runIntegrationTests() {
 
   // Test 3: Test with missing index.mdx file (temporarily move it)
   console.log('3. Testing with missing index.mdx file...');
-  const indexPath = path.join(process.cwd(), 'content/en/v1/index.mdx');
-  const backupPath = path.join(process.cwd(), 'content/en/v1/index.mdx.test-backup');
+  const indexPath = path.join(process.cwd(), 'content/en/docs/v1/index.mdx');
+  const backupPath = path.join(process.cwd(), 'content/en/docs/v1/index.mdx.test-backup');
   
   try {
     // Backup the index file

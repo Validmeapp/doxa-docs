@@ -104,7 +104,7 @@ tags: ["tag1", "tag2"]
 1. Create content in English first
 2. Generate translation templates:
    ```bash
-   tsx scripts/content-authoring.ts translate content/en/v1/overview.mdx es
+   tsx scripts/content-authoring.ts translate content/en/docs/v1/overview.mdx es
    ```
 3. Translate the content and update frontmatter
 4. Validate the translated content

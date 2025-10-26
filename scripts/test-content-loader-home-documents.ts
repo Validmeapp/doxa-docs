@@ -48,16 +48,16 @@ class HomeDocumentTester {
     await this.runTest('findIndexFile - English v1 exists', async () => {
       const result = await this.contentLoader.findIndexFile('en', 'v1');
       if (!result) throw new Error('Expected to find English v1 index file');
-      if (!result.includes('content/en/v1/index.mdx')) {
-        throw new Error(`Expected path to contain 'content/en/v1/index.mdx', got: ${result}`);
+      if (!result.includes('content/en/docs/v1/index.mdx')) {
+        throw new Error(`Expected path to contain 'content/en/docs/v1/index.mdx', got: ${result}`);
       }
     });
 
     await this.runTest('findIndexFile - Spanish v1 exists', async () => {
       const result = await this.contentLoader.findIndexFile('es', 'v1');
       if (!result) throw new Error('Expected to find Spanish v1 index file');
-      if (!result.includes('content/es/v1/index.mdx')) {
-        throw new Error(`Expected path to contain 'content/es/v1/index.mdx', got: ${result}`);
+      if (!result.includes('content/es/docs/v1/index.mdx')) {
+        throw new Error(`Expected path to contain 'content/es/docs/v1/index.mdx', got: ${result}`);
       }
     });
 

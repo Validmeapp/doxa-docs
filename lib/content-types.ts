@@ -64,3 +64,38 @@ export interface SidebarGroup {
   order?: number;
   collapsed?: boolean;
 }
+
+// Link auditing interfaces
+export interface BrokenLink {
+  filePath: string;
+  linkText: string;
+  originalUrl: string;
+  suggestedFix?: string;
+  lineNumber?: number;
+  reason: string;
+}
+
+export interface FixedLink {
+  filePath: string;
+  originalUrl: string;
+  newUrl: string;
+  linkText: string;
+  lineNumber?: number;
+}
+
+export interface AuditResult {
+  totalLinks: number;
+  validLinks: number;
+  brokenLinks: BrokenLink[];
+  fixableLinks: BrokenLink[];
+  unfixableLinks: BrokenLink[];
+  processedFiles: number;
+}
+
+export interface FixResult {
+  totalFixed: number;
+  fixedLinks: FixedLink[];
+  strippedLinks: BrokenLink[];
+  backupCreated: boolean;
+  errors: string[];
+}

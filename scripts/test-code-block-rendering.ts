@@ -13,7 +13,7 @@ async function testCodeBlockRendering() {
 
   try {
     // Read the users.mdx file
-    const contentPath = join(process.cwd(), 'content/en/v1/api-reference/users.mdx');
+    const contentPath = join(process.cwd(), 'content/en/docs/v1/api-reference/users.mdx');
     const content = await readFile(contentPath, 'utf-8');
     
     console.log('📄 Processing users.mdx content...');

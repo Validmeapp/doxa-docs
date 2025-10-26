@@ -40,7 +40,10 @@
     "search:build": "tsx scripts/build-search-index.ts",
     "search:cleanup": "tsx scripts/cleanup-search-data.ts",
     "sitemap:generate": "tsx scripts/generate-sitemaps.ts",
-    "build:full": "npm run search:build && npm run sitemap:generate && npm run build"
+    "build:full": "npm run search:build && npm run sitemap:generate && npm run build",
+    "links:audit": "tsx scripts/link-auditor-cli.ts audit",
+    "links:fix": "tsx scripts/link-auditor-cli.ts fix",
+    "links:normalize": "tsx scripts/link-auditor-cli.ts normalize"
   },
   "keywords": [
     "documentation",

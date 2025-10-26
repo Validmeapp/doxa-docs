@@ -524,7 +524,7 @@ Commands:
 
   translate <source-file> <target-locale>
     Generate translation template from existing file
-    Example: tsx scripts/content-authoring.ts translate content/en/v1/overview.mdx es
+    Example: tsx scripts/content-authoring.ts translate content/en/docs/v1/overview.mdx es
 
   watch
     Watch content files for changes and validate
@@ -534,7 +534,7 @@ Examples:
   tsx scripts/content-authoring.ts create en v1 guide "API Integration Guide"
   tsx scripts/content-authoring.ts list
   tsx scripts/content-authoring.ts validate
-  tsx scripts/content-authoring.ts translate content/en/v1/overview.mdx es
+  tsx scripts/content-authoring.ts translate content/en/docs/v1/overview.mdx es
   tsx scripts/content-authoring.ts watch
 `);
       break;
