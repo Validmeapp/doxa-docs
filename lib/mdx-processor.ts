@@ -3,7 +3,7 @@ import remarkGfm from 'remark-gfm';
 import remarkFrontmatter from 'remark-frontmatter';
 import remarkHtml from 'remark-html';
 import { visit } from 'unist-util-visit';
-import { codeToHtml } from 'shiki';
+
 import { TOCItem } from './content-types';
 
 /**
@@ -144,45 +144,84 @@ function generateHeadingId(text: string, existingIds: Set<string> = new Set()): 
 
 
 /**
- * Custom remark plugin for syntax highlighting with Shiki
+ * Simple remark plugin to render code blocks directly as HTML
+ * No client-side React components, just plain HTML with basic styling
  */
-function remarkShikiHighlight() {
-  return async (tree: any) => {
-    const codeNodes: any[] = [];
-    
-    // Collect all code nodes
+function remarkRenderCodeBlocks() {
+  return (tree: any) => {
     visit(tree, 'code', (node: any) => {
-      codeNodes.push(node);
-    });
-    
-    // Process each code node with Shiki
-    for (const node of codeNodes) {
-      try {
-        const lang = node.lang || 'text';
-        const code = node.value || '';
-        
-        const html = await codeToHtml(code, {
-          lang,
-          theme: 'github-light',
-          defaultColor: false,
-          cssVariablePrefix: '--shiki-',
-        });
-        
-        // Replace the code node with HTML
-        node.type = 'html';
-        node.value = html;
-        delete node.lang;
-        delete node.meta;
-      } catch (error) {
-        console.warn(`Failed to highlight code block with language "${node.lang}":`, error);
-        // Fallback to plain code block
-        const escapedCode = escapeHtml(node.value || '');
-        node.type = 'html';
-        node.value = `<pre><code class="language-${node.lang || 'text'}">${escapedCode}</code></pre>`;
-        delete node.lang;
-        delete node.meta;
+      const lang = node.lang || 'text';
+      const code = node.value || '';
+      const meta = node.meta || '';
+      
+      // Parse meta attributes (e.g., filename="example.js")
+      const metaAttributes: { [key: string]: string } = {};
+      if (meta) {
+        const metaRegex = /(\w+)=["']([^"']+)["']/g;
+        let match;
+        while ((match = metaRegex.exec(meta)) !== null) {
+          metaAttributes[match[1]] = match[2];
+        }
       }
-    }
+      
+      // Get language display name
+      const getLanguageDisplayName = (language: string): string => {
+        const languageMap: { [key: string]: string } = {
+          js: 'JavaScript',
+          javascript: 'JavaScript',
+          ts: 'TypeScript',
+          typescript: 'TypeScript',
+          py: 'Python',
+          python: 'Python',
+          bash: 'Bash',
+          shell: 'Shell',
+          json: 'JSON',
+          yaml: 'YAML',
+          html: 'HTML',
+          css: 'CSS',
+          sql: 'SQL',
+          text: 'Plain Text',
+        };
+        return languageMap[language.toLowerCase()] || language.toUpperCase();
+      };
+      
+      // Escape HTML in code
+      const escapeHtml = (text: string): string => {
+        return text
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#039;');
+      };
+      
+      // Create simple HTML code block
+      const filename = metaAttributes.filename;
+      const languageDisplay = getLanguageDisplayName(lang);
+      const escapedCode = escapeHtml(code);
+      
+      const html = `
+        <div class="code-block-wrapper" style="margin: 1.5rem 0; border: 1px solid #e5e7eb; border-radius: 0.5rem; overflow: hidden; background: #f9fafb;">
+          <div class="code-block-header" style="display: flex; align-items: center; justify-content: space-between; padding: 0.5rem 1rem; background: #f3f4f6; border-bottom: 1px solid #e5e7eb;">
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <span style="background: #3b82f6; color: white; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem; font-weight: 500;">
+                ${languageDisplay}
+              </span>
+              ${filename ? `<span style="font-size: 0.75rem; color: #6b7280;">${filename}</span>` : ''}
+            </div>
+            <button onclick="navigator.clipboard.writeText(this.getAttribute('data-code'))" data-code="${escapeHtml(code)}" style="background: none; border: none; color: #6b7280; cursor: pointer; font-size: 0.75rem; padding: 0.25rem 0.5rem; border-radius: 0.25rem;" onmouseover="this.style.background='#e5e7eb'" onmouseout="this.style.background='none'">
+              Copy
+            </button>
+          </div>
+          <pre style="margin: 0; padding: 1rem; overflow-x: auto; font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace; font-size: 0.875rem; line-height: 1.5; background: #ffffff;"><code class="language-${lang}">${escapedCode}</code></pre>
+        </div>
+      `;
+      
+      node.type = 'html';
+      node.value = html;
+      delete node.lang;
+      delete node.meta;
+    });
   };
 }
 
@@ -220,8 +259,8 @@ export class MDXProcessor {
       .use(remarkFrontmatter) // Parse frontmatter
       .use(remarkToc) // Extract table of contents
       .use(remarkLinkValidator, this.contentPages) // Validate internal links
-      .use(remarkShikiHighlight) // Syntax highlighting with Shiki
-      .use(remarkHtml); // Convert to HTML
+      .use(remarkRenderCodeBlocks) // Render code blocks directly as HTML
+      .use(remarkHtml, { sanitize: false }); // Convert to HTML without sanitization
   }
 
   /**

@@ -647,3 +647,68 @@ button:disabled,
   color: hsl(var(--muted-foreground));
   user-select: none;
 }
+
+/* Fallback code block styling */
+.fallback-highlighting .fallback-code-block {
+  margin: 0;
+  padding: 1rem;
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  overflow-x: auto;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+  color: hsl(var(--foreground));
+}
+
+.fallback-highlighting .fallback-code-block code {
+  background: transparent !important;
+  padding: 0 !important;
+  border: none !important;
+  border-radius: 0 !important;
+  font-family: inherit;
+  color: inherit;
+}
+
+/* Enhanced error state styling */
+.code-block-content.fallback-highlighting {
+  position: relative;
+}
+
+.code-block-content.fallback-highlighting::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, hsl(var(--destructive)) 0%, transparent 100%);
+  opacity: 0.5;
+}
+
+/* Improved accessibility for code blocks */
+.code-block-content pre {
+  tab-size: 2;
+  -moz-tab-size: 2;
+}
+
+/* Better focus indicators for copy buttons */
+button[aria-label="Copy code to clipboard"]:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
+}
+
+/* Loading spinner animation */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
