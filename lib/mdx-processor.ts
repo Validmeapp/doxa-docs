@@ -3,6 +3,7 @@ import remarkGfm from 'remark-gfm';
 import remarkFrontmatter from 'remark-frontmatter';
 import remarkHtml from 'remark-html';
 import { visit } from 'unist-util-visit';
+import { codeToHtml } from 'shiki';
 import { TOCItem } from './content-types';
 
 /**
@@ -140,32 +141,48 @@ function generateHeadingId(text: string, existingIds: Set<string> = new Set()): 
   return id;
 }
 
-/**
- * Custom remark plugin for enhanced code blocks
- */
-function remarkCodeBlocks() {
-  return (tree: any) => {
-    visit(tree, 'code', (node: any) => {
-      if (node.lang) {
-        // Create enhanced code block with language class
-        const escapedCode = escapeHtml(node.value);
-        const wrappedHtml = `
-          <div class="code-block-wrapper">
-            <pre class="language-${node.lang}"><code class="language-${node.lang}">${escapedCode}</code></pre>
-          </div>
-        `;
 
-        // Replace the code node with raw HTML
+
+/**
+ * Custom remark plugin for syntax highlighting with Shiki
+ */
+function remarkShikiHighlight() {
+  return async (tree: any) => {
+    const codeNodes: any[] = [];
+    
+    // Collect all code nodes
+    visit(tree, 'code', (node: any) => {
+      codeNodes.push(node);
+    });
+    
+    // Process each code node with Shiki
+    for (const node of codeNodes) {
+      try {
+        const lang = node.lang || 'text';
+        const code = node.value || '';
+        
+        const html = await codeToHtml(code, {
+          lang,
+          theme: 'github-light',
+          defaultColor: false,
+          cssVariablePrefix: '--shiki-',
+        });
+        
+        // Replace the code node with HTML
         node.type = 'html';
-        node.value = wrappedHtml;
+        node.value = html;
         delete node.lang;
         delete node.meta;
-      } else {
-        // No language specified, use plain code block
+      } catch (error) {
+        console.warn(`Failed to highlight code block with language "${node.lang}":`, error);
+        // Fallback to plain code block
+        const escapedCode = escapeHtml(node.value || '');
         node.type = 'html';
-        node.value = `<div class="code-block-wrapper"><pre><code>${escapeHtml(node.value)}</code></pre></div>`;
+        node.value = `<pre><code class="language-${node.lang || 'text'}">${escapedCode}</code></pre>`;
+        delete node.lang;
+        delete node.meta;
       }
-    });
+    }
   };
 }
 
@@ -203,7 +220,7 @@ export class MDXProcessor {
       .use(remarkFrontmatter) // Parse frontmatter
       .use(remarkToc) // Extract table of contents
       .use(remarkLinkValidator, this.contentPages) // Validate internal links
-      .use(remarkCodeBlocks) // Add enhanced code blocks
+      .use(remarkShikiHighlight) // Syntax highlighting with Shiki
       .use(remarkHtml); // Convert to HTML
   }
 

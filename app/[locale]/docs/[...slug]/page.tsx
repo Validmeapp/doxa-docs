@@ -215,7 +215,7 @@ export default async function DocumentationPage({
             )}
           </header>
           
-          <div dangerouslySetInnerHTML={{ __html: content.content }} />
+          <div className="prose prose-lg max-w-none dark:prose-invert" dangerouslySetInnerHTML={{ __html: content.content }} />
           
           {content.frontmatter.lastModified && (
             <footer className="mt-12 pt-8 border-t border-gray-200 dark:border-gray-700 text-sm text-gray-600 dark:text-gray-400 not-prose">

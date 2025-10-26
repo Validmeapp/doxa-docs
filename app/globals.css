@@ -289,6 +289,33 @@ button:disabled,
 }
 
 /* Code Block Styles */
+.prose pre {
+  margin: 1.5rem 0 !important;
+  border-radius: 0.5rem !important;
+  overflow: hidden !important;
+  border: 1px solid rgb(229 231 235) !important;
+  /* gray-200 */
+  padding: 1rem !important;
+  overflow-x: auto !important;
+  font-size: 0.875rem !important;
+  line-height: 1.5 !important;
+  font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace !important;
+}
+
+.dark .prose pre {
+  border-color: rgb(75 85 99) !important;
+  /* gray-600 */
+}
+
+.prose pre code {
+  font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace !important;
+  background: transparent !important;
+  padding: 0 !important;
+  border: none !important;
+  border-radius: 0 !important;
+}
+
+/* Legacy code block wrapper styles for backward compatibility */
 .code-block-wrapper {
   margin: 1.5rem 0;
   border-radius: 0.5rem;
@@ -535,8 +562,8 @@ button:disabled,
   font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
 }
 
-/* Shiki theme variables */
-.code-block-content {
+/* Shiki theme variables for light mode */
+:root {
   --shiki-color-text: hsl(var(--foreground));
   --shiki-color-background: transparent;
   --shiki-token-constant: hsl(var(--primary));
@@ -550,7 +577,8 @@ button:disabled,
   --shiki-token-link: hsl(221 83% 53%);
 }
 
-.dark .code-block-content {
+/* Shiki theme variables for dark mode */
+.dark {
   --shiki-color-text: hsl(var(--foreground));
   --shiki-token-constant: hsl(var(--primary));
   --shiki-token-string: hsl(142 76% 45%);
@@ -561,6 +589,38 @@ button:disabled,
   --shiki-token-string-expression: hsl(142 76% 45%);
   --shiki-token-punctuation: hsl(var(--muted-foreground));
   --shiki-token-link: hsl(221 83% 65%);
+}
+
+/* Shiki code block styling */
+.prose .shiki {
+  margin: 1.5rem 0 !important;
+  border-radius: 0.5rem !important;
+  border: 1px solid rgb(229 231 235) !important;
+  /* gray-200 */
+  overflow: hidden !important;
+}
+
+.dark .prose .shiki {
+  border-color: rgb(75 85 99) !important;
+  /* gray-600 */
+}
+
+.prose .shiki pre {
+  margin: 0 !important;
+  padding: 1rem !important;
+  overflow-x: auto !important;
+  font-size: 0.875rem !important;
+  line-height: 1.5 !important;
+  font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace !important;
+  background: transparent !important;
+}
+
+.prose .shiki code {
+  font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace !important;
+  background: transparent !important;
+  padding: 0 !important;
+  border: none !important;
+  border-radius: 0 !important;
 }
 
 /* Highlighted lines */
