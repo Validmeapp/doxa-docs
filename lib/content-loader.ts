@@ -346,7 +346,41 @@ export class ContentLoader {
       return this.getHomeDocument(locale, version);
     }
     
+    // Ensure content map is built for proper link validation
+    await this.ensureContentMapBuilt();
+    
     return this.findContentBySlug(slug, locale, version);
+  }
+
+  /**
+   * Ensures the content map is built for the MDX processor
+   * This is needed for proper link validation when loading individual files
+   */
+  private contentMapBuilt = false;
+  
+  private async ensureContentMapBuilt(): Promise<void> {
+    if (this.contentMapBuilt) {
+      return;
+    }
+    
+    const files = this.discoverContentFiles();
+    const contentMap = new Map<string, string>();
+    
+    for (const filePath of files) {
+      try {
+        const fileContent = fs.readFileSync(filePath, 'utf-8');
+        const { data: frontmatter, content: markdownContent } = matter(fileContent);
+        const relativePath = path.relative(this.contentDir, filePath);
+        const slug = frontmatter.slug || this.generateSlug(relativePath);
+        contentMap.set(slug, markdownContent);
+      } catch (error) {
+        console.error(`Error reading file for content map ${filePath}:`, error);
+      }
+    }
+    
+    // Update MDX processor with content map for link validation
+    mdxProcessor.updateContentPages(contentMap);
+    this.contentMapBuilt = true;
   }
 
   /**
@@ -357,6 +391,9 @@ export class ContentLoader {
     const indexFilePath = await this.findIndexFile(locale, version);
     
     if (indexFilePath) {
+      // Ensure content map is built for proper link validation
+      await this.ensureContentMapBuilt();
+      
       // Load the actual index.mdx file
       return this.loadContentFile(indexFilePath);
     }

@@ -68,16 +68,30 @@ class ContentValidator {
       slug = slug.replace(/\\/g, '/');
       slug = slug.replace(/\/index$/, '');
       
-      // Extract just the filename part for the slug (without locale/version path)
+      // Extract the path after locale/version (same as ContentLoader.generateSlug)
       const parts = slug.split('/');
+      
       if (parts.length >= 3) {
-        // Return just the filename part (last segment)
-        const filename = parts[parts.length - 1];
+        // Skip locale and version, return the rest of the path
+        const contentSlug = parts.slice(2).join('/');
         const locale = parts[0];
+        const version = parts[1];
         
         // Add the actual route paths that will work
-        this.validPaths.add(`/${locale}/docs/${filename}`);
-        this.validPaths.add(`/docs/${filename}`);
+        this.validPaths.add(`/${locale}/docs/${version}/${contentSlug}`);
+        this.validPaths.add(`/docs/${version}/${contentSlug}`);
+        
+        // Also add without version for backwards compatibility
+        this.validPaths.add(`/${locale}/docs/${contentSlug}`);
+        this.validPaths.add(`/docs/${contentSlug}`);
+      } else if (parts.length === 2) {
+        // This is an index file (locale/version only)
+        const locale = parts[0];
+        const version = parts[1];
+        this.validPaths.add(`/${locale}/docs/${version}`);
+        this.validPaths.add(`/${locale}/docs`);
+        this.validPaths.add(`/docs/${version}`);
+        this.validPaths.add(`/docs`);
       }
       
       // Also add the original file-based path for backwards compatibility
