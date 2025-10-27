@@ -26,7 +26,7 @@ async function main() {
       locale: 'en',
       version: 'v1',
       resultsCount: 5,
-      clickedResultPath: '/en/v1/authentication'
+      clickedResultPath: '/en/docs/v1/authentication'
     });
 
     console.log('✅ Logged test search queries');

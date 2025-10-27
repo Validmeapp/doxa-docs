@@ -1,0 +1,613 @@
+---
+title: "API Reference - Requests"
+description: "Referencia completa de endpoints para crear y gestionar solicitudes"
+version: "v1"
+locale: "es"
+order: 2
+category: "developer-guide"
+subcategory: "api-reference"
+lastUpdated: "2025-10-26"
+icon: "api"
+---
+
+# Requests API Reference
+
+Referencia técnica completa para trabajar con solicitudes de validación.
+
+---
+
+## 📍 Base URL
+
+```
+Desarrollo: https://dev.api.validme.tech
+Producción: https://api.validme.tech
+```
+
+## 🔐 Autenticación
+
+Todos los requests requieren el header:
+
+```
+x-vm-authorization: Bearer YOUR_API_TOKEN
+Content-Type: application/json
+```
+
+---
+
+## 1. POST /requests
+
+### Crear Nueva Solicitud
+
+Inicia una nueva validación.
+
+**Endpoint:**
+```
+POST https://api.validme.tech/requests
+```
+
+**Headers:**
+```
+x-vm-authorization: Bearer sk_live_...
+Content-Type: application/json
+```
+
+### Request Body
+
+#### Parámetros Requeridos
+
+| Parámetro | Tipo | Descripción |
+|-----------|------|-------------|
+| `phoneNumber` | string | Teléfono del usuario con código de país (ej: `+59165890904`) |
+| `description` | string | Descripción clara del motivo de validación |
+| `category` | string | `DOCUMENT_VALIDATION`, `CONSENT`, `SESSION` |
+| `callbackUrls` | array | URLs donde recibirás webhooks |
+
+#### Parámetros Condicionales
+
+**Opción A: Especificar tipos de verificación**
+```
+"verificationTypes": ["NATIONAL_ID", "SELFIE"]
+```
+
+**Opción B: Usar Flow Predefinido**
+```
+"flowId": "flow_68d85ee81c623d111e303c5e"
+```
+
+#### Parámetros Opcionales
+
+| Parámetro | Tipo | Descripción |
+|-----------|------|-------------|
+| `metadata` | object | Datos personalizados para tu referencia |
+| `acceptanceMode` | string | `BUTTON` (default), `OTP`, `CHOICE` |
+| `mode` | string | `PAYLOAD`, `FILES`, `ALL` (default) |
+
+### Request Body - Ejemplo
+
+```json
+{
+  "verificationTypes": ["NATIONAL_ID", "SELFIE"],
+  "phoneNumber": "+59165890904",
+  "description": "Validación KYC - Apertura de cuenta",
+  "category": "DOCUMENT_VALIDATION",
+  "acceptanceMode": "BUTTON",
+  "callbackUrls": [
+    "https://tuapi.com/webhooks/validme"
+  ],
+  "metadata": {
+    "customerId": "user_123",
+    "referenceCode": "KYC-2025-001",
+    "department": "Compliance"
+  }
+}
+```
+
+### Response - 201 Created
+
+```json
+{
+  "success": true,
+  "data": {
+    "_id": "68f41f9221765dd7a4102dd6",
+    "accountId": "68e56f7e8a624a901884b831",
+    "organizationId": "68d85ee81c623d111e303c5e",
+    "code": "ABC123",
+    "status": "PENDING",
+    "verifications": [
+      {
+        "status": "PENDING",
+        "type": "NATIONAL_ID"
+      },
+      {
+        "status": "PENDING",
+        "type": "SELFIE"
+      }
+    ],
+    "mode": "ALL",
+    "acceptanceMode": "BUTTON",
+    "category": "DOCUMENT_VALIDATION",
+    "callbackUrls": [
+      "https://tuapi.com/webhooks/validme"
+    ],
+    "metadata": {
+      "customerId": "user_123",
+      "referenceCode": "KYC-2025-001"
+    },
+    "statusTransitions": [
+      {
+        "status": "PENDING",
+        "description": "Request created",
+        "timestamp": "2025-10-26T15:30:00.000Z"
+      }
+    ],
+    "createdAt": "2025-10-26T15:30:00.000Z",
+    "updatedAt": "2025-10-26T15:30:00.000Z"
+  }
+}
+```
+
+### Response Fields
+
+| Campo | Tipo | Descripción |
+|-------|------|-------------|
+| `_id` | string | ID único del request |
+| `code` | string | Código de 6 dígitos para usuario |
+| `status` | enum | Estado actual (PENDING, CONFIRMED, etc) |
+| `verifications` | array | Array de verificaciones |
+| `statusTransitions` | array | Histórico de cambios de estado |
+
+---
+
+## 2. GET /requests/:id
+
+### Obtener Solicitud Individual
+
+Recupera el estado y detalles de una solicitud.
+
+**Endpoint:**
+```
+GET https://api.validme.tech/requests/68f41f9221765dd7a4102dd6
+```
+
+**Headers:**
+```
+x-vm-authorization: Bearer sk_live_...
+```
+
+### Response - 200 OK
+
+```json
+{
+  "success": true,
+  "data": {
+    "_id": "68f41f9221765dd7a4102dd6",
+    "status": "SUCCESS",
+    "code": "ABC123",
+    "verifications": [
+      {
+        "status": "SUCCESS",
+        "type": "NATIONAL_ID",
+        "confidence": 0.98
+      },
+      {
+        "status": "SUCCESS",
+        "type": "SELFIE",
+        "confidence": 0.96
+      }
+    ],
+    "statusTransitions": [
+      {
+        "status": "PENDING",
+        "description": "Request created",
+        "timestamp": "2025-10-26T15:30:00.000Z"
+      },
+      {
+        "status": "CONFIRMED",
+        "timestamp": "2025-10-26T15:35:00.000Z"
+      },
+      {
+        "status": "SENDING",
+        "timestamp": "2025-10-26T15:36:00.000Z"
+      },
+      {
+        "status": "SUCCESS",
+        "timestamp": "2025-10-26T15:45:00.000Z"
+      }
+    ],
+    "metadata": {
+      "customerId": "user_123"
+    },
+    "createdAt": "2025-10-26T15:30:00.000Z",
+    "updatedAt": "2025-10-26T15:45:00.000Z"
+  }
+}
+```
+
+---
+
+## 3. GET /requests
+
+### Listar Solicitudes
+
+Recupera un listado de solicitudes con paginación.
+
+**Endpoint:**
+```
+GET https://api.validme.tech/requests
+```
+
+**Query Parameters:**
+
+| Parámetro | Tipo | Descripción |
+|-----------|------|-------------|
+| `page` | integer | Número de página (default: 1) |
+| `limit` | integer | Resultados por página (default: 20, max: 100) |
+| `status` | string | Filtrar por estado (PENDING, SUCCESS, FAILED, etc) |
+| `from` | date | Filtrar desde fecha (ISO 8601) |
+| `to` | date | Filtrar hasta fecha (ISO 8601) |
+| `sortBy` | string | Campo para ordenar (createdAt, status) |
+| `order` | string | `asc` o `desc` |
+
+### Ejemplo de Query
+
+```
+GET https://api.validme.tech/requests?page=1&limit=20&status=SUCCESS&from=2025-10-01&to=2025-10-31&sortBy=createdAt&order=desc
+```
+
+### Response - 200 OK
+
+```json
+{
+  "success": true,
+  "data": {
+    "requests": [
+      {
+        "_id": "68f41f9221765dd7a4102dd6",
+        "status": "SUCCESS",
+        "code": "ABC123",
+        "phoneNumber": "+59165890904",
+        "metadata": { "customerId": "user_123" },
+        "createdAt": "2025-10-26T15:30:00.000Z",
+        "updatedAt": "2025-10-26T15:45:00.000Z"
+      },
+      {
+        "_id": "68f41f9221765dd7a4102dd7",
+        "status": "PENDING",
+        "code": "DEF456",
+        "phoneNumber": "+59162345678",
+        "metadata": { "customerId": "user_124" },
+        "createdAt": "2025-10-26T14:00:00.000Z",
+        "updatedAt": "2025-10-26T14:00:00.000Z"
+      }
+    ],
+    "pagination": {
+      "page": 1,
+      "limit": 20,
+      "total": 245,
+      "pages": 13
+    }
+  }
+}
+```
+
+---
+
+## 4. DELETE /requests/:id
+
+### Cancelar Solicitud
+
+Cancela una solicitud pendiente (antes de que usuario confirme).
+
+**Endpoint:**
+```
+DELETE https://api.validme.tech/requests/68f41f9221765dd7a4102dd6
+```
+
+**Headers:**
+```
+x-vm-authorization: Bearer sk_live_...
+```
+
+### Response - 200 OK
+
+```json
+{
+  "success": true,
+  "data": {
+    "_id": "68f41f9221765dd7a4102dd6",
+    "status": "CANCELLED",
+    "message": "Request cancelled successfully",
+    "deletedAt": "2025-10-26T16:00:00.000Z"
+  }
+}
+```
+
+### Estados Cancelables
+
+```
+✓ PENDING - Puedes cancelar
+✓ CONFIRMED - Puedes cancelar
+✗ SENDING - No puedes cancelar
+✗ SUCCESS - No puedes cancelar (finalizado)
+✗ FAILED - Ya está cancelado
+✗ REJECTED - Ya está cancelado
+✗ EXPIRED - Ya está cancelado
+```
+
+---
+
+## Estados del Request
+
+### Diagrama de Estados
+
+```
+PENDING ─────────→ CONFIRMED ────────→ SENDING ────────→ SUCCESS
+  ↓                                                          ✓
+  └────────────────────────────────────────────────────────┘
+  
+REJECTED (usuario rechaza)
+EXPIRED (tiempo excedido, 24h)
+FAILED (validación no aprobada)
+INVALIDATED (usuario ingresa OTP incorrecto)
+```
+
+### Significado de Estados
+
+| Estado | Significado |
+|--------|-------------|
+| **PENDING** | Request creado, esperando usuario |
+| **CONFIRMED** | Usuario confirmó recibir SMS/link |
+| **SENDING** | Usuario está cargando documentos |
+| **SUCCESS** | Validación completada exitosamente ✅ |
+| **REJECTED** | Usuario rechazó la solicitud ❌ |
+| **EXPIRED** | Solicitud expiró (24 horas sin uso) |
+| **FAILED** | Validación fallida (documentos rechazados) |
+| **INVALIDATED** | Usuario ingresó OTP incorrecto |
+
+---
+
+## Verification Types
+
+### Tipos Disponibles
+
+| Tipo | Descripción | Región |
+|------|-------------|--------|
+| `NATIONAL_ID` | Cédula de identidad | Bolivia, Perú, Colombia |
+| `PASSPORT` | Pasaporte | Global |
+| `DRIVER_LICENSE` | Licencia de conducción | Varios |
+| `SELFIE` | Selfie de validación | Global |
+| `SELFIE_VIDEO` | Video con instrucciones | Global |
+
+---
+
+## Parámetros de Respuesta
+
+### Metadata
+
+Parámetros personalizados que guardas con cada request:
+
+```javascript
+"metadata": {
+  "customerId": "12345",
+  "referenceCode": "KYC-2025-001",
+  "department": "Compliance",
+  // ... cualquier dato que necesites
+}
+```
+
+Se devuelven sin cambios en respuestas y webhooks.
+
+### Acceptance Modes
+
+| Modo | Descripción |
+|------|-------------|
+| `BUTTON` | Usuario ve botón "Aceptar" |
+| `OTP` | Usuario ingresa OTP de 6 dígitos |
+| `CHOICE` | Usuario elige aceptar/rechazar |
+
+---
+
+## Ejemplos de Código
+
+### JavaScript/Node.js
+
+```javascript
+const axios = require('axios');
+
+async function createRequest() {
+  try {
+    const response = await axios.post(
+      'https://api.validme.tech/requests',
+      {
+        verificationTypes: ['NATIONAL_ID', 'SELFIE'],
+        phoneNumber: '+59165890904',
+        description: 'Validación KYC',
+        category: 'DOCUMENT_VALIDATION',
+        acceptanceMode: 'BUTTON',
+        callbackUrls: ['https://tuapi.com/webhooks/validme'],
+        metadata: {
+          customerId: 'user_123',
+          reference: 'KYC-2025-001'
+        }
+      },
+      {
+        headers: {
+          'x-vm-authorization': `Bearer ${process.env.VALIDME_API_TOKEN}`,
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+    
+    console.log('Request created:', response.data.data._id);
+    console.log('User code:', response.data.data.code);
+    
+    return response.data.data;
+  } catch (error) {
+    console.error('Error:', error.response.data);
+  }
+}
+```
+
+### Python
+
+```python
+import requests
+import os
+
+def create_request():
+    api_url = 'https://api.validme.tech/requests'
+    api_token = os.getenv('VALIDME_API_TOKEN')
+    
+    headers = {
+        'x-vm-authorization': f'Bearer {api_token}',
+        'Content-Type': 'application/json'
+    }
+    
+    payload = {
+        'verificationTypes': ['NATIONAL_ID', 'SELFIE'],
+        'phoneNumber': '+59165890904',
+        'description': 'Validación KYC',
+        'category': 'DOCUMENT_VALIDATION',
+        'acceptanceMode': 'BUTTON',
+        'callbackUrls': ['https://tuapi.com/webhooks/validme'],
+        'metadata': {
+            'customerId': 'user_123',
+            'reference': 'KYC-2025-001'
+        }
+    }
+    
+    response = requests.post(api_url, json=payload, headers=headers)
+    
+    if response.status_code == 201:
+        data = response.json()['data']
+        print(f"Request created: {data['_id']}")
+        print(f"User code: {data['code']}")
+        return data
+    else:
+        print(f"Error: {response.json()}")
+```
+
+### cURL
+
+```bash
+curl -X POST https://api.validme.tech/requests \
+  -H "x-vm-authorization: Bearer sk_live_..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "verificationTypes": ["NATIONAL_ID", "SELFIE"],
+    "phoneNumber": "+59165890904",
+    "description": "Validación KYC",
+    "category": "DOCUMENT_VALIDATION",
+    "acceptanceMode": "BUTTON",
+    "callbackUrls": ["https://tuapi.com/webhooks/validme"],
+    "metadata": {
+      "customerId": "user_123",
+      "reference": "KYC-2025-001"
+    }
+  }'
+```
+
+---
+
+## Códigos de Error
+
+### 400 Bad Request
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "INVALID_PHONE_NUMBER",
+    "message": "Phone number format is invalid",
+    "detail": "Expected format: +[country][number]"
+  }
+}
+```
+
+### 401 Unauthorized
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "INVALID_TOKEN",
+    "message": "API token is invalid or expired"
+  }
+}
+```
+
+### 404 Not Found
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "REQUEST_NOT_FOUND",
+    "message": "Request with ID 68f41f9221765dd7a4102dd6 not found"
+  }
+}
+```
+
+---
+
+## Rate Limiting
+
+### Límites
+
+```
+Plan Starter: 100 requests/min
+Plan Professional: 500 requests/min
+Plan Enterprise: Sin límite (personalizado)
+```
+
+### Headers de Rate Limit
+
+```
+X-RateLimit-Limit: 500
+X-RateLimit-Remaining: 487
+X-RateLimit-Reset: 2025-10-26T16:05:00Z
+```
+
+### Excediendo Límite
+
+```
+HTTP/1.1 429 Too Many Requests
+
+{
+  "success": false,
+  "error": {
+    "code": "RATE_LIMIT_EXCEEDED",
+    "message": "Too many requests, retry after 60 seconds"
+  }
+}
+```
+
+---
+
+## Mejores Prácticas
+
+### ✅ DO
+
+- ✓ Validar números de teléfono antes de enviar
+- ✓ Guardar `_id` del request en tu BD
+- ✓ Usar `metadata` para referencias internas
+- ✓ Implementar retry logic con backoff exponencial
+
+### ❌ DON'T
+
+- ✗ No exponer API Token en frontend
+- ✗ No hacer requests en bucles sin delay
+- ✗ No ignorar webhooks de erro
+- ✗ No guardar datos sensibles en metadata
+
+---
+
+## Próximos Pasos
+
+- [Webhooks Reference](/es/docs/v1/developer-guide/webhooks)
+- [Error Codes](/es/docs/v1/developer-guide/api-reference/errors)
+- [Security Guide](/es/docs/v1/developer-guide/security/encryption)
+
+---
+
+**Última actualización**: 26 de octubre, 2025

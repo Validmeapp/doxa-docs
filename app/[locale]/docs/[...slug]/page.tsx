@@ -1,10 +1,12 @@
 import { Metadata } from 'next';
-import { notFound } from 'next/navigation';
-import { getContentBySlug, getAllContentSlugs } from '@/lib/content-loader';
+import { notFound, redirect } from 'next/navigation';
+import { getContentBySlug, getAllContentSlugs, contentLoader } from '@/lib/content-loader';
 import { generateDocumentationMetadata, generateDocumentationJsonLd } from '@/lib/metadata-generator';
 import { generateContentStructuredData, generateRichSnippets } from '@/lib/structured-data-extractor';
 import { StructuredData } from '@/components/structured-data';
 import { SyntaxHighlighter } from '@/components/syntax-highlighter';
+import { MissingHomePage } from '@/components/missing-home-page';
+import { ContentRenderer } from '@/components/content-renderer';
 
 import { type Locale, locales } from '@/lib/locale-config';
 
@@ -63,9 +65,10 @@ export async function generateMetadata({
       actualSlug = '';
     }
     
-    const content = await getContentBySlug(locale as Locale, 'v1', actualSlug);
+    // Use enhanced ContentLoader method
+    const content = await contentLoader.getContentBySlug(locale as Locale, 'v1', actualSlug);
     
-    if (!content) {
+    if (!content || content.frontmatter.title === 'Missing Home Document') {
       return {};
     }
 
@@ -76,7 +79,7 @@ export async function generateMetadata({
       content.frontmatter
     );
   } catch (error) {
-    console.error('Error generating metadata:', error);
+    console.error('Error generating metadata for documentation page:', error);
     return {};
   }
 }
@@ -89,25 +92,16 @@ export default async function DocumentationPage({
     notFound();
   }
 
+  // Handle empty slug array as home document request
+  if (!slug || slug.length === 0) {
+    // Redirect to the main docs page
+    redirect(`/${locale}/docs`);
+  }
+
   // Handle special case where slug is just ['v1'] - redirect to docs overview
   if (slug.length === 1 && slug[0] === 'v1') {
-    // In development, we can't use redirect() with static export, so we'll show a message
-    if (process.env.NODE_ENV === 'development') {
-      return (
-        <div className="space-y-4">
-          <h1 className="text-4xl font-bold">Documentation v1</h1>
-          <p className="text-muted-foreground">
-            You're viewing the v1 documentation. Navigate to specific pages:
-          </p>
-          <ul className="space-y-2">
-            <li><a href={`/${locale}/docs/overview`} className="text-primary hover:underline">Overview</a></li>
-            <li><a href={`/${locale}/docs/authentication`} className="text-primary hover:underline">Authentication</a></li>
-            <li><a href={`/${locale}/docs/getting-started`} className="text-primary hover:underline">Getting Started</a></li>
-          </ul>
-        </div>
-      );
-    }
-    notFound();
+    // Redirect to the main docs page for v1
+    redirect(`/${locale}/docs`);
   }
 
   try {
@@ -121,10 +115,17 @@ export default async function DocumentationPage({
       actualSlug = '';
     }
     
-    const content = await getContentBySlug(locale as Locale, 'v1', actualSlug);
+    // Use enhanced ContentLoader method for better error handling
+    const content = await contentLoader.getContentBySlug(locale as Locale, 'v1', actualSlug);
     
     if (!content) {
+      console.warn(`Content not found for slug: ${actualSlug}, locale: ${locale}, version: v1`);
       notFound();
+    }
+
+    // If this is somehow a missing home document (shouldn't happen in slug routes), redirect
+    if (content.frontmatter.title === 'Missing Home Document') {
+      redirect(`/${locale}/docs`);
     }
 
     // Generate breadcrumbs for structured data
@@ -216,9 +217,9 @@ export default async function DocumentationPage({
             )}
           </header>
           
-          <div 
+          <ContentRenderer 
+            content={content.content}
             className="prose prose-lg max-w-none dark:prose-invert"
-            dangerouslySetInnerHTML={{ __html: content.content }}
           />
           
           {content.frontmatter.lastModified && (
@@ -234,7 +235,32 @@ export default async function DocumentationPage({
       </>
     );
   } catch (error) {
-    console.error('Error loading content:', error);
-    notFound();
+    console.error('Error loading documentation page:', error);
+    
+    // Check if this is a content loading error vs a system error
+    if (error instanceof Error && error.message.includes('not found')) {
+      notFound();
+    }
+    
+    // For other errors, show a more user-friendly error page
+    return (
+      <div className="prose prose-slate max-w-none dark:prose-invert">
+        <div className="not-prose mb-8">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-red-100 dark:bg-red-900/20">
+              <span className="text-red-600 dark:text-red-400 text-xl">⚠️</span>
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold text-foreground mb-1">
+                Error Loading Page
+              </h1>
+              <p className="text-muted-foreground">
+                An error occurred while loading this documentation page. Please try refreshing or go back to the <a href={`/${locale}/docs`} className="text-primary hover:underline">documentation home</a>.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   }
 }

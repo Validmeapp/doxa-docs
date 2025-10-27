@@ -26,7 +26,7 @@ export class ContentLoader {
 
     // Check required fields
     for (const field of requiredFields) {
-      if (!frontmatter[field]) {
+      if (frontmatter[field] === undefined || frontmatter[field] === null) {
         errors.push({
           field,
           message: `Required field '${field}' is missing`,
@@ -263,6 +263,11 @@ export class ContentLoader {
       return parts.slice(2).join('/');
     }
     
+    // If this is just locale/version (index file), return empty string
+    if (parts.length === 2) {
+      return '';
+    }
+    
     return slug;
   }
 
@@ -333,9 +338,198 @@ export class ContentLoader {
 
   /**
    * Gets content by slug for a specific locale and version
+   * If slug is empty, returns the home document
    */
   public async getContentBySlug(locale: string, version: string, slug: string): Promise<ContentPage | null> {
+    // Handle empty slug as home document request
+    if (!slug || slug === '' || slug === '/') {
+      return this.getHomeDocument(locale, version);
+    }
+    
+    // Ensure content map is built for proper link validation
+    await this.ensureContentMapBuilt();
+    
     return this.findContentBySlug(slug, locale, version);
+  }
+
+  /**
+   * Ensures the content map is built for the MDX processor
+   * This is needed for proper link validation when loading individual files
+   */
+  private contentMapBuilt = false;
+  
+  private async ensureContentMapBuilt(): Promise<void> {
+    if (this.contentMapBuilt) {
+      return;
+    }
+    
+    const files = this.discoverContentFiles();
+    const contentMap = new Map<string, string>();
+    
+    for (const filePath of files) {
+      try {
+        const fileContent = fs.readFileSync(filePath, 'utf-8');
+        const { data: frontmatter, content: markdownContent } = matter(fileContent);
+        const relativePath = path.relative(this.contentDir, filePath);
+        const slug = frontmatter.slug || this.generateSlug(relativePath);
+        contentMap.set(slug, markdownContent);
+      } catch (error) {
+        console.error(`Error reading file for content map ${filePath}:`, error);
+      }
+    }
+    
+    // Update MDX processor with content map for link validation
+    mdxProcessor.updateContentPages(contentMap);
+    this.contentMapBuilt = true;
+  }
+
+  /**
+   * Gets the home document for a specific locale and version
+   * Returns index.mdx content if it exists, otherwise returns friendly fallback
+   */
+  public async getHomeDocument(locale: string, version: string): Promise<ContentPage | null> {
+    const indexFilePath = await this.findIndexFile(locale, version);
+    
+    if (indexFilePath) {
+      // Ensure content map is built for proper link validation
+      await this.ensureContentMapBuilt();
+      
+      // Load the actual index.mdx file
+      return this.loadContentFile(indexFilePath);
+    }
+    
+    // Generate friendly fallback content
+    const fallbackContent = this.generateMissingHomeContent(locale, version);
+    const slug = ''; // Home document has empty slug
+    
+    // Create a synthetic ContentPage for the fallback
+    const fallbackPage: ContentPage = {
+      frontmatter: {
+        title: 'Missing Home Document',
+        description: `Home document for ${locale}/${version} is missing`,
+        version,
+        locale,
+        order: 0,
+      },
+      content: fallbackContent,
+      slug,
+      filePath: `content/${locale}/${version}/index.mdx`,
+      tableOfContents: [],
+    };
+    
+    return fallbackPage;
+  }
+
+  /**
+   * Finds the index.mdx file for a specific locale and version
+   * Returns the full file path if found, null otherwise
+   */
+  public async findIndexFile(locale: string, version: string): Promise<string | null> {
+    const possiblePaths = [
+      path.join(this.contentDir, locale, version, 'index.mdx'),
+      path.join(this.contentDir, locale, version, 'index.md'),
+    ];
+    
+    for (const filePath of possiblePaths) {
+      if (fs.existsSync(filePath)) {
+        return filePath;
+      }
+    }
+    
+    return null;
+  }
+
+  /**
+   * Generates friendly fallback content when index.mdx is missing
+   */
+  public generateMissingHomeContent(locale: string, version: string): string {
+    // Get available content in this locale/version for suggestions
+    const availableContent = this.getAvailableContentForLocaleVersion(locale, version);
+    
+    const contentList = availableContent.length > 0 
+      ? availableContent.map(slug => `- [${this.formatSlugTitle(slug)}](/${locale}/${version}/docs/${slug})`).join('\n')
+      : '- No content available yet';
+
+    return `# Missing Home Document
+
+Welcome to the documentation for **${locale}/${version}**.
+
+## What's Missing?
+
+This documentation section is missing its home page. To fix this, create an \`index.mdx\` file at:
+
+\`\`\`
+content/${locale}/${version}/index.mdx
+\`\`\`
+
+## Available Content
+
+Here's what's currently available in this section:
+
+${contentList}
+
+## How to Create a Home Page
+
+1. Create a new file: \`content/${locale}/${version}/index.mdx\`
+2. Add frontmatter with required fields:
+
+\`\`\`yaml
+---
+title: "Your Home Page Title"
+description: "Description of this documentation section"
+version: "${version}"
+locale: "${locale}"
+order: 1
+---
+\`\`\`
+
+3. Add your content below the frontmatter using Markdown or MDX syntax
+
+## Need Help?
+
+Check the existing content structure for examples, or refer to the documentation authoring guide.`;
+  }
+
+  /**
+   * Gets available content slugs for a specific locale/version (synchronous helper)
+   */
+  private getAvailableContentForLocaleVersion(locale: string, version: string): string[] {
+    const files = this.discoverContentFiles();
+    const slugs: string[] = [];
+    
+    for (const filePath of files) {
+      try {
+        const fileContent = fs.readFileSync(filePath, 'utf-8');
+        const { data: frontmatter } = matter(fileContent);
+        
+        if (frontmatter.locale === locale && frontmatter.version === version) {
+          const relativePath = path.relative(this.contentDir, filePath);
+          const slug = frontmatter.slug || this.generateSlug(relativePath);
+          
+          // Don't include empty slugs (home documents) in the list
+          if (slug && slug !== '') {
+            slugs.push(slug);
+          }
+        }
+      } catch (error) {
+        // Skip files that can't be parsed
+        continue;
+      }
+    }
+    
+    return slugs.sort();
+  }
+
+  /**
+   * Formats a slug into a human-readable title
+   */
+  private formatSlugTitle(slug: string): string {
+    return slug
+      .split('/')
+      .map(part => part.split('-').map(word => 
+        word.charAt(0).toUpperCase() + word.slice(1)
+      ).join(' '))
+      .join(' > ');
   }
 
   /**

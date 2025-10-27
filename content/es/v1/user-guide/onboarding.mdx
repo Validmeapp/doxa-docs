@@ -1,0 +1,399 @@
+---
+title: "Guía de Onboarding"
+description: "Configuración inicial de tu empresa en ValidMe (15 min)"
+version: "v1"
+locale: "es"
+order: 2
+category: "user-guide"
+lastUpdated: "2025-10-26"
+readTime: "15 min"
+icon: "check-circle"
+---
+
+# Guía de Onboarding: Primeros Pasos
+
+Bienvenido a ValidMe. Esta guía te llevará a través de la configuración inicial de tu empresa en **15 minutos**.
+
+## 📋 Requisitos Previos
+
+Antes de comenzar, asegúrate de tener:
+
+- ✅ Acceso a email corporativo
+- ✅ Datos básicos de tu empresa (nombre, país, sitio web)
+- ✅ Navegador web actualizado
+- ✅ (Opcional) Números de teléfono para recibir SMS
+
+## 🎯 Resumen del Proceso
+
+```
+Invitación por Email
+        ↓
+Crear Cuenta
+        ↓
+Verificar Email
+        ↓
+Información Empresarial
+        ↓
+Generar Claves RSA
+        ↓
+Crear API Token
+        ↓
+✅ ¡Listo!
+```
+
+---
+
+## Paso 1: Recibir Invitación
+
+Deberías haber recibido un email de invitación a tu bandeja de entrada.
+
+### Contenido del Email
+
+```
+De: noreply@validme.tech
+Asunto: "Invitación a ValidMe - [Tu Empresa]"
+
+Incluye:
+- Enlace de invitación única
+- Código temporal de acceso
+- Instrucciones básicas
+- Link de soporte
+```
+
+### ¿No Recibiste el Email?
+
+1. Revisa la carpeta de **Spam/Promociones**
+2. Intenta agregar `@validme.tech` a contactos
+3. [Contacta soporte](/es/docs/v1/support/contact)
+
+---
+
+## Paso 2: Crear tu Cuenta
+
+### Haz clic en el enlace de invitación
+
+Te dirigirá a la página de registro.
+
+```
+URL: https://backoffice.validme.tech/onboarding/verify-invite
+```
+
+### Completa el Formulario
+
+| Campo | Descripción | Ejemplo |
+|-------|-------------|---------|
+| **Nombre Completo** | Tu nombre real | Juan García López |
+| **Email** | Email de trabajo | juan@tuempresa.com |
+| **Contraseña** | Mínimo 12 caracteres | P@ssw0rd!Segura123 |
+| **Confirmación** | Repite la contraseña | P@ssw0rd!Segura123 |
+
+### 🔐 Requisitos de Contraseña
+
+La contraseña debe contener:
+- ✓ Mínimo 12 caracteres
+- ✓ Al menos 1 letra mayúscula
+- ✓ Al menos 1 número
+- ✓ Al menos 1 carácter especial (!@#$%)
+
+**Recomendación**: Usa un gestor de contraseñas.
+
+---
+
+## Paso 3: Verificar tu Email
+
+Después de crear la cuenta, recibirás un email de verificación.
+
+### Email de Verificación
+
+```
+Asunto: "Verifica tu email en ValidMe"
+
+Contenido:
+Haz clic en el botón:
+[VERIFICAR EMAIL]
+
+O copia este código:
+ABC123XYZ789
+```
+
+### Cómo Verificar
+
+**Opción 1: Haz clic en el botón**
+- Abre el email
+- Haz clic en "VERIFICAR EMAIL"
+- Automáticamente confirmado ✅
+
+**Opción 2: Usa el código**
+- Copia el código del email
+- Pega en la página de validación
+- Haz clic en "Verificar"
+
+⏱️ **El código expira en 24 horas**
+
+---
+
+## Paso 4: Configurar Información de tu Empresa
+
+Una vez verificado, completa los datos de tu empresa.
+
+### Formulario de Empresa
+
+#### Sección 1: Información Básica
+
+| Campo | Descripción | Requerido |
+|-------|-------------|-----------|
+| **Nombre de Empresa** | Nombre legal | ✅ Sí |
+| **Número de Registro** | RUT, RFC, etc | ✅ Sí |
+| **País** | Ubicación principal | ✅ Sí |
+| **Industria** | Sector (Fintech, Marketplace, etc) | ✅ Sí |
+| **Sitio Web** | www.tuempresa.com | ⚠️ Recomendado |
+
+#### Sección 2: Contacto
+
+| Campo | Descripción | Requerido |
+|-------|-------------|-----------|
+| **Email de Contacto** | Para notificaciones importantes | ✅ Sí |
+| **Teléfono** | Con código de país (+591...) | ⚠️ Recomendado |
+| **Dirección** | Dirección registrada | ✅ Sí |
+
+#### Sección 3: Tipo de Servicio
+
+Selecciona cuál es tu caso de uso principal:
+
+- 🏦 **Fintech** - Servicios financieros
+- 🛍️ **Marketplace** - Plataforma de vendedores
+- ✈️ **Viajes** - Reservas y tours
+- 🎰 **Entretenimiento** - Casinos, juegos
+- 📱 **Otro** - Especifica
+
+### 💡 Consejos
+
+- ✓ Usa datos exactamente como aparecen en documentos legales
+- ✓ Verifica números de teléfono antes de guardar
+- ✓ El email de contacto será usado para notificaciones críticas
+
+---
+
+## Paso 5: Generar Claves RSA
+
+Las claves RSA son fundamentales para la seguridad de tus datos.
+
+### ¿Por Qué son Necesarias?
+
+Los archivos y datos sensibles que recibes a través de webhooks estarán **encriptados** con tu clave pública. Solo tú (con tu clave privada) puedes desencriptarlos.
+
+### Generar las Claves
+
+1. Ve a **Settings** → **RSA Key Management**
+2. Haz clic en **Generar Nuevo Par de Claves**
+3. Se crearán automáticamente:
+   - 🔒 **Clave Privada** (guárdala secretamente)
+   - 🔑 **Clave Pública** (se guarda en nuestros servidores)
+
+### 📥 Descargar Clave Privada
+
+```
+Contenido del archivo (ejemplo):
+-----BEGIN PRIVATE KEY-----
+MIIEvQIBADANBgkqhkiG9w0BAQEFAASCA...
+...más líneas...
+-----END PRIVATE KEY-----
+```
+
+### ⚠️ Importante: Seguridad
+
+**NUNCA compartir tu clave privada:**
+- ❌ No la compartas por email
+- ❌ No la subas a repositorios públicos
+- ❌ No la guardes en texto plano
+
+**DO:**
+- ✅ Guárdala en un lugar seguro
+- ✅ Usa variables de entorno en producción
+- ✅ Rota claves cada 6 meses
+
+### Guardar Clave Privada Seguramente
+
+**En Producción:**
+```bash
+# Almacena en variables de entorno
+export VALIDME_PRIVATE_KEY="tu-clave-privada"
+
+# O en un .env file (NO COMMITS)
+VALIDME_PRIVATE_KEY=tu-clave-privada
+```
+
+**En Desarrollo Local:**
+```
+proyecto/
+├── .env.local (git-ignore)
+├── keys/
+│   └── private-key.pem (git-ignore)
+```
+
+---
+
+## Paso 6: Crear tu API Token
+
+El API Token es tu credencial para hacer requests a la API.
+
+### Acceder a API Keys
+
+1. Ve a **Settings** → **API Keys**
+2. Haz clic en **Crear Nuevo Token**
+
+### Crear Token
+
+| Campo | Descripción |
+|-------|-------------|
+| **Nombre** | "Producción" o "Desarrollo" |
+| **Descripción** | "Integración con plataforma móvil" |
+| **Permisos** | Selecciona permisos necesarios |
+| **Expiración** | 90 días / 1 año / Sin expiración |
+
+### Tipos de Tokens
+
+**Desarrollo:**
+- ✓ Usar en pruebas locales
+- ✓ Expiración corta (30 días)
+- ✓ Permisos limitados
+
+**Producción:**
+- ✓ Usar en servidores live
+- ✓ Expiración larga o sin expiración
+- ✓ Todos los permisos
+
+### 📋 Copiar Token
+
+Una vez creado, **cópialo inmediatamente** porque no se mostrará de nuevo.
+
+```
+Token: sk_live_7a9k5L2m3nP4qRsTuVwXyZ1a
+```
+
+### Almacenar Token
+
+```bash
+# Variable de entorno
+export VALIDME_API_KEY="sk_live_7a9k5L2m3nP4qRsTuVwXyZ1a"
+
+# En archivo .env (git-ignore)
+VALIDME_API_KEY=sk_live_7a9k5L2m3nP4qRsTuVwXyZ1a
+```
+
+---
+
+## Paso 7: Configurar Webhook URL
+
+Para recibir eventos en tiempo real, configura tu webhook.
+
+### Acceder a Webhooks
+
+1. Ve a **Settings** → **Webhooks**
+2. Haz clic en **Agregar Webhook**
+
+### Configurar Endpoint
+
+| Campo | Descripción |
+|-------|-------------|
+| **URL** | `https://tuapi.com/webhooks/validme` |
+| **Eventos** | Selecciona qué eventos recibir |
+| **Activo** | Checkbox para habilitar |
+
+### Eventos Disponibles
+
+- ✓ `request.status.pending` - Solicitud creada
+- ✓ `request.status.confirmed` - Usuario confirmó
+- ✓ `request.status.sending` - Usuario cargando datos
+- ✓ `request.document.submitted` - Documento recibido
+- ✓ `request.status.success` - Validación completada
+- ✓ `request.status.rejected` - Usuario rechazó
+- ✓ `request.status.failed` - Validación falló
+
+### Probar Webhook
+
+1. Haz clic en **Test**
+2. Se enviará un event de prueba a tu URL
+3. Deberías recibir un POST HTTP
+
+```
+POST /webhooks/validme HTTP/1.1
+Content-Type: application/json
+
+{
+  "eventType": "test.event",
+  "eventPayload": { ... }
+}
+```
+
+---
+
+## Paso 8: Verificación Final
+
+### Checklist de Completitud
+
+- [ ] Email verificado
+- [ ] Información de empresa completada
+- [ ] Claves RSA generadas y descargadas
+- [ ] API Token creado y guardado
+- [ ] Webhook URL configurada
+- [ ] Email de confirmación recibido
+
+### Dashboard Inicial
+
+Una vez completado, verás:
+
+```
+Welcome to ValidMe!
+
+Tu información:
+├── Empresa: [Nombre Empresa]
+├── API Token: sk_live_***
+├── Claves RSA: ✅ Configuradas
+├── Webhooks: 1 activo
+└── Solicitudes: 0 creadas
+```
+
+---
+
+## ✅ ¡Onboarding Completado!
+
+Felicidades, ya tienes ValidMe configurado.
+
+### Próximos Pasos
+
+**Para Usuarios (Dashboard):**
+1. Explora el [Dashboard](/es/docs/v1/user-guide/manage-account)
+2. Crea tu primer [Request Manual](/es/docs/v1/user-guide/requests)
+3. Revisa [Billing](/es/docs/v1/user-guide/billing)
+
+**Para Desarrolladores:**
+1. Lee [Getting Started](/es/docs/v1/developer-guide/getting-started)
+2. Prueba tu [Primer API Request](/es/docs/v1/developer-guide/examples/javascript)
+3. Implementa [Webhooks](/es/docs/v1/developer-guide/webhooks)
+
+---
+
+## 🆘 Solución de Problemas
+
+### "No recibí el email de invitación"
+→ [Ver solución](/es/docs/v1/support/troubleshooting#no-email-invitacion)
+
+### "Olvidé mi contraseña"
+→ Haz clic en "Recuperar Contraseña" en login
+
+### "¿Cómo roto las claves RSA?"
+→ [Guía de Seguridad](/es/docs/v1/developer-guide/security/encryption#rotacion)
+
+### "Error generando API Token"
+→ [Contacta soporte](/es/docs/v1/support/contact)
+
+---
+
+## 📞 ¿Necesitas Ayuda?
+
+- 📧 [Email de soporte](/es/docs/v1/support/contact)
+- 📚 [FAQ Completo](/es/docs/v1/support/faq)
+- 🐛 [Troubleshooting](/es/docs/v1/support/troubleshooting)
+
+**¡Bienvenido a ValidMe!** 🎉

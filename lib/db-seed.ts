@@ -62,21 +62,21 @@ const defaultSeedData: SeedData = {
   redirects: [
     {
       from_path: '/docs',
-      to_path: '/en/v1/overview',
+      to_path: '/en/docs/v1/overview',
       status_code: 301,
       locale: 'en',
       version: 'v1'
     },
     {
       from_path: '/api',
-      to_path: '/en/v1/api-reference',
+      to_path: '/en/docs/v1/api-reference',
       status_code: 301,
       locale: 'en',
       version: 'v1'
     },
     {
       from_path: '/old-auth',
-      to_path: '/en/v1/authentication',
+      to_path: '/en/docs/v1/authentication',
       status_code: 301,
       locale: 'en',
       version: 'v1'
@@ -163,7 +163,7 @@ function seedSampleAnalytics(): void {
   
   const sampleData = [
     {
-      path: '/en/v1/overview',
+      path: '/en/docs/v1/overview',
       locale: 'en',
       version: 'v1',
       user_agent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)',
@@ -171,7 +171,7 @@ function seedSampleAnalytics(): void {
       viewed_at: new Date(Date.now() - 86400000).toISOString() // 1 day ago
     },
     {
-      path: '/en/v1/authentication',
+      path: '/en/docs/v1/authentication',
       locale: 'en',
       version: 'v1',
       user_agent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
@@ -179,7 +179,7 @@ function seedSampleAnalytics(): void {
       viewed_at: new Date(Date.now() - 43200000).toISOString() // 12 hours ago
     },
     {
-      path: '/es/v1/overview',
+      path: '/es/docs/v1/overview',
       locale: 'es',
       version: 'v1',
       user_agent: 'Mozilla/5.0 (X11; Linux x86_64)',
@@ -220,7 +220,7 @@ function seedSampleSearchQueries(): void {
       locale: 'en',
       version: 'v1',
       results_count: 5,
-      clicked_result_path: '/en/v1/authentication',
+      clicked_result_path: '/en/docs/v1/authentication',
       searched_at: new Date(Date.now() - 7200000).toISOString() // 2 hours ago
     },
     {
@@ -228,7 +228,7 @@ function seedSampleSearchQueries(): void {
       locale: 'en',
       version: 'v1',
       results_count: 3,
-      clicked_result_path: '/en/v1/api-reference/authentication',
+      clicked_result_path: '/en/docs/v1/api-reference/authentication',
       searched_at: new Date(Date.now() - 1800000).toISOString() // 30 minutes ago
     },
     {

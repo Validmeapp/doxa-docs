@@ -35,8 +35,8 @@ async function testContentLoader() {
   console.log();
 
   // Test available locales and versions
-  console.log('🌍 Available locales:', contentLoader.getAvailableLocales());
-  console.log('📋 Available versions:', contentLoader.getAvailableVersions());
+  console.log('🌍 Available locales:', await contentLoader.getAvailableLocales());
+  console.log('📋 Available versions:', await contentLoader.getAvailableVersions());
   console.log();
 
   // Test filtering by locale and version
@@ -57,6 +57,75 @@ async function testContentLoader() {
   } else {
     console.log('Page not found');
   }
+  console.log();
+
+  // Test home document functionality
+  console.log('🏠 Testing home document functionality...');
+  
+  // Test finding index files
+  console.log('📍 Testing findIndexFile...');
+  const enIndexPath = await contentLoader.findIndexFile('en', 'v1');
+  console.log(`English v1 index file: ${enIndexPath || 'Not found'}`);
+  
+  const esIndexPath = await contentLoader.findIndexFile('es', 'v1');
+  console.log(`Spanish v1 index file: ${esIndexPath || 'Not found'}`);
+  
+  const nonExistentIndexPath = await contentLoader.findIndexFile('fr', 'v1');
+  console.log(`French v1 index file: ${nonExistentIndexPath || 'Not found'}`);
+  console.log();
+
+  // Test getting home documents
+  console.log('📄 Testing getHomeDocument...');
+  const enHomeDoc = await contentLoader.getHomeDocument('en', 'v1');
+  if (enHomeDoc) {
+    console.log(`English v1 home document: "${enHomeDoc.frontmatter.title}"`);
+    console.log(`Slug: "${enHomeDoc.slug}"`);
+    console.log(`Content length: ${enHomeDoc.content.length} characters`);
+  } else {
+    console.log('English v1 home document: Not found');
+  }
+  
+  const esHomeDoc = await contentLoader.getHomeDocument('es', 'v1');
+  if (esHomeDoc) {
+    console.log(`Spanish v1 home document: "${esHomeDoc.frontmatter.title}"`);
+    console.log(`Slug: "${esHomeDoc.slug}"`);
+  } else {
+    console.log('Spanish v1 home document: Not found');
+  }
+  
+  // Test fallback for missing home document
+  const frHomeDoc = await contentLoader.getHomeDocument('fr', 'v1');
+  if (frHomeDoc) {
+    console.log(`French v1 home document (fallback): "${frHomeDoc.frontmatter.title}"`);
+    console.log(`Is fallback content: ${frHomeDoc.content.includes('Missing Home Document')}`);
+  } else {
+    console.log('French v1 home document: Not found');
+  }
+  console.log();
+
+  // Test getContentBySlug with empty slug (home document)
+  console.log('🔗 Testing getContentBySlug with empty slug...');
+  const homeViaEmptySlug = await contentLoader.getContentBySlug('en', 'v1', '');
+  if (homeViaEmptySlug) {
+    console.log(`Home via empty slug: "${homeViaEmptySlug.frontmatter.title}"`);
+  } else {
+    console.log('Home via empty slug: Not found');
+  }
+  
+  const homeViaSlash = await contentLoader.getContentBySlug('en', 'v1', '/');
+  if (homeViaSlash) {
+    console.log(`Home via slash: "${homeViaSlash.frontmatter.title}"`);
+  } else {
+    console.log('Home via slash: Not found');
+  }
+  console.log();
+
+  // Test missing home content generation
+  console.log('📝 Testing missing home content generation...');
+  const missingContent = contentLoader.generateMissingHomeContent('test', 'v1');
+  console.log(`Generated missing content length: ${missingContent.length} characters`);
+  console.log(`Contains instructions: ${missingContent.includes('index.mdx')}`);
+  console.log(`Contains locale/version: ${missingContent.includes('test/v1')}`);
 
   console.log('\n✨ Content loader test completed!');
 }

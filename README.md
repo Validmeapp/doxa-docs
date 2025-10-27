@@ -119,8 +119,8 @@ npm run content:create es v1 overview "Descripción General"
 
 1. **Create the MDX file** in the appropriate directory:
    ```bash
-   mkdir -p content/en/v1/guides
-   touch content/en/v1/guides/my-new-guide.mdx
+   mkdir -p content/en/docs/v1/guides
+   touch content/en/docs/v1/guides/my-new-guide.mdx
    ```
 
 2. **Add frontmatter** (required for all content):
@@ -252,8 +252,8 @@ npm run lint:content:report
 3. **Generate translation templates:**
    ```bash
    # Generate French translation from English content
-   npm run content:translate content/en/v1/overview.mdx fr
-   npm run content:translate content/en/v1/authentication.mdx fr
+   npm run content:translate content/en/docs/v1/overview.mdx fr
+   npm run content:translate content/en/docs/v1/authentication.mdx fr
    ```
 
 4. **Translate the content** and update frontmatter:
@@ -272,7 +272,7 @@ npm run lint:content:report
 1. **Create content in English first** (primary language)
 2. **Generate translation templates:**
    ```bash
-   npm run content:translate content/en/v1/guides/getting-started.mdx es
+   npm run content:translate content/en/docs/v1/guides/getting-started.mdx es
    ```
 3. **Translate content** while preserving:
    - Code examples and syntax
@@ -578,7 +578,7 @@ npm run performance:lighthouse
 2. **Copy and update content from previous version:**
    ```bash
    # Copy English v1 content to v2
-   cp -r content/en/v1/* content/en/v2/
+   cp -r content/en/docs/v1/* content/en/v2/
    
    # Update frontmatter in all v2 files
    find content/en/v2 -name "*.mdx" -exec sed -i 's/version: "v1"/version: "v2"/g' {} \;

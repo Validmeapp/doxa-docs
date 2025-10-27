@@ -10,9 +10,11 @@ import fs from 'fs';
 import path from 'path';
 import { ContentValidator } from './validate-content';
 import { PerformanceMonitor } from './performance-monitor';
+import { AssetProcessingManager } from './process-assets';
 
 interface BuildOptions {
   skipValidation?: boolean;
+  skipAssetProcessing?: boolean;
   skipPerformanceAnalysis?: boolean;
   enableAnalyzer?: boolean;
   generateLighthouse?: boolean;
@@ -74,6 +76,11 @@ class OptimizedBuilder {
 
   private async runPreBuildTasks(): Promise<void> {
     console.log('⚙️  Step 2: Running pre-build tasks...');
+
+    // Process static assets
+    if (!this.options.skipAssetProcessing) {
+      this.runCommand('tsx scripts/process-assets.ts', 'Processing static assets');
+    }
 
     // Build search index
     this.runCommand('tsx scripts/build-search-index.ts', 'Building search index');
@@ -215,6 +222,7 @@ async function main() {
   
   const options: BuildOptions = {
     skipValidation: args.includes('--skip-validation'),
+    skipAssetProcessing: args.includes('--skip-assets'),
     skipPerformanceAnalysis: args.includes('--skip-performance'),
     enableAnalyzer: args.includes('--analyze'),
     generateLighthouse: args.includes('--lighthouse'),
@@ -229,6 +237,7 @@ Usage: tsx scripts/build-optimized.ts [options]
 
 Options:
   --skip-validation      Skip content validation step
+  --skip-assets          Skip asset processing step
   --skip-performance     Skip performance analysis step
   --analyze             Enable webpack bundle analyzer
   --lighthouse          Generate Lighthouse performance report
