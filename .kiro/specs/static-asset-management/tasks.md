@@ -125,21 +125,21 @@
   - Verify search performance is not impacted
   - _Requirements: 6.4_
 
-- [ ] 5. Create locale and version scoping system
+- [x] 5. Create locale and version scoping system
   - Implement asset organization with `/public/assets/<locale>/<version>/` structure
   - Add locale/version context resolution for asset paths
   - Ensure proper isolation between different locale/version combinations
   - Test asset resolution across different content contexts
   - _Requirements: 3.1, 3.2, 3.3_
 
-- [ ] 5.1 Implement asset path scoping
+- [x] 5.1 Implement asset path scoping
   - Modify asset processor to organize assets by locale and version
   - Create path resolution logic for scoped asset structure
   - Implement context-aware asset URL generation
   - Write tests for path scoping and resolution
   - _Requirements: 3.1, 3.2_
 
-- [ ] 5.2 Add context resolution for components
+- [x] 5.2 Add context resolution for components
   - Modify DocImage and DocAssetLink to use locale/version context
   - Implement automatic context detection from page metadata
   - Add fallback mechanisms for missing locale/version assets

@@ -115,6 +115,71 @@ export class AssetProcessor {
   }
 
   /**
+   * Generate scoped asset path for a given locale and version
+   */
+  generateScopedAssetPath(locale: string, version: string, assetType: AssetType, filename: string): string {
+    const typeDir = assetType === AssetType.IMAGE ? 'images' : 'files';
+    return path.join('/', this.publicDir, locale, version, typeDir, filename).replace(/\\/g, '/');
+  }
+
+  /**
+   * Resolve asset URL from relative path with context
+   */
+  resolveAssetUrl(relativePath: string, locale: string, version: string, manifest?: AssetManifest): string | null {
+    if (!manifest) {
+      // Fallback to direct path construction if no manifest available
+      const normalizedPath = relativePath.replace(/\\/g, '/');
+      const pathParts = normalizedPath.split('/');
+      const filename = pathParts[pathParts.length - 1];
+      const assetType = this.determineAssetTypeFromPath(relativePath);
+      return this.generateScopedAssetPath(locale, version, assetType, filename);
+    }
+
+    // Look up in manifest
+    const manifestEntry = manifest.assets[relativePath];
+    if (manifestEntry && manifestEntry.locale === locale && manifestEntry.version === version) {
+      return manifestEntry.publicPath;
+    }
+
+    // Try fallback to default locale/version if not found
+    const fallbackEntry = Object.values(manifest.assets).find(entry => 
+      entry.originalPath === relativePath && 
+      (entry.locale === locale || entry.version === version)
+    );
+
+    return fallbackEntry?.publicPath || null;
+  }
+
+  /**
+   * Get all available locales and versions from content directory
+   */
+  async getAvailableLocalesAndVersions(): Promise<{ locales: string[], versions: string[] }> {
+    const locales = new Set<string>();
+    const versions = new Set<string>();
+
+    try {
+      const localeDirectories = await this.getDirectories(this.contentDir);
+      
+      for (const locale of localeDirectories) {
+        locales.add(locale);
+        const localePath = path.join(this.contentDir, locale);
+        const versionDirectories = await this.getDirectories(localePath);
+        
+        for (const version of versionDirectories) {
+          versions.add(version);
+        }
+      }
+    } catch (error) {
+      console.warn(`Failed to get available locales and versions: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+
+    return {
+      locales: Array.from(locales).sort(),
+      versions: Array.from(versions).sort()
+    };
+  }
+
+  /**
    * Discover all assets in content directories
    */
   async discoverAssets(contentDir?: string): Promise<AssetReference[]> {
@@ -170,9 +235,8 @@ export class AssetProcessor {
       // Create hashed filename
       const hashedFilename = `${baseName}.${contentHash.substring(0, 8)}${ext}`;
       
-      // Generate public path
-      const publicPath = path.join('/', this.publicDir, asset.locale, asset.version, 
-        asset.type === AssetType.IMAGE ? 'images' : 'files', hashedFilename);
+      // Generate public path using scoped path generation
+      const publicPath = this.generateScopedAssetPath(asset.locale, asset.version, asset.type, hashedFilename);
       
       // Determine MIME type
       const mimeType = this.getMimeType(asset.sourcePath);
@@ -299,6 +363,62 @@ export class AssetProcessor {
     }
 
     return processedAssets;
+  }
+
+  /**
+   * Copy processed assets to their scoped public locations
+   */
+  async copyAssetsToPublicDirectory(assets: ProcessedAsset[]): Promise<void> {
+    for (const asset of assets) {
+      await this.copyAssetToPublicLocation(asset);
+    }
+  }
+
+  /**
+   * Copy a single asset to its public location with proper directory structure
+   */
+  private async copyAssetToPublicLocation(asset: ProcessedAsset): Promise<void> {
+    try {
+      // Construct the full public path (remove leading slash for file system operations)
+      const publicFilePath = path.join(process.cwd(), asset.publicPath.substring(1));
+      
+      // Ensure the directory exists
+      const publicDir = path.dirname(publicFilePath);
+      await fs.mkdir(publicDir, { recursive: true });
+      
+      // Copy the main asset
+      await fs.copyFile(asset.sourcePath, publicFilePath);
+      
+      // Copy derivatives if they exist
+      if (asset.derivatives && asset.derivatives.length > 0) {
+        for (const derivative of asset.derivatives) {
+          const derivativePublicPath = path.join(process.cwd(), derivative.publicPath.substring(1));
+          const derivativeDir = path.dirname(derivativePublicPath);
+          await fs.mkdir(derivativeDir, { recursive: true });
+          
+          // For derivatives, we need to generate them first (this would be handled by ImageOptimizer)
+          // For now, we'll assume they're already generated and stored temporarily
+          // In a real implementation, this would coordinate with the ImageOptimizer
+        }
+      }
+    } catch (error) {
+      throw new Error(`Failed to copy asset ${asset.sourcePath} to ${asset.publicPath}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+
+  /**
+   * Write asset manifest to public directory
+   */
+  async writeManifest(manifest: AssetManifest): Promise<void> {
+    try {
+      // Ensure the public assets directory exists
+      await fs.mkdir(path.dirname(this.manifestPath), { recursive: true });
+      
+      // Write the manifest file
+      await fs.writeFile(this.manifestPath, JSON.stringify(manifest, null, 2), 'utf-8');
+    } catch (error) {
+      throw new Error(`Failed to write asset manifest: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
   }
 
   /**
@@ -459,6 +579,11 @@ export class AssetProcessor {
       return AssetType.BINARY;
     }
     return AssetType.UNKNOWN;
+  }
+
+  private determineAssetTypeFromPath(filePath: string): AssetType {
+    const mimeType = this.getMimeType(filePath);
+    return this.determineAssetType(mimeType);
   }
 
   private sanitizePath(filePath: string): string {

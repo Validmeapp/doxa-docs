@@ -2,8 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
-import { getLocaleFromPathname } from '@/lib/locale-utils';
 import { Download, File, FileText, Archive, Image as ImageIcon } from 'lucide-react';
+import { 
+  getAssetContextFromPathname, 
+  resolveAssetWithFallback, 
+  generateDirectAssetPath,
+  type AssetContext 
+} from '@/lib/asset-context';
 import type { AssetManifest, ManifestEntry } from '@/lib/asset-processor';
 
 interface DocAssetLinkProps {
@@ -14,10 +19,7 @@ interface DocAssetLinkProps {
   showMetadata?: boolean;
 }
 
-interface AssetContext {
-  locale: string;
-  version: string;
-}
+
 
 // Cache for the asset manifest to avoid repeated fetches
 let manifestCache: AssetManifest | null = null;
@@ -61,61 +63,14 @@ async function loadAssetManifest(): Promise<AssetManifest> {
 }
 
 /**
- * Extract version from pathname (assumes /[locale]/docs/[...slug] structure)
- */
-function getVersionFromPathname(pathname: string): string {
-  // For now, default to 'v1' - this can be enhanced based on routing structure
-  return 'v1';
-}
-
-/**
  * Get asset context from current page
  */
 function useAssetContext(): AssetContext {
   const pathname = usePathname();
-  const locale = getLocaleFromPathname(pathname);
-  const version = getVersionFromPathname(pathname);
-
-  return { locale, version };
+  return getAssetContextFromPathname(pathname);
 }
 
-/**
- * Resolve asset path using the manifest
- */
-function resolveAssetPath(
-  src: string, 
-  context: AssetContext, 
-  manifest: AssetManifest
-): { publicPath: string; entry: ManifestEntry } | null {
-  // Normalize the source path to match manifest keys
-  const normalizedSrc = src.startsWith('/') ? src.slice(1) : src;
-  
-  // Try to find exact match first
-  let manifestKey = `${context.locale}/${context.version}/assets/${normalizedSrc}`;
-  let entry = manifest.assets[manifestKey];
-  
-  if (entry) {
-    return { publicPath: entry.publicPath, entry };
-  }
 
-  // Try alternative path formats
-  const alternativeKeys = [
-    `${context.locale}/${context.version}/assets/files/${normalizedSrc}`,
-    `${context.locale}/${context.version}/assets/images/${normalizedSrc}`,
-    normalizedSrc,
-    `assets/${normalizedSrc}`,
-    `files/${normalizedSrc}`,
-  ];
-
-  for (const key of alternativeKeys) {
-    entry = manifest.assets[key];
-    if (entry && entry.locale === context.locale && entry.version === context.version) {
-      return { publicPath: entry.publicPath, entry };
-    }
-  }
-
-  return null;
-}
 
 /**
  * Format file size in human-readable format
@@ -238,6 +193,7 @@ export function DocAssetLink({
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [retryCount, setRetryCount] = useState(0);
+  const [fallbackInfo, setFallbackInfo] = useState<{ used: boolean; type?: string } | null>(null);
   
   const context = useAssetContext();
 
@@ -255,17 +211,28 @@ export function DocAssetLink({
         
         if (!isMounted) return;
 
-        // Resolve the asset path
-        const resolved = resolveAssetPath(src, context, manifest);
+        // Resolve the asset path with fallback logic
+        const resolved = resolveAssetWithFallback(src, context, manifest);
         
         if (resolved) {
           setResolvedSrc(resolved.publicPath);
           setAssetEntry(resolved.entry);
+          setFallbackInfo({ 
+            used: resolved.fallbackUsed || false, 
+            type: resolved.fallbackType 
+          });
+          
+          // Log fallback usage for debugging
+          if (resolved.fallbackUsed) {
+            console.info(`Asset fallback used for ${src}: ${resolved.fallbackType} fallback to ${resolved.publicPath}`);
+          }
         } else {
-          // Asset not found in manifest, try using src directly as fallback
+          // Asset not found in manifest, generate direct path as fallback
           console.warn(`Asset not found in manifest: ${src} for context ${context.locale}/${context.version}`);
-          setResolvedSrc(src);
+          const directPath = generateDirectAssetPath(src, context);
+          setResolvedSrc(directPath);
           setAssetEntry(null);
+          setFallbackInfo({ used: true, type: 'direct' });
         }
       } catch (err) {
         if (!isMounted) return;
