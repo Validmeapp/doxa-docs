@@ -144,6 +144,15 @@ export class SearchIndexer {
    * Convert MDX content to searchable HTML
    */
   private convertMdxToSearchableHtml(content: string, frontmatter: any): string {
+    // Define binary file extensions that should be excluded from search
+    const binaryExtensions = [
+      '.pdf', '.zip', '.tar', '.gz', '.rar', '.7z',
+      '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx',
+      '.csv', '.json', '.xml', '.sql', '.db',
+      '.exe', '.dmg', '.pkg', '.deb', '.rpm',
+      '.iso', '.img', '.bin'
+    ];
+
     // Remove MDX-specific syntax and convert to basic HTML
     let htmlContent = content
       // Remove import statements
@@ -152,6 +161,22 @@ export class SearchIndexer {
       .replace(/^export\s+.*$/gm, '')
       // Remove frontmatter if it exists
       .replace(/^---[\s\S]*?---/m, '')
+      // Remove images from search content first (they don't add searchable text)
+      .replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '')
+      // Remove binary asset links from search indexing
+      .replace(/\[([^\]]*)\]\(([^)]+)\)/g, (match, linkText, url) => {
+        // Check if this is a binary file link (check for extension before query params)
+        const urlWithoutQuery = url.split('?')[0].toLowerCase();
+        const isBinaryFile = binaryExtensions.some(ext => urlWithoutQuery.endsWith(ext));
+        
+        if (isBinaryFile) {
+          // Exclude binary file links from search - return empty string
+          return '';
+        }
+        
+        // Keep regular links for search indexing
+        return `<a href="${url}">${linkText}</a>`;
+      })
       // Convert headers (order matters - start with most specific)
       .replace(/^#### (.*$)/gm, '<h4>$1</h4>')
       .replace(/^### (.*$)/gm, '<h3>$1</h3>')
@@ -165,12 +190,11 @@ export class SearchIndexer {
       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
       // Convert italic text
       .replace(/\*(.*?)\*/g, '<em>$1</em>')
-      // Convert links
-      .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>')
       // Convert lists
       .replace(/^- (.*$)/gm, '<li>$1</li>')
       .replace(/^(\d+)\. (.*$)/gm, '<li>$1. $2</li>')
-      // Clean up extra whitespace
+      // Clean up extra whitespace and empty lines left by removed content
+      .replace(/\n\s*\n\s*\n/g, '\n\n')
       .replace(/\n\s*\n/g, '\n\n')
       .trim();
 

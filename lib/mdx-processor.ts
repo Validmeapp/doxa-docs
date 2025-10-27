@@ -104,6 +104,134 @@ function remarkLinkValidator(contentPages: Map<string, string>) {
 }
 
 /**
+ * Custom remark plugin to convert standard Markdown images to DocImage components
+ */
+function remarkImageConverter() {
+  return (tree: any) => {
+    visit(tree, 'image', (node: any, index: number | undefined, parent: any) => {
+      // Skip if we don't have proper parent/index context
+      if (typeof index !== 'number' || !parent || !parent.children) {
+        return;
+      }
+
+      const { url, alt, title } = node;
+      
+      // Skip external images (they should use regular img tags)
+      if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) {
+        return;
+      }
+
+      // Build DocImage component props
+      const props: string[] = [];
+      
+      // Add src prop (required)
+      props.push(`src="${escapeHtml(url)}"`);
+      
+      // Add alt prop (required)
+      props.push(`alt="${escapeHtml(alt || '')}"`);
+      
+      // Add title as additional prop if present
+      if (title) {
+        props.push(`title="${escapeHtml(title)}"`);
+      }
+
+      // Create the DocImage component HTML
+      const componentHtml = `<DocImage ${props.join(' ')} />`;
+      
+      // Replace the image node with HTML node
+      const htmlNode = {
+        type: 'html',
+        value: componentHtml
+      };
+      
+      parent.children[index] = htmlNode;
+    });
+  };
+}
+
+/**
+ * Custom remark plugin to convert binary file links to DocAssetLink components
+ */
+function remarkAssetLinkConverter() {
+  // Define binary file extensions that should be converted
+  const binaryExtensions = new Set([
+    '.pdf', '.zip', '.tar', '.gz', '.rar', '.7z',
+    '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx',
+    '.csv', '.json', '.xml', '.sql', '.db',
+    '.exe', '.dmg', '.pkg', '.deb', '.rpm',
+    '.iso', '.img', '.bin'
+  ]);
+
+  return (tree: any) => {
+    visit(tree, 'link', (node: any, index: number | undefined, parent: any) => {
+      // Skip if we don't have proper parent/index context
+      if (typeof index !== 'number' || !parent || !parent.children) {
+        return;
+      }
+
+      const { url, title } = node;
+      
+      // Skip external links
+      if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('mailto:')) {
+        return;
+      }
+
+      // Skip anchor links
+      if (url.startsWith('#')) {
+        return;
+      }
+
+      // Check if this is a binary file link
+      const urlLower = url.toLowerCase();
+      const isBinaryFile = Array.from(binaryExtensions).some(ext => urlLower.endsWith(ext));
+      
+      if (!isBinaryFile) {
+        return;
+      }
+
+      // Extract link text from children
+      let linkText = '';
+      if (node.children && node.children.length > 0) {
+        linkText = extractTextFromNode({ children: node.children });
+      }
+
+      // Build DocAssetLink component props
+      const props: string[] = [];
+      
+      // Add src prop (required)
+      props.push(`src="${escapeHtml(url)}"`);
+      
+      // Add download prop (default to true for binary files)
+      props.push('download={true}');
+      
+      // Add showMetadata prop (default to true)
+      props.push('showMetadata={true}');
+      
+      // Add title as additional prop if present
+      if (title) {
+        props.push(`title="${escapeHtml(title)}"`);
+      }
+
+      // Create the DocAssetLink component HTML with children
+      let componentHtml;
+      if (linkText.trim()) {
+        componentHtml = `<DocAssetLink ${props.join(' ')}>${escapeHtml(linkText)}</DocAssetLink>`;
+      } else {
+        componentHtml = `<DocAssetLink ${props.join(' ')} />`;
+      }
+      
+      // Replace the link node with HTML node
+      const htmlNode = {
+        type: 'html',
+        value: componentHtml
+      };
+      
+      parent.children[index] = htmlNode;
+    });
+  };
+}
+
+/**
  * Extract text content from a heading node
  */
 function extractTextFromNode(node: any): string {
@@ -443,6 +571,8 @@ export class MDXProcessor {
       .use(remarkFrontmatter) // Parse frontmatter
       .use(remarkToc) // Extract table of contents
       .use(remarkLinkValidator, this.contentPages) // Validate internal links
+      .use(remarkImageConverter) // Convert images to DocImage components
+      .use(remarkAssetLinkConverter) // Convert binary file links to DocAssetLink components
       .use(remarkRenderCodeBlocks) // Render code blocks directly as HTML
       .use(remarkHtml, { sanitize: false }); // Convert to HTML without sanitization
   }
