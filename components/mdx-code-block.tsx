@@ -52,29 +52,69 @@ export function MDXCodeBlock({
   highlightLines,
   showLineNumbers = false,
 }: MDXCodeBlockProps) {
-  // Extract language from className (format: "language-javascript" or empty for untyped)
-  const originalLanguage = className.replace(/language-/, '') || '';
-  const isTyped = originalLanguage && originalLanguage.trim().length > 0 && originalLanguage !== 'text';
-  const language = isTyped ? originalLanguage : 'text';
-  
-  // Parse highlight lines from string format "1,2,3" to number array
-  const highlightLinesArray = highlightLines
-    ? highlightLines.split(',').map(line => parseInt(line.trim(), 10)).filter(Boolean)
-    : [];
-
-  // Validate children prop
-  if (typeof children !== 'string') {
-    console.error('MDXCodeBlock: children must be a string, received:', typeof children);
+  // Enhanced validation and error handling for malformed content
+  if (children === null || children === undefined) {
+    console.error('MDXCodeBlock: children is null or undefined');
     return (
       <div className="rounded-lg border border-destructive bg-destructive/10 p-4">
+        <div className="flex items-center justify-between border-b bg-destructive/20 px-4 py-2 -mx-4 -mt-4 mb-4">
+          <span className="rounded bg-destructive/20 px-2 py-1 text-xs font-medium text-destructive">
+            Error
+          </span>
+        </div>
         <p className="text-sm text-destructive">
-          Error: Invalid code content. Expected string, received {typeof children}.
+          Error: Code content is missing. Please provide valid code content.
         </p>
       </div>
     );
   }
 
-  // Handle empty code
+  if (typeof children !== 'string') {
+    console.error('MDXCodeBlock: children must be a string, received:', typeof children, children);
+    return (
+      <div className="rounded-lg border border-destructive bg-destructive/10 p-4">
+        <div className="flex items-center justify-between border-b bg-destructive/20 px-4 py-2 -mx-4 -mt-4 mb-4">
+          <span className="rounded bg-destructive/20 px-2 py-1 text-xs font-medium text-destructive">
+            Error
+          </span>
+        </div>
+        <p className="text-sm text-destructive">
+          Error: Invalid code content. Expected string, received {typeof children}.
+        </p>
+        <details className="mt-2">
+          <summary className="cursor-pointer text-xs text-destructive/80">Show details</summary>
+          <pre className="mt-1 text-xs text-destructive/60 whitespace-pre-wrap break-words">
+            {JSON.stringify(children, null, 2)}
+          </pre>
+        </details>
+      </div>
+    );
+  }
+
+  // Extract language from className (format: "language-javascript" or empty for untyped)
+  // Handle missing language gracefully - this is a key requirement
+  const originalLanguage = className ? className.replace(/language-/, '') : '';
+  const normalizedLanguage = originalLanguage.trim().toLowerCase();
+  
+  // Determine if this is a typed or untyped code block
+  const isTyped = normalizedLanguage && 
+                  normalizedLanguage.length > 0 && 
+                  normalizedLanguage !== 'text' && 
+                  normalizedLanguage !== 'plain' &&
+                  normalizedLanguage !== 'none';
+  
+  // For untyped blocks, use 'text' as the language for consistent handling
+  const language = isTyped ? originalLanguage : 'text';
+  
+  // Parse highlight lines from string format "1,2,3" to number array
+  const highlightLinesArray = highlightLines
+    ? highlightLines.split(',').map(line => {
+        const parsed = parseInt(line.trim(), 10);
+        return isNaN(parsed) ? null : parsed;
+      }).filter((line): line is number => line !== null)
+    : [];
+
+  // Handle empty code - provide clear message as per requirement 6.5
   if (!children || children.trim().length === 0) {
     return (
       <div className="rounded-lg border bg-muted/50 p-4">
@@ -194,6 +234,7 @@ export function MDXCodeBlock({
   };
 
   // Use the CodeBlock component with enhanced language handling
+  // Pass neutral styling mode for untyped blocks
   return (
     <CodeBlock
       code={children.trim()}
@@ -201,7 +242,8 @@ export function MDXCodeBlock({
       filename={filename}
       highlightLines={highlightLinesArray}
       showLineNumbers={showLineNumbers}
-      className={!isTyped ? 'untyped-code-block' : ''}
+      className={!isTyped ? 'untyped-code-block neutral-styling' : ''}
+      neutralStyling={!isTyped}
     />
   );
 }

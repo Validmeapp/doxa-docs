@@ -59,7 +59,7 @@
   - Write tests for various code block scenarios
   - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5_
 
-- [ ] 8. Update code block components for consistency
+- [x] 8. Update code block components for consistency
   - Modify `MDXCodeBlock` component to handle missing language gracefully
   - Ensure consistent styling between typed and untyped code blocks
   - Update `CodeBlock` component to support neutral styling mode
