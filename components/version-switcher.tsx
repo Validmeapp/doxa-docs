@@ -11,9 +11,9 @@ interface VersionSwitcherProps {
 }
 
 // Available versions - this would typically come from a config or API
+// NOTE: Only v1 content exists currently. When v2 content is created, add it back here.
 const availableVersions = [
-  { value: 'v2', label: 'v2.0', status: 'latest' as const },
-  { value: 'v1', label: 'v1.0', status: 'stable' as const },
+  { value: 'v1', label: 'v1.0', status: 'latest' as const },
 ] as const;
 
 export function VersionSwitcher({ currentVersion, locale }: VersionSwitcherProps) {

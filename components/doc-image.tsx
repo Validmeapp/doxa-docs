@@ -194,8 +194,8 @@ export function DocImage({
             console.info(`Asset fallback used for ${src}: ${resolved.fallbackType} fallback to ${resolved.publicPath}`);
           }
         } else {
-          // Asset not found in manifest, generate direct path as fallback
-          console.warn(`Asset not found in manifest: ${src} for context ${context.locale}/${context.version}`);
+          // Asset not found in manifest, use direct path
+          // This is expected when assets haven't been processed yet or when using external URLs
           const directPath = generateDirectAssetPath(src, context);
           setResolvedSrc(directPath);
           setFallbackInfo({ used: true, type: 'direct' });

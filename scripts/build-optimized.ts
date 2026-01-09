@@ -82,6 +82,12 @@ class OptimizedBuilder {
       this.runCommand('tsx scripts/process-assets.ts', 'Processing static assets');
     }
 
+    // Audit links for all locales and versions
+    if (!this.options.skipValidation) {
+      this.runCommand('tsx scripts/link-auditor-cli.ts audit -l en --content-version v1', 'Auditing English links');
+      this.runCommand('tsx scripts/link-auditor-cli.ts audit -l es --content-version v1', 'Auditing Spanish links');
+    }
+
     // Build search index
     this.runCommand('tsx scripts/build-search-index.ts', 'Building search index');
 

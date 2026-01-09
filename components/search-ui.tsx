@@ -44,56 +44,60 @@ export function SearchUI({
   const searchInputRef = useRef<HTMLInputElement>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
 
-  // Initialize Pagefind
+  // Initialize Pagefind from static files (built at build time)
   useEffect(() => {
     const initPagefind = async () => {
       try {
-        // Create a simple search implementation for now
-        // This is a fallback until we can get Pagefind working properly
-        const mockPagefind = {
-          search: async (query: string) => {
-            // For now, return mock results to test the UI
-            if (!query.trim()) {
-              return { results: [] };
-            }
-            
-            // Mock search results
-            const mockResults = [
-              {
-                id: '1',
-                data: async () => ({
-                  url: `/${locale}/docs/v1/authentication`,
-                  meta: { title: 'Authentication', locale, version },
-                  excerpt: `JWT tokens are used for authentication. This page contains information about ${query}.`
-                })
-              },
-              {
-                id: '2', 
-                data: async () => ({
-                  url: `/${locale}/docs/v1/overview`,
-                  meta: { title: 'API Overview', locale, version },
-                  excerpt: `API overview documentation mentioning ${query} and related concepts.`
-                })
-              }
-            ];
-            
-            // Filter results based on query (simple mock)
-            const filteredResults = query.toLowerCase().includes('jwt') ? mockResults : 
-                                  query.toLowerCase().includes('api') ? mockResults :
-                                  [];
-            
-            return { results: filteredResults };
-          }
-        };
-        
-        setPagefind(mockPagefind);
+        // Load Pagefind from the pre-built static search index
+        // The index is built during the build process and stored in /public/search/{locale}/{version}/
+        const pagefindPath = `/search/${locale}/${version}/pagefind.js`;
+
+        // Dynamically import Pagefind from the static files
+        // Pagefind exposes itself on the window object when loaded
+        const existingScript = document.querySelector(`script[src="${pagefindPath}"]`);
+
+        if (!existingScript) {
+          const script = document.createElement('script');
+          script.src = pagefindPath;
+          script.async = true;
+
+          await new Promise<void>((resolve, reject) => {
+            script.onload = () => resolve();
+            script.onerror = () => reject(new Error(`Failed to load Pagefind from ${pagefindPath}`));
+            document.head.appendChild(script);
+          });
+        }
+
+        // Wait for Pagefind to be available on window
+        let attempts = 0;
+        const maxAttempts = 50; // 5 seconds max wait
+
+        while (!(window as any).pagefind && attempts < maxAttempts) {
+          await new Promise(resolve => setTimeout(resolve, 100));
+          attempts++;
+        }
+
+        if ((window as any).pagefind) {
+          // Initialize Pagefind with options
+          await (window as any).pagefind.options({
+            excerptLength: 30,
+            highlightParam: 'highlight'
+          });
+
+          setPagefind((window as any).pagefind);
+          setError(null);
+        } else {
+          throw new Error('Pagefind failed to initialize');
+        }
       } catch (error) {
-        console.warn('Could not initialize search:', error);
-        setError('Search is not available');
+        console.warn('Could not initialize Pagefind search:', error);
+        setError('Search index not available. Run npm run search:build first.');
       }
     };
 
     initPagefind();
+
+    // Cleanup: Pagefind is a singleton on window, no need to destroy
   }, [locale, version]);
 
   const handleResultClick = useCallback(async (result: SearchResult) => {
@@ -183,7 +187,7 @@ export function SearchUI({
     }
   }, [selectedIndex, results]);
 
-  // Perform search
+  // Perform search using Pagefind's static index
   const performSearch = useCallback(async (searchQuery: string) => {
     if (!pagefind || !searchQuery.trim()) {
       setResults([]);
@@ -193,18 +197,28 @@ export function SearchUI({
 
     setIsLoading(true);
     setError(null);
-    
+
     try {
       const searchResults = await pagefind.search(searchQuery);
 
       const results: SearchResult[] = await Promise.all(
         searchResults.results.slice(0, 10).map(async (result: any) => {
           const data = await result.data();
+
+          // Pagefind returns url or raw_url depending on version
+          const url = data.url || data.raw_url || '';
+
+          // Strip HTML tags from excerpt for plain text display
+          // Pagefind returns excerpt with <mark> tags for highlighting
+          const plainExcerpt = (data.excerpt || '')
+            .replace(/<mark>/g, '')
+            .replace(/<\/mark>/g, '');
+
           return {
             id: result.id,
-            url: data.url,
+            url: url,
             title: data.meta?.title || 'Untitled',
-            excerpt: data.excerpt || '',
+            excerpt: plainExcerpt,
             meta: {
               locale: data.meta?.locale || locale,
               version: data.meta?.version || version,
@@ -218,23 +232,19 @@ export function SearchUI({
       setResults(results);
       setSelectedIndex(0);
 
-      // Log search analytics
-      try {
-        await fetch('/api/search/analytics', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            query: searchQuery,
-            locale,
-            version,
-            resultsCount: results.length
-          })
-        });
-      } catch (error) {
-        console.warn('Failed to log search analytics:', error);
-      }
+      // Log search analytics (non-blocking, analytics is stored in SQLite)
+      fetch('/api/search/analytics', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          query: searchQuery,
+          locale,
+          version,
+          resultsCount: results.length
+        })
+      }).catch(err => console.warn('Failed to log search analytics:', err));
 
       // Call analytics callback
       if (onSearch) {
