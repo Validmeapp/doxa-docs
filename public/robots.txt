@@ -1,0 +1,21 @@
+User-agent: *
+Allow: /
+
+# Sitemaps
+Sitemap: http://localhost:3000/sitemap.xml
+
+# Crawl-delay for respectful crawling
+Crawl-delay: 1
+
+# Disallow search parameters
+Disallow: /*?*
+
+# Disallow temporary or development paths
+Disallow: /api/
+Disallow: /_next/
+Disallow: /temp/
+Disallow: /.temp/
+
+# Allow specific API endpoints that should be indexed
+Allow: /api/health
+Allow: /api/config

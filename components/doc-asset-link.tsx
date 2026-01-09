@@ -271,12 +271,13 @@ export function DocAssetLink({
   // Show error state if resolution failed and no fallback src
   if (error && !resolvedSrc) {
     return (
-      <AssetLinkError 
-        src={src} 
-        children={children}
-        className={className} 
+      <AssetLinkError
+        src={src}
+        className={className}
         onRetry={handleRetry}
-      />
+      >
+        {children}
+      </AssetLinkError>
     );
   }
 

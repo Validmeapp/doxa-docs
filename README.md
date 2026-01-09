@@ -2,6 +2,21 @@
 
 A modern, enterprise-grade multilingual documentation portal built with Next.js 16, TypeScript, and Tailwind CSS. Designed for API documentation, developer guides, and knowledge base content with automatic language detection, version management, and static site generation.
 
+## Implementation Status
+
+| Feature | Status | Notes |
+|---------|--------|-------|
+| Core MDX Processing | ✅ Complete | Shiki syntax highlighting, frontmatter parsing |
+| Multilingual Support (EN/ES) | ✅ Complete | Full content in both languages |
+| Static Search (Pagefind) | ✅ Complete | Client-side search with locale/version indexes |
+| Content Validation | ✅ Complete | Frontmatter, links, structure validation |
+| Link Auditing | ✅ Complete | Detects and can auto-fix broken internal links |
+| Asset Pipeline | ✅ Complete | Image optimization, hashing, manifest generation |
+| Theme Support | ✅ Complete | Dark/Light mode with system preference |
+| Version Switcher | ✅ Complete | Currently v1 only |
+| Optimized Build | ✅ Complete | Pre-build validation, performance analysis |
+| Docker Deployment | ✅ Complete | Caddy proxy with auto SSL |
+
 ## 🌟 Features
 
 - 🌍 **Multilingual Support**: English, Spanish with automatic language detection
@@ -45,32 +60,68 @@ A modern, enterprise-grade multilingual documentation portal built with Next.js 
    npm install
    ```
 
-2. **Start the enhanced development server:**
+2. **Initialize database (first time only):**
    ```bash
-   npm run dev:enhanced
-   ```
-   
-   Or use the standard Next.js dev server:
-   ```bash
-   npm run dev
+   npm run db:init
    ```
 
-3. **Open your browser:**
+3. **Start the development server:**
+   ```bash
+   # Standard Next.js dev server
+   npm run dev
+
+   # Or enhanced dev server with content watching
+   npm run dev:enhanced
+   ```
+
+4. **Open your browser:**
    - Local: http://localhost:3000
-   - The app will automatically redirect to your preferred language
+   - English docs: http://localhost:3000/en/docs/v1
+   - Spanish docs: http://localhost:3000/es/docs/v1
+
+### Testing Locally
+
+```bash
+# Run full optimized build with all validations
+npm run build:optimized
+
+# This runs in sequence:
+# 1. Content validation (frontmatter, structure)
+# 2. Link auditing (EN and ES)
+# 3. Search index building
+# 4. Sitemap generation
+# 5. TypeScript type checking
+# 6. ESLint
+# 7. Next.js build
+# 8. Performance analysis
+
+# Serve the static build locally
+npx serve out
+
+# Or test individual steps:
+npm run validate:content      # Validate content files
+npm run type-check            # TypeScript checking
+npm run lint                  # ESLint
+npm run search:build          # Build search indexes
+```
 
 ### Production Build
 
 ```bash
-# Build with optimization and performance analysis
+# Full production build with reports
 npm run build:production
 
-# Or standard build
+# Standard optimized build
+npm run build:optimized
+
+# Basic Next.js build (skips validations)
 npm run build
 
-# Serve the static build
+# Serve the static output
 npx serve out
 ```
+
+The build output goes to `./out/` directory as static HTML files.
 
 ---
 
@@ -82,21 +133,29 @@ The documentation content is organized in a hierarchical structure:
 
 ```
 content/
-├── en/                     # English content
-│   └── v1/                # Version 1
-│       ├── overview.mdx   # API overview
-│       ├── authentication.mdx
-│       ├── guides/        # Tutorial guides
-│       │   └── getting-started.mdx
-│       └── api-reference/ # API documentation
-│           ├── users.mdx
+├── en/                          # English content
+│   └── v1/                      # Version 1
+│       ├── index.mdx            # Landing page (order: 0)
+│       ├── user-guide/          # User guides
+│       │   ├── onboarding.mdx
+│       │   └── billing.mdx
+│       └── developer-guide/     # Developer documentation
+│           ├── getting-started.mdx
+│           ├── api-reference.mdx
 │           └── webhooks.mdx
-├── es/                     # Spanish content
-│   └── v1/                # Same structure as English
-│       ├── overview.mdx
-│       └── ...
-
+├── es/                          # Spanish content (mirrors English)
+│   └── v1/
+│       ├── index.mdx
+│       ├── user-guide/
+│       │   ├── onboarding.mdx
+│       │   └── billing.mdx
+│       └── developer-guide/
+│           ├── getting-started.mdx
+│           ├── api-reference.mdx
+│           └── webhooks.mdx
 ```
+
+**URL Routing**: Content at `content/en/v1/developer-guide/api-reference.mdx` maps to `/en/docs/v1/developer-guide/api-reference`
 
 ### Creating New Content
 
@@ -131,8 +190,11 @@ npm run content:create es v1 overview "Descripción General"
    version: "v1"
    locale: "en"
    order: 3
-   tags: ["guide", "tutorial", "api"]
-   lastModified: "2024-01-20"
+   category: "developer-guide"
+   subcategory: "guides"
+   lastUpdated: "2025-10-26"
+   icon: "code"
+   readTime: "10 min"
    ---
    ```
 
@@ -157,13 +219,15 @@ npm run content:create es v1 overview "Descripción General"
 |-------|------|----------|-------------|
 | `title` | string | ✅ | Page title (used in navigation and SEO) |
 | `description` | string | ✅ | Brief description for SEO and previews |
-| `version` | string | ✅ | API version (e.g., "v1", "v2") |
+| `version` | string | ✅ | API version (e.g., "v1") |
 | `locale` | string | ✅ | Language code ("en", "es") |
-| `order` | number | ✅ | Sort order in navigation |
-| `tags` | string[] | ✅ | Tags for categorization and search |
-| `lastModified` | string | ❌ | Last update date (ISO format) |
-| `deprecated` | boolean | ❌ | Mark content as deprecated |
-| `redirectFrom` | string[] | ❌ | Previous URLs that should redirect here |
+| `order` | number | ✅ | Sort order in navigation (0 = first) |
+| `category` | string | ✅ | Main category ("user-guide", "developer-guide") |
+| `subcategory` | string | ❌ | Sub-category for grouping |
+| `lastUpdated` | string | ❌ | Last update date (YYYY-MM-DD) |
+| `icon` | string | ❌ | Icon name for navigation |
+| `readTime` | string | ❌ | Estimated reading time |
+| `difficulty` | string | ❌ | Content difficulty level |
 
 ### Content Best Practices
 
@@ -194,21 +258,32 @@ curl -H "Authorization: Bearer your-api-key" \
 ````
 
 #### Linking Between Documents
-Use absolute paths for internal links:
+Use absolute paths with locale and version for internal links:
 
 ```markdown
-- [Authentication Guide](/docs/authentication)
-- [Users API Reference](/docs/api-reference/users)
-- [Getting Started](/docs/guides/getting-started)
+- [API Reference](/en/docs/v1/developer-guide/api-reference)
+- [Webhooks Guide](/en/docs/v1/developer-guide/webhooks)
+- [Getting Started](/en/docs/v1/developer-guide/getting-started)
 ```
+
+**Important**: Internal links must include the full path with locale (`en`/`es`) and version (`v1`). The link auditor validates these during build.
 
 ### Content Validation
 
 Validate your content before publishing:
 
 ```bash
-# Validate all content
+# Validate all content (frontmatter, structure)
 npm run validate:content
+
+# Audit internal links for English content
+npm run links:audit -- -l en --content-version v1
+
+# Audit internal links for Spanish content
+npm run links:audit -- -l es --content-version v1
+
+# Auto-fix broken links (creates backup first)
+npm run links:fix -- -l en --content-version v1
 
 # Lint content for style and consistency
 npm run lint:content
@@ -862,9 +937,10 @@ const footerLinks = {
 ```bash
 npm run dev                    # Standard Next.js dev server
 npm run dev:enhanced           # Enhanced dev server with content watching
-npm run build                  # Production build
-npm run build:optimized        # Build with performance analysis
-npm run build:production       # Full production build with reports
+npm run build                  # Basic Next.js build
+npm run build:optimized        # Full build with validations and analysis
+npm run build:production       # Production build with Lighthouse reports
+npm run start                  # Start production server
 ```
 
 #### Content Management
@@ -874,15 +950,44 @@ npm run content:list           # List all content files
 npm run content:validate       # Validate content structure
 npm run content:translate      # Generate translation templates
 npm run content:watch          # Watch content files for changes
+npm run validate:content       # Validate frontmatter and structure
+```
+
+#### Link Auditing
+```bash
+npm run links:audit            # Audit internal links
+npm run links:fix              # Auto-fix broken links
+npm run links:normalize        # Test link normalization
 ```
 
 #### Quality Assurance
 ```bash
-npm run lint                   # Lint TypeScript/JavaScript
+npm run lint                   # ESLint for TypeScript/JavaScript
+npm run lint:fix               # ESLint with auto-fix
 npm run lint:content           # Lint content files
 npm run lint:content:report    # Generate content linting report
-npm run validate:content       # Validate content structure and links
 npm run type-check             # TypeScript type checking
+npm run format                 # Prettier formatting
+npm run format:check           # Check Prettier formatting
+```
+
+#### Search & Sitemaps
+```bash
+npm run search:build           # Build Pagefind search indexes
+npm run search:cleanup         # Clean up search data
+npm run sitemap:generate       # Generate XML sitemaps
+npm run build:full             # Build search + sitemap + Next.js
+```
+
+#### Database
+```bash
+npm run db:init                # Initialize SQLite database
+npm run db:migrate             # Run database migrations
+npm run db:migrate:down        # Rollback migrations
+npm run db:migrate:status      # Check migration status
+npm run db:seed                # Seed database with initial data
+npm run db:health              # Check database health
+npm run db:info                # Show database info
 ```
 
 #### Performance & Analysis
@@ -891,6 +996,13 @@ npm run performance:analyze    # Analyze bundle sizes
 npm run performance:build      # Build with performance monitoring
 npm run performance:lighthouse # Generate Lighthouse report
 npm run build:analyze          # Build with webpack bundle analyzer
+```
+
+#### Testing
+```bash
+npm run test                   # Run Jest tests
+npm run test:watch             # Run tests in watch mode
+npm run test:coverage          # Run tests with coverage report
 ```
 
 ### Development Workflow

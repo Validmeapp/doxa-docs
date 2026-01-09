@@ -101,11 +101,6 @@ export function VersionSwitcher({ currentVersion, locale }: VersionSwitcherProps
                         Latest
                       </span>
                     )}
-                    {version.status === 'stable' && (
-                      <span className="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-                        Stable
-                      </span>
-                    )}
                   </div>
                 </div>
               </button>
