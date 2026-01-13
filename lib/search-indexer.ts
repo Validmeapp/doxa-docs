@@ -154,7 +154,7 @@ export class SearchIndexer {
     ];
 
     // Remove MDX-specific syntax and convert to basic HTML
-    let htmlContent = content
+    const htmlContent = content
       // Remove import statements
       .replace(/^import\s+.*$/gm, '')
       // Remove export statements

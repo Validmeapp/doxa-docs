@@ -212,6 +212,7 @@ export class LinkAuditor {
 
   /**
    * Normalize a link to be locale/version-aware
+   * Converts URL paths like /en/docs/v1/user-guide/onboarding to content paths like en/v1/user-guide/onboarding
    */
   normalizeLink(link: string, locale: string, version: string): string {
     // Skip external links
@@ -226,6 +227,13 @@ export class LinkAuditor {
 
     // Remove leading slash if present
     let normalizedLink = link.startsWith('/') ? link.slice(1) : link;
+
+    // Handle URL paths with /docs/ segment (e.g., en/docs/v1/... -> en/v1/...)
+    // The docs segment is part of the Next.js route but not the content file structure
+    const docsPattern = new RegExp(`^(${locale})/docs/(${version})/`);
+    if (docsPattern.test(normalizedLink)) {
+      normalizedLink = normalizedLink.replace(docsPattern, `$1/$2/`);
+    }
 
     // If the link doesn't start with locale/version, prepend it
     if (!normalizedLink.startsWith(`${locale}/${version}/`)) {

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <sitemap>
+    <loc>http://localhost:3000/sitemap-en-v1.xml</loc>
+    <lastmod>2026-01-09T19:00:20.055Z</lastmod>
+  </sitemap>
+  <sitemap>
+    <loc>http://localhost:3000/sitemap-es-v1.xml</loc>
+    <lastmod>2026-01-09T19:00:20.797Z</lastmod>
+  </sitemap>
+</sitemapindex>

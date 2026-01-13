@@ -227,8 +227,8 @@ export function DocAssetLink({
             console.info(`Asset fallback used for ${src}: ${resolved.fallbackType} fallback to ${resolved.publicPath}`);
           }
         } else {
-          // Asset not found in manifest, generate direct path as fallback
-          console.warn(`Asset not found in manifest: ${src} for context ${context.locale}/${context.version}`);
+          // Asset not found in manifest, use direct path
+          // This is expected when assets haven't been processed yet or when using external URLs
           const directPath = generateDirectAssetPath(src, context);
           setResolvedSrc(directPath);
           setAssetEntry(null);
@@ -271,12 +271,13 @@ export function DocAssetLink({
   // Show error state if resolution failed and no fallback src
   if (error && !resolvedSrc) {
     return (
-      <AssetLinkError 
-        src={src} 
-        children={children}
-        className={className} 
+      <AssetLinkError
+        src={src}
+        className={className}
         onRetry={handleRetry}
-      />
+      >
+        {children}
+      </AssetLinkError>
     );
   }
 

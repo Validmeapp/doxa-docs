@@ -138,9 +138,10 @@ class ContentValidator {
 
   private validateFrontmatter(filePath: string, frontmatter: any): void {
     const required = ['title', 'description', 'version', 'locale', 'order'];
-    
+
     for (const field of required) {
-      if (!frontmatter[field]) {
+      // Use explicit undefined/null check to allow falsy values like 0
+      if (frontmatter[field] === undefined || frontmatter[field] === null) {
         this.addError(filePath, 'frontmatter', `Missing required field: ${field}`);
       }
     }

@@ -356,81 +356,38 @@ function SingleCodeBlock({
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Enhanced validation for malformed code content
-  if (code === null || code === undefined) {
-    console.error('SingleCodeBlock: code is null or undefined');
-    return (
-      <div className={`rounded-lg border border-destructive bg-destructive/10 p-4 ${className}`}>
-        <div className="flex items-center justify-between border-b bg-destructive/20 px-4 py-2 -mx-4 -mt-4 mb-4">
-          <span className="rounded bg-destructive/20 px-2 py-1 text-xs font-medium text-destructive">
-            Error
-          </span>
-        </div>
-        <p className="text-sm text-destructive">
-          Error: Code content is missing. Cannot render code block.
-        </p>
-      </div>
-    );
-  }
-
-  if (typeof code !== 'string') {
-    console.error('SingleCodeBlock: code must be a string, received:', typeof code, code);
-    return (
-      <div className={`rounded-lg border border-destructive bg-destructive/10 p-4 ${className}`}>
-        <div className="flex items-center justify-between border-b bg-destructive/20 px-4 py-2 -mx-4 -mt-4 mb-4">
-          <span className="rounded bg-destructive/20 px-2 py-1 text-xs font-medium text-destructive">
-            Error
-          </span>
-        </div>
-        <p className="text-sm text-destructive">
-          Error: Invalid code content. Expected string, received {typeof code}.
-        </p>
-      </div>
-    );
-  }
-
-  // Handle empty code blocks with clear message (requirement 6.5)
-  if (code.trim().length === 0) {
-    return (
-      <div className={`rounded-lg border bg-muted/50 p-4 ${className}`}>
-        {!hideHeader && (
-          <div className="flex items-center justify-between border-b bg-muted/30 px-4 py-2 -mx-4 -mt-4 mb-4">
-            <span className="rounded bg-muted px-2 py-1 text-xs font-medium text-muted-foreground">
-              Empty Code Block
-            </span>
-          </div>
-        )}
-        <p className="text-sm text-muted-foreground italic text-center py-4">
-          This code block is empty
-        </p>
-      </div>
-    );
-  }
+  // Determine validation state (compute before hooks to use in useEffect)
+  const isCodeNull = code === null || code === undefined;
+  const isCodeNotString = !isCodeNull && typeof code !== 'string';
+  const isCodeEmpty = !isCodeNull && !isCodeNotString && typeof code === 'string' && code.trim().length === 0;
+  const isValidCode = !isCodeNull && !isCodeNotString && !isCodeEmpty;
 
   // Determine if this is a typed or untyped code block
   const normalizedLanguage = language ? language.trim().toLowerCase() : '';
-  const isTyped = normalizedLanguage && 
-                  normalizedLanguage.length > 0 && 
-                  normalizedLanguage !== 'text' && 
+  const isTyped = normalizedLanguage &&
+                  normalizedLanguage.length > 0 &&
+                  normalizedLanguage !== 'text' &&
                   normalizedLanguage !== 'plain' &&
                   normalizedLanguage !== 'none';
-  
+
   // Use neutralStyling prop or detect from className for backward compatibility
-  const isUntypedBlock = neutralStyling || 
-                         className.includes('untyped-code-block') || 
-                         className.includes('neutral-styling') || 
+  const isUntypedBlock = neutralStyling ||
+                         className.includes('untyped-code-block') ||
+                         className.includes('neutral-styling') ||
                          !isTyped;
 
+  // Hook must be called unconditionally - before any returns
   useEffect(() => {
+    // Skip processing for invalid code
+    if (!isValidCode) {
+      setIsLoading(false);
+      return;
+    }
+
     const highlightCode = async () => {
       try {
         setIsLoading(true);
         setError(null);
-        
-        // Validate inputs
-        if (!code || typeof code !== 'string') {
-          throw new Error('Invalid code content');
-        }
 
         // Handle untyped code blocks with neutral styling (requirement 3.2, 3.3)
         if (isUntypedBlock || language === 'text' || !language) {
@@ -478,7 +435,7 @@ function SingleCodeBlock({
     };
 
     highlightCode();
-  }, [code, language, highlightLines, isUntypedBlock]);
+  }, [code, language, highlightLines, isUntypedBlock, isValidCode]);
 
   const handleCopy = async () => {
     try {
@@ -617,7 +574,56 @@ function SingleCodeBlock({
     }
   };
 
+  // Render error states for invalid code (after hooks, using state variables)
+  if (isCodeNull) {
+    console.error('SingleCodeBlock: code is null or undefined');
+    return (
+      <div className={`rounded-lg border border-destructive bg-destructive/10 p-4 ${className}`}>
+        <div className="flex items-center justify-between border-b bg-destructive/20 px-4 py-2 -mx-4 -mt-4 mb-4">
+          <span className="rounded bg-destructive/20 px-2 py-1 text-xs font-medium text-destructive">
+            Error
+          </span>
+        </div>
+        <p className="text-sm text-destructive">
+          Error: Code content is missing. Cannot render code block.
+        </p>
+      </div>
+    );
+  }
 
+  if (isCodeNotString) {
+    console.error('SingleCodeBlock: code must be a string, received:', typeof code, code);
+    return (
+      <div className={`rounded-lg border border-destructive bg-destructive/10 p-4 ${className}`}>
+        <div className="flex items-center justify-between border-b bg-destructive/20 px-4 py-2 -mx-4 -mt-4 mb-4">
+          <span className="rounded bg-destructive/20 px-2 py-1 text-xs font-medium text-destructive">
+            Error
+          </span>
+        </div>
+        <p className="text-sm text-destructive">
+          Error: Invalid code content. Expected string, received {typeof code}.
+        </p>
+      </div>
+    );
+  }
+
+  // Handle empty code blocks with clear message (requirement 6.5)
+  if (isCodeEmpty) {
+    return (
+      <div className={`rounded-lg border bg-muted/50 p-4 ${className}`}>
+        {!hideHeader && (
+          <div className="flex items-center justify-between border-b bg-muted/30 px-4 py-2 -mx-4 -mt-4 mb-4">
+            <span className="rounded bg-muted px-2 py-1 text-xs font-medium text-muted-foreground">
+              Empty Code Block
+            </span>
+          </div>
+        )}
+        <p className="text-sm text-muted-foreground italic text-center py-4">
+          This code block is empty
+        </p>
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (

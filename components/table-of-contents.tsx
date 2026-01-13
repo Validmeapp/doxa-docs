@@ -22,7 +22,7 @@ export function TableOfContents({ items = [], className = '' }: TableOfContentsP
 
   // Generate a clean ID from text with uniqueness
   const generateId = useCallback((text: string, existingIds: Set<string> = new Set()): string => {
-    let baseId = text
+    const baseId = text
       .toLowerCase()
       .replace(/[^\w\s-]/g, '') // Remove special characters
       .replace(/\s+/g, '-') // Replace spaces with hyphens
