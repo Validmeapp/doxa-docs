@@ -1,0 +1,462 @@
+---
+title: Webhooks
+description: Learn how to receive and handle webhook events from the ValidMe API
+version: v1
+locale: en
+order: 5
+---
+
+# Webhooks
+
+Webhooks allow ValidMe to notify your application in real-time about request status changes and document submissions.
+
+## Webhook Configuration
+
+Your webhook endpoint must:
+
+- Accept `HTTP POST` requests
+- Accept `application/json` content type
+- Be accessible from the internet
+
+## Security: Encrypted Data
+
+<aside>
+
+For the `request.document.submitted` event, you will receive files and payload (document information) encrypted with your public RSA key. You must decrypt them using your private RSA key.
+
+</aside>
+
+### Decryption Example (JavaScript)
+
+```ts
+function decrypt(buffer: Buffer, privateKey: string): Buffer {
+    // Convert the encrypted data into blocks (256 bytes per block)
+    const blockSize = 256; // Block size for RSA with a 2048-bit key
+    const blocks = [];
+    for (let i = 0; i < buffer.length; i += blockSize) {
+        blocks.push(buffer.subarray(i, i + blockSize));
+    }
+
+    // Decrypt each block with RSA
+    const decryptedBlocks = blocks.map(block => {
+        return crypto.privateDecrypt(
+            {
+                key: privateKey,
+                padding: crypto.constants.RSA_PKCS1_OAEP_PADDING,
+            },
+            block
+        );
+    });
+
+    return Buffer.concat(decryptedBlocks);
+}
+```
+
+---
+
+## Event Types
+
+All webhook events are identified by their `eventType` field:
+
+```ts
+export enum RequestEventType {
+    REQUEST_STATUS_PENDING = 'request.status.pending',           // Request created
+    REQUEST_STATUS_CONFIRMED = 'request.status.confirmed',       // User accepted
+    REQUEST_STATUS_SENDING = 'request.status.sending',           // Being processed
+    REQUEST_STATUS_REJECTED = 'request.status.rejected',         // User declined
+    REQUEST_STATUS_EXPIRED = 'request.status.expired',           // Time limit reached
+    REQUEST_STATUS_SUCCESS = 'request.status.success',           // Completed successfully
+    REQUEST_STATUS_FAILED = 'request.status.failed',             // Processing error
+    REQUEST_STATUS_INVALIDATED = 'request.status.invalidated',   // Wrong OTP code
+    REQUEST_DOCUMENT_SUBMITTED = 'request.document.submitted',   // Document uploaded
+}
+```
+
+---
+
+## Webhook Events
+
+### request.status.confirmed
+
+Triggered when a user accepts the request (confirms with OTP, selects correct code, or clicks accept button).
+
+```json
+{
+  "eventType": "request.status.confirmed",
+  "eventPayload": {
+    "request": {
+      "_id": "68f411ae21765dd7a4102c41",
+      "deletedAt": null,
+      "accountId": "68e56f7e8a624a901884b831",
+      "organizationId": "68d85ee81c623d111e303c5e",
+      "code": "445465",
+      "verifications": [
+        {
+          "status": "PENDING",
+          "type": "NATIONAL_ID"
+        },
+        {
+          "status": "PENDING",
+          "type": "SELFIE"
+        }
+      ],
+      "status": "CONFIRMED",
+      "mode": "ALL",
+      "acceptanceMode": "OTP",
+      "category": "DOCUMENT_VALIDATION",
+      "callbackUrls": ["https://your-app.com/webhook"],
+      "description": "ACME Corp needs to validate your identity",
+      "metadata": {
+        "customerId": "123"
+      },
+      "createdAt": "2025-10-18T22:16:14.881Z",
+      "updatedAt": "2025-10-18T22:16:54.740Z"
+    },
+    "account": {
+      "id": "68e56f7e8a624a901884b831",
+      "email": null,
+      "phoneNumber": "+59166666666"
+    },
+    "metadata": {
+      "customerId": "123"
+    }
+  }
+}
+```
+
+---
+
+### request.status.sending
+
+Triggered when the request is being processed and sent to the user.
+
+```json
+{
+  "eventType": "request.status.sending",
+  "eventPayload": {
+    "request": {
+      "_id": "68f411ae21765dd7a4102c41",
+      "deletedAt": null,
+      "accountId": "68e56f7e8a624a901884b831",
+      "organizationId": "68d85ee81c623d111e303c5e",
+      "code": "445465",
+      "verifications": [
+        {
+          "status": "SENDING",
+          "type": "NATIONAL_ID"
+        },
+        {
+          "status": "CONFIRMED",
+          "type": "SELFIE"
+        }
+      ],
+      "status": "SENDING",
+      "mode": "ALL",
+      "acceptanceMode": "OTP",
+      "category": "DOCUMENT_VALIDATION",
+      "callbackUrls": ["https://your-app.com/webhook"],
+      "description": "ACME Corp needs to validate your identity",
+      "metadata": {
+        "customerId": "123"
+      },
+      "createdAt": "2025-10-18T22:16:14.881Z",
+      "updatedAt": "2025-10-18T22:17:11.748Z"
+    },
+    "account": {
+      "id": "68e56f7e8a624a901884b831",
+      "email": null,
+      "phoneNumber": "+59166666666"
+    },
+    "metadata": {
+      "customerId": "123"
+    }
+  }
+}
+```
+
+---
+
+### request.status.rejected
+
+Triggered when a user declines or rejects the request.
+
+```json
+{
+  "eventType": "request.status.rejected",
+  "eventPayload": {
+    "request": {
+      "_id": "68f411ae21765dd7a4102c41",
+      "status": "REJECTED",
+      "acceptanceMode": "OTP",
+      "category": "DOCUMENT_VALIDATION",
+      "description": "ACME Corp needs to validate your identity",
+      "metadata": {
+        "customerId": "123"
+      },
+      "createdAt": "2025-10-18T22:16:14.881Z",
+      "updatedAt": "2025-10-18T22:20:00.000Z"
+    },
+    "account": {
+      "id": "68e56f7e8a624a901884b831",
+      "phoneNumber": "+59166666666"
+    },
+    "metadata": {
+      "customerId": "123"
+    }
+  }
+}
+```
+
+---
+
+### request.status.expired
+
+Triggered when the request validity period has ended and the user did not respond.
+
+```json
+{
+  "eventType": "request.status.expired",
+  "eventPayload": {
+    "request": {
+      "_id": "68f411ae21765dd7a4102c41",
+      "status": "EXPIRED",
+      "acceptanceMode": "OTP",
+      "category": "DOCUMENT_VALIDATION",
+      "description": "ACME Corp needs to validate your identity",
+      "metadata": {
+        "customerId": "123"
+      },
+      "createdAt": "2025-10-18T22:16:14.881Z",
+      "updatedAt": "2025-10-18T23:16:14.881Z"
+    },
+    "account": {
+      "id": "68e56f7e8a624a901884b831",
+      "phoneNumber": "+59166666666"
+    },
+    "metadata": {
+      "customerId": "123"
+    }
+  }
+}
+```
+
+---
+
+### request.status.invalidated
+
+Triggered when the user enters an invalid OTP code.
+
+```json
+{
+  "eventType": "request.status.invalidated",
+  "eventPayload": {
+    "request": {
+      "_id": "68f411ae21765dd7a4102c41",
+      "status": "INVALIDATED",
+      "acceptanceMode": "OTP",
+      "category": "DOCUMENT_VALIDATION",
+      "description": "ACME Corp needs to validate your identity",
+      "metadata": {
+        "customerId": "123"
+      },
+      "createdAt": "2025-10-18T22:16:14.881Z",
+      "updatedAt": "2025-10-18T22:17:30.000Z"
+    },
+    "account": {
+      "id": "68e56f7e8a624a901884b831",
+      "phoneNumber": "+59166666666"
+    },
+    "metadata": {
+      "customerId": "123"
+    }
+  }
+}
+```
+
+---
+
+### request.status.failed
+
+Triggered when request processing fails.
+
+```json
+{
+  "eventType": "request.status.failed",
+  "eventPayload": {
+    "request": {
+      "_id": "68f411ae21765dd7a4102c41",
+      "status": "FAILED",
+      "category": "DOCUMENT_VALIDATION",
+      "description": "ACME Corp needs to validate your identity",
+      "metadata": {
+        "customerId": "123"
+      },
+      "createdAt": "2025-10-18T22:16:14.881Z",
+      "updatedAt": "2025-10-18T22:18:00.000Z"
+    },
+    "account": {
+      "id": "68e56f7e8a624a901884b831",
+      "phoneNumber": "+59166666666"
+    },
+    "metadata": {
+      "customerId": "123"
+    }
+  }
+}
+```
+
+---
+
+### request.document.submitted
+
+Triggered when a user submits a document. **Files and payload are encrypted with your public key.**
+
+```json
+{
+  "eventType": "request.document.submitted",
+  "eventPayload": {
+    "request": {
+      "_id": "68f411ae21765dd7a4102c41",
+      "status": "SENDING",
+      "category": "DOCUMENT_VALIDATION",
+      "verifications": [
+        {
+          "status": "SUCCESS",
+          "type": "NATIONAL_ID"
+        },
+        {
+          "status": "PENDING",
+          "type": "SELFIE"
+        }
+      ],
+      "description": "ACME Corp needs to validate your identity",
+      "metadata": {
+        "customerId": "123"
+      }
+    },
+    "account": {
+      "id": "68e56f7e8a624a901884b831",
+      "phoneNumber": "+59166666666"
+    },
+    "verificationType": "NATIONAL_ID",
+    "payload": "encrypted_payload_base64",
+    "metadata": {
+      "customerId": "123"
+    },
+    "files": [
+      {
+        "fileName": "NATIONAL_ID_BACK.jpg",
+        "contentType": "image/jpeg",
+        "fileUrl": "https://storage.googleapis.com/verification-files-validme-dev/verifications/.../file.jpg"
+      },
+      {
+        "fileName": "NATIONAL_ID_FRONT.jpg",
+        "contentType": "image/jpeg",
+        "fileUrl": "https://storage.googleapis.com/verification-files-validme-dev/verifications/.../file2.jpg"
+      }
+    ]
+  }
+}
+```
+
+**Note:** Decrypt the `payload` field using your private RSA key.
+
+---
+
+### request.status.success
+
+Triggered when all verifications are completed successfully.
+
+#### For Document Validation
+
+```json
+{
+  "eventType": "request.status.success",
+  "eventPayload": {
+    "request": {
+      "_id": "68f411ae21765dd7a4102c41",
+      "status": "SUCCESS",
+      "category": "DOCUMENT_VALIDATION",
+      "verifications": [
+        {
+          "status": "SUCCESS",
+          "type": "NATIONAL_ID"
+        },
+        {
+          "status": "SUCCESS",
+          "type": "SELFIE"
+        }
+      ],
+      "description": "ACME Corp needs to validate your identity",
+      "metadata": {
+        "customerId": "123"
+      },
+      "createdAt": "2025-10-18T22:16:14.881Z",
+      "updatedAt": "2025-10-18T22:18:24.041Z"
+    },
+    "account": {
+      "id": "68e56f7e8a624a901884b831",
+      "phoneNumber": "+59166666666"
+    },
+    "metadata": {
+      "customerId": "123"
+    }
+  }
+}
+```
+
+#### For Session (Login)
+
+```json
+{
+  "eventType": "request.status.success",
+  "eventPayload": {
+    "request": {
+      "_id": "68f411ae21765dd7a4102c41",
+      "status": "SUCCESS",
+      "category": "SESSION",
+      "description": "Login to ACME Corp",
+      "metadata": {
+        "customerId": "123"
+      },
+      "createdAt": "2025-10-18T22:16:14.881Z",
+      "updatedAt": "2025-10-18T22:18:24.041Z"
+    },
+    "account": {
+      "id": "68e56f7e8a624a901884b831",
+      "phoneNumber": "+59166666666"
+    },
+    "session": {
+      "_id": "68f411ae21765dd7a4102c12",
+      "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+      "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+    },
+    "metadata": {
+      "customerId": "123"
+    }
+  }
+}
+```
+
+**Note:** For session requests, the `session` object contains:
+- `accessToken`: Use this for authenticated API requests
+- `refreshToken`: Use this to refresh expired access tokens
+- `_id`: Session identifier
+
+---
+
+## Webhook Response
+
+Your webhook endpoint should respond with a `2xx` status code to indicate success. ValidMe will retry webhooks that don't respond successfully.
+
+### Expected Response
+
+```json
+{
+  "success": true
+}
+```
+
+---
+
+For more information, check the [Authentication guide](../authentication) and [Request documentation](index).

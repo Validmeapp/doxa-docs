@@ -1,0 +1,91 @@
+---
+title: Session Request
+description: Learn how to create sessions and generate authentication tokens for users
+version: v1
+locale: en
+order: 2
+---
+
+# Session Request
+
+A Session Request allows users to log in. This generates authentication tokens and initiates a new session for the user.
+
+## Request Body
+
+```json
+{
+  "flowId": "flow-id-12345",
+  "phoneNumber": "+59166666666",
+  "description": "Login to ACME Corp",
+  "acceptanceMode": "BUTTON",
+  "category": "SESSION",
+  "callbackUrls": ["https://your-app.com/webhook"],
+  "metadata": {
+    "customerId": "456"
+  }
+}
+```
+
+## Response
+
+```json
+{
+  "data": {
+    "deletedAt": null,
+    "accountId": "68e56f7e8a624a901884b831",
+    "organizationId": "68d85ee81c623d111e303c5e",
+    "status": "PENDING",
+    "acceptanceMode": "BUTTON",
+    "category": "SESSION",
+    "callbackUrls": [
+      "https://your-app.com/webhook"
+    ],
+    "statusTransitions": [
+      {
+        "status": "PENDING",
+        "description": "Request created",
+        "timestamp": "2026-01-14T10:30:00.361Z"
+      }
+    ],
+    "description": "Login to ACME Corp",
+    "metadata": {
+      "customerId": "456"
+    },
+    "_id": "session-unique-id-11111",
+    "createdAt": "2026-01-14T10:30:00.362Z",
+    "updatedAt": "2026-01-14T10:30:00.362Z",
+    "__v": 0,
+    "sessionToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+  },
+  "success": true
+}
+```
+
+## Request Parameters
+
+### Required Parameters
+
+- **flowId** (required): The unique identifier of your verification flow
+- **phoneNumber** (required): User's phone number in international format (e.g., +59166666666)
+- **description** (required): Description of the login/session purpose
+- **acceptanceMode** (required): How the user will accept (OTP, CHOICE, BUTTON)
+- **category** (required): Must be "SESSION"
+
+### Optional Parameters
+
+- **metadata** (optional): Custom metadata (e.g., customerId from your system)
+- **callbackUrls** (optional): URLs where ValidMe will send webhook events
+
+## Response Fields
+
+- **_id**: Unique request identifier
+- **status**: Current request status (PENDING, CONFIRMED, SUCCESS, REJECTED, etc.)
+- **sessionToken**: Authentication token for the user session
+- **description**: The description sent with the request
+- **createdAt**: When the session was created
+
+---
+
+Previous: [Consent Request](consent) | Next: [Document Validation Request](document-validation)
+
+Previous: [Document Validation Request](document-validation)

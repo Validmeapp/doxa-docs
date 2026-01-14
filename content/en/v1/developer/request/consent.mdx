@@ -1,0 +1,87 @@
+---
+title: Consent Request
+description: Learn how to send consent requests that users can accept or reject
+version: v1
+locale: en
+order: 3
+---
+
+# Consent Request
+
+A Consent Request allows users to accept a request sent by your organization. This is where the user grants permission for a specific action or data access.
+
+## Request Body
+
+```json
+{
+  "flowId": "flow-id-12345",
+  "phoneNumber": "+59166666666",
+  "description": "ACME Corp needs your consent to access your data",
+  "acceptanceMode": "BUTTON",
+  "category": "CONSENT",
+  "callbackUrls": ["https://your-app.com/webhook"],
+  "metadata": {
+    "customerId": "123"
+  }
+}
+```
+
+## Response
+
+```json
+{
+  "data": {
+    "deletedAt": null,
+    "accountId": "68e56f7e8a624a901884b831",
+    "organizationId": "68d85ee81c623d111e303c5e",
+    "status": "PENDING",
+    "acceptanceMode": "BUTTON",
+    "category": "CONSENT",
+    "callbackUrls": [
+      "https://your-app.com/webhook"
+    ],
+    "statusTransitions": [
+      {
+        "status": "PENDING",
+        "description": "Request created",
+        "timestamp": "2026-01-14T10:30:00.361Z"
+      }
+    ],
+    "description": "ACME Corp needs your consent to access your data",
+    "metadata": {
+      "customerId": "123"
+    },
+    "_id": "consent-unique-id-12345",
+    "createdAt": "2026-01-14T10:30:00.362Z",
+    "updatedAt": "2026-01-14T10:30:00.362Z",
+    "__v": 0
+  },
+  "success": true
+}
+```
+
+## Request Parameters
+
+### Required Parameters
+
+- **flowId** (required): The unique identifier of your verification flow
+- **phoneNumber** (required): User's phone number in international format (e.g., +59166666666)
+- **description** (required): Clear explanation of what the user is consenting to
+- **acceptanceMode** (required): How the user will accept (OTP, CHOICE, BUTTON)
+- **category** (required): Must be "CONSENT"
+
+### Optional Parameters
+
+- **metadata** (optional): Custom metadata (e.g., customerId from your system)
+- **callbackUrls** (optional): URLs where ValidMe will send webhook events
+
+## Response Fields
+
+- **_id**: Unique request identifier
+- **status**: Current request status (PENDING, CONFIRMED, SUCCESS, REJECTED, etc.)
+- **description**: The description sent with the request
+- **createdAt**: When the request was created
+
+---
+
+Previous: [Getting Started](index) | Next: [Document Validation Request](document-validation)
