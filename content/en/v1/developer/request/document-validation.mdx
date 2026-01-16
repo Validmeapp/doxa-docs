@@ -1,0 +1,105 @@
+---
+title: Document Validation Request
+description: Learn how to validate user documents through the ValidMe API
+version: v1
+locale: en
+order: 4
+---
+
+# Document Validation Request
+
+A Document Validation Request allows users to accept and submit their documents for validation. The organization sends a request asking the user to share documents, and the user can choose to accept and send them.
+
+## Request Body
+
+```json
+{
+  "flowId": "flow-id-12345",
+  "phoneNumber": "+59166666666",
+  "description": "ACME Corp needs to validate your identity",
+  "acceptanceMode": "BUTTON",
+  "category": "DOCUMENT_VALIDATION",
+  "callbackUrls": ["https://your-app.com/webhook"],
+  "metadata": {
+    "customerId": "123"
+  }
+}
+```
+
+## Response
+
+```json
+{
+  "data": {
+    "deletedAt": null,
+    "accountId": "68e56f7e8a624a901884b831",
+    "organizationId": "68d85ee81c623d111e303c5e",
+    "code": null,
+    "verifications": [
+      {
+        "status": "PENDING",
+        "type": "NATIONAL_ID"
+      },
+      {
+        "status": "PENDING",
+        "type": "SELFIE"
+      }
+    ],
+    "requiredDocuments": [],
+    "status": "PENDING",
+    "mode": "ALL",
+    "acceptanceMode": "BUTTON",
+    "category": "DOCUMENT_VALIDATION",
+    "callbackUrls": [
+      "https://your-app.com/webhook"
+    ],
+    "statusTransitions": [
+      {
+        "status": "PENDING",
+        "description": "Request created",
+        "timestamp": "2025-10-18T23:15:30.361Z"
+      }
+    ],
+    "ip": "::1",
+    "device": "PostmanRuntime/7.49.0",
+    "description": "ACME Corp needs to validate your identity",
+    "metadata": {
+      "customerId": "123"
+    },
+    "_id": "68f41f9221765dd7a4102dd6",
+    "createdAt": "2025-10-18T23:15:30.362Z",
+    "updatedAt": "2025-10-18T23:15:30.362Z",
+    "__v": 0
+  },
+  "success": true
+}
+```
+
+## Request Parameters
+
+### Required Parameters
+
+- **flowId** (required): The unique identifier of your verification flow
+- **phoneNumber** (required): User's phone number in international format (e.g., +59166666666)
+- **description** (required): Clear and simple description explaining why the organization needs this verification
+- **acceptanceMode** (required): How the user will accept the request (OTP, CHOICE, BUTTON)
+- **category** (required): Must be "DOCUMENT_VALIDATION"
+
+### Optional Parameters
+
+- **metadata** (optional): Custom metadata (e.g., customerId from your system)
+- **callbackUrls** (optional): URLs where ValidMe will send webhook events
+
+
+## Response Fields
+
+- **_id**: Unique request identifier
+- **status**: Current request status (PENDING, CONFIRMED, SENDING, SUCCESS, REJECTED, etc.)
+- **verifications**: Array of document verification statuses
+- **description**: The description sent with the request
+- **createdAt**: When the request was created
+- **statusTransitions**: History of status changes
+
+---
+
+Previous: [Consent Request](consent) | Next: [Session Request](session)

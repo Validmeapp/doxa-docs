@@ -1,0 +1,250 @@
+---
+title: Error Handling
+description: Reference guide for ValidMe API errors and how to handle them
+version: v1
+locale: en
+order: 7
+---
+
+# Error Handling
+
+This guide explains the different error codes you may encounter when using the ValidMe API and how to handle them.
+
+## Error Response Structure
+
+All error responses follow this format:
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "ERROR_CODE",
+    "message": "Human readable error message",
+    "type": "ErrorType",
+    "detail": "Detailed error description",
+    "params": {}
+  },
+  "timestamp": "2025-08-04T20:35:53.387Z",
+  "path": "/requests",
+  "method": "POST",
+  "requestId": "RIDqbfemk7x0j9hzqalu4mkyvky"
+}
+```
+
+---
+
+## Common Errors
+
+### ACCOUNT_NOT_FOUND
+
+The user account was not found in ValidMe.
+
+**Solution:** Use the [App Invitation](/en/docs/v1/developer/app-invitation) endpoint to send an invitation to the user.
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "ACCOUNT_NOT_FOUND",
+    "message": "Account not found",
+    "type": "AccountNotFoundError",
+    "detail": "The account was not found",
+    "params": {}
+  },
+  "timestamp": "2025-08-04T20:35:53.387Z",
+  "path": "/requests",
+  "method": "POST",
+  "requestId": "RIDqbfemk7x0j9hzqalu4mkyvky"
+}
+```
+
+---
+
+### ORGANIZATION_NOT_FOUND
+
+Your organization was not found in the system.
+
+**Solution:** Check that your API token is correct and your organization is active in the BackOffice.
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "ORGANIZATION_NOT_FOUND",
+    "message": "Organization not found",
+    "type": "OrganizationNotFoundError",
+    "detail": "The organization was not found",
+    "params": {}
+  },
+  "timestamp": "2025-08-04T20:35:53.387Z",
+  "path": "/requests",
+  "method": "POST",
+  "requestId": "RIDqbfemk7x0j9hzqalu4mkyvky"
+}
+```
+
+---
+
+### ORGANIZATION_PUBLIC_KEY_NOT_FOUND
+
+Your organization's RSA public key is not configured.
+
+**Solution:** Generate RSA keys in BackOffice **Settings > RSA Key Management**.
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "ORGANIZATION_PUBLIC_KEY_NOT_FOUND",
+    "message": "Organization public key not found",
+    "type": "OrganizationPublicKeyNotFoundError",
+    "detail": "The organization public key was not found",
+    "params": {}
+  },
+  "timestamp": "2025-08-04T20:35:53.387Z",
+  "path": "/requests",
+  "method": "POST",
+  "requestId": "RIDqbfemk7x0j9hzqalu4mkyvky"
+}
+```
+
+---
+
+### FLOW_NOT_FOUND
+
+The specified Flow ID does not exist or is invalid.
+
+**Solution:** 
+- Verify the Flow ID is correct
+- Check that the flow exists in **Validation Flows**
+- Ensure you're using the exact Flow ID
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "FLOW_NOT_FOUND",
+    "message": "Flow not found",
+    "type": "FlowNotFoundError",
+    "detail": "The flow was not found",
+    "params": {}
+  },
+  "timestamp": "2025-08-04T20:35:53.387Z",
+  "path": "/requests",
+  "method": "POST",
+  "requestId": "RIDqbfemk7x0j9hzqalu4mkyvky"
+}
+```
+
+---
+
+### REQUIRED_DOCUMENT_COUNTRY_NOT_ALLOWED
+
+The document country specified in the flow is not allowed.
+
+**Solution:** 
+- Check the flow configuration in the BackOffice
+- Ensure the country is supported by ValidMe
+- Verify document types and countries in the flow match your needs
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "REQUIRED_DOCUMENT_COUNTRY_NOT_ALLOWED",
+    "message": "Required document country not allowed",
+    "type": "RequiredDocumentCountryNotAllowed",
+    "detail": "Required document country not allowed",
+    "params": {}
+  },
+  "timestamp": "2025-08-04T20:35:53.387Z",
+  "path": "/requests",
+  "method": "POST",
+  "requestId": "RIDqbfemk7x0j9hzqalu4mkyvky"
+}
+```
+
+---
+
+### REQUIRED_DOCUMENTS_NOT_FOUND
+
+The user does not have the required documents to fulfill the request.
+
+**Solution:** 
+- The user must have the required documents available to submit
+- Ensure the user understands what documents are needed
+- Check the flow configuration to see what documents are required
+- Ask the user to provide the necessary documents (e.g., National ID, passport, etc.)
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "REQUIRED_DOCUMENTS_NOT_FOUND",
+    "message": "Required documents not found",
+    "type": "RequiredDocumentsNotFound",
+    "detail": "Required documents not found",
+    "params": {}
+  },
+  "timestamp": "2025-08-04T20:35:53.387Z",
+  "path": "/requests",
+  "method": "POST",
+  "requestId": "RIDqbfemk7x0j9hzqalu4mkyvky"
+}
+```
+
+---
+
+### EMAIL_ALREADY_EXIST
+
+The email address is already registered in the system.
+
+**Solution:** 
+- Use a different email address
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "EMAIL_ALREADY_EXIST",
+    "message": "Email already exist",
+    "type": "EmailAlreadyExistError",
+    "detail": "The email already exist",
+    "params": {}
+  },
+  "timestamp": "2025-08-04T20:35:53.387Z",
+  "path": "/requests",
+  "method": "POST",
+  "requestId": "RIDqbfemk7x0j9hzqalu4mkyvky"
+}
+```
+
+---
+
+## Error Response Fields
+
+- **success**: Always `false` for errors
+- **error.code**: Machine-readable error code for programmatic handling
+- **error.message**: Human-readable error message
+- **error.type**: Error class type
+- **error.detail**: Detailed description of the error
+- **error.params**: Additional parameters related to the error
+- **timestamp**: When the error occurred (ISO 8601 format)
+- **path**: API endpoint that caused the error
+- **method**: HTTP method used (POST, GET, etc.)
+- **requestId**: Unique identifier for tracking this request in logs
+
+---
+
+## Best Practices
+
+1. **Always check the error code** to determine the appropriate action
+2. **Log the requestId** for debugging and support tickets
+3. **Handle ACCOUNT_NOT_FOUND** by sending an app invitation
+4. **Validate input** before making requests to catch errors early
+5. **Retry on transient errors** with exponential backoff
+6. **Contact support** if errors persist with the requestId
+
+---
+
+For more information, check the [Request documentation](request/index) and [Authentication guide](authentication).

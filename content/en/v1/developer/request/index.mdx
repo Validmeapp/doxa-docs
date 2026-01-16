@@ -1,0 +1,134 @@
+---
+title: Getting Started with Requests
+description: Introduction to making requests to the ValidMe API - choose between Consent, Document Validation, or Session requests
+version: v1
+locale: en
+order: 1
+---
+
+# Getting Started with Requests
+
+## Important: Request Initiation
+
+All requests must be initiated by the organization (company) with a **clear and simple description** so users can understand the purpose of the request and decide whether to accept or reject it.
+
+The ValidMe API supports three main types of requests.
+
+## Request Types
+
+1. **[Consent Request](consent)** - Send a consent request that users can accept or reject
+
+2. **[Document Validation Request](document-validation)** - Request users to accept and submit documents for validation
+
+3. **[Session Request](session)** - Create a session for user login and generate authentication tokens
+
+## Common Headers
+
+All requests must include the authentication header:
+
+```curl
+x-vm-authorization: Bearer <<Token>>
+```
+
+---
+
+## Enums
+
+### Request Status
+
+Represents the current state of a request throughout its lifecycle:
+
+```ts
+export enum RequestStatus {
+  PENDING = 'PENDING',           // Request has been created and is waiting for user action
+  CONFIRMED = 'CONFIRMED',       // User has accepted the request
+  SENDING = 'SENDING',           // Request is being processed and sent to the user
+  REJECTED = 'REJECTED',         // User has declined the request
+  EXPIRED = 'EXPIRED',           // Request validity period has ended
+  SUCCESS = 'SUCCESS',           // Request completed successfully
+  FAILED = 'FAILED',             // Request processing failed
+  INVALIDATED = 'INVALIDATED',   // User entered an invalid OTP code
+}
+```
+
+**Status Flow:**
+- Starts as `PENDING` when created
+- Moves to `SENDING` as it's being processed
+- Can be `CONFIRMED` (accepted) or `REJECTED` (declined) by user
+- Ends as `SUCCESS` or `FAILED`
+- Can become `EXPIRED` if not completed in time
+- Can be `INVALIDATED` if wrong OTP is provided
+
+---
+
+### Request Category
+
+Defines the type of request being made:
+
+```ts
+export enum RequestCategory {
+  SESSION = 'SESSION',                         // User login request - generates tokens
+  DOCUMENT_VALIDATION = 'DOCUMENT_VALIDATION', // User submits documents for validation
+  CONSENT = 'CONSENT',                         // User accepts consent for data access
+}
+```
+
+**Use Cases:**
+- **SESSION**: When user needs to authenticate and get session tokens
+- **DOCUMENT_VALIDATION**: When organization needs user documents
+- **CONSENT**: When organization needs user to accept terms or data sharing
+
+---
+
+### Request Mode
+
+Specifies what type of data is being requested:
+
+```ts
+export enum RequestMode {
+  PAYLOAD = 'PAYLOAD',   // Document information in text format
+  FILES = 'FILES',       // Only file uploads are requested (documents)
+  ALL = 'ALL',           // Both document information data and files are requested
+}
+```
+
+---
+
+### Acceptance Mode
+
+Determines how the user confirms acceptance of the request:
+
+```ts
+export enum AcceptanceMode {
+  OTP = 'OTP',           // User enters a One-Time Password generated when request is created
+  CHOICE = 'CHOICE',     // User selects the correct code from 3 options generated when request is created
+  BUTTON = 'BUTTON',     // User accepts with a single button click
+}
+```
+
+---
+
+### Request Event Type (Webhooks)
+
+Events triggered during request lifecycle. These are sent to your `callbackUrl`:
+
+```ts
+export enum RequestEventType {
+    REQUEST_STATUS_PENDING = 'request.status.pending',           // Request created
+    REQUEST_STATUS_CONFIRMED = 'request.status.confirmed',       // User accepted
+    REQUEST_STATUS_SENDING = 'request.status.sending',           // Being processed
+    REQUEST_STATUS_REJECTED = 'request.status.rejected',         // User declined
+    REQUEST_STATUS_EXPIRED = 'request.status.expired',           // Time limit reached
+    REQUEST_STATUS_SUCCESS = 'request.status.success',           // Completed successfully
+    REQUEST_STATUS_FAILED = 'request.status.failed',             // Processing error
+    REQUEST_STATUS_INVALIDATED = 'request.status.invalidated',   // Wrong OTP code
+    REQUEST_DOCUMENT_SUBMITTED = 'request.document.submitted',   // Document uploaded
+}
+```
+
+**Webhook Integration:**
+Subscribe to these events to track request progress in real-time. ValidMe will POST to your `callbackUrl` when these events occur.
+
+---
+
+For more information, check the [Authentication guide](../authentication) and [Verification Flows guide](../flow).
