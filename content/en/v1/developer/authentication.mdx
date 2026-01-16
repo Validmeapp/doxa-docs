@@ -1,0 +1,51 @@
+---
+title: Authentication
+description: Learn how to authenticate requests to the ValidMe API using authorization tokens
+version: v1
+locale: en
+order: 2
+---
+
+# Authentication
+
+All requests to the ValidMe API require authentication using an authorization token.
+
+## Using Your API Token
+
+To authenticate your requests, use the token provided from the backOffice or by the ValidMe team.
+
+### Authorization Header
+
+Include the authorization token in the request header:
+
+```curl
+x-vm-authorization = Bearer <<Token>>
+```
+
+### Example Usage
+
+Replace `<<Token>>` with your actual API token provided by ValidMe:
+
+```curl
+x-vm-authorization = Bearer your_actual_token_here_abc123def456
+```
+
+## Token Management
+
+- Obtain your token from **Settings > API Keys** in the BackOffice
+- Keep your token secure and never share it publicly
+- The token will not be shown again, store it securely
+- If your token is compromised, contact the ValidMe team for assistance
+
+## Authentication Errors
+
+If you receive authentication errors:
+
+1. Verify the token is valid and has not expired
+2. Ensure the token is correctly formatted in the header
+3. Check that the `x-vm-authorization` header is included in all requests
+4. Generate a new token if needed from the BackOffice
+
+---
+
+Ready to make authenticated requests? Check out the [API Endpoints documentation](api-endpoints) for available endpoints.

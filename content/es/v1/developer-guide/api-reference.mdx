@@ -57,7 +57,7 @@ Content-Type: application/json
 
 | Parámetro | Tipo | Descripción |
 |-----------|------|-------------|
-| `phoneNumber` | string | Teléfono del usuario con código de país (ej: `+59165890904`) |
+| `phoneNumber` | string | Teléfono del usuario con código de país (ej: `+59166666666`) |
 | `description` | string | Descripción clara del motivo de validación |
 | `category` | string | `DOCUMENT_VALIDATION`, `CONSENT`, `SESSION` |
 | `callbackUrls` | array | URLs donde recibirás webhooks |
@@ -87,7 +87,7 @@ Content-Type: application/json
 ```json
 {
   "verificationTypes": ["NATIONAL_ID", "SELFIE"],
-  "phoneNumber": "+59165890904",
+  "phoneNumber": "+59166666666",
   "description": "Validación KYC - Apertura de cuenta",
   "category": "DOCUMENT_VALIDATION",
   "acceptanceMode": "BUTTON",
@@ -265,7 +265,7 @@ GET https://api.validme.tech/requests?page=1&limit=20&status=SUCCESS&from=2025-1
         "_id": "68f41f9221765dd7a4102dd6",
         "status": "SUCCESS",
         "code": "ABC123",
-        "phoneNumber": "+59165890904",
+        "phoneNumber": "+59166666666",
         "metadata": { "customerId": "user_123" },
         "createdAt": "2025-10-26T15:30:00.000Z",
         "updatedAt": "2025-10-26T15:45:00.000Z"
@@ -420,7 +420,7 @@ async function createRequest() {
       'https://api.validme.tech/requests',
       {
         verificationTypes: ['NATIONAL_ID', 'SELFIE'],
-        phoneNumber: '+59165890904',
+        phoneNumber: '+59166666666',
         description: 'Validación KYC',
         category: 'DOCUMENT_VALIDATION',
         acceptanceMode: 'BUTTON',
@@ -465,7 +465,7 @@ def create_request():
     
     payload = {
         'verificationTypes': ['NATIONAL_ID', 'SELFIE'],
-        'phoneNumber': '+59165890904',
+        'phoneNumber': '+59166666666',
         'description': 'Validación KYC',
         'category': 'DOCUMENT_VALIDATION',
         'acceptanceMode': 'BUTTON',
@@ -495,7 +495,7 @@ curl -X POST https://api.validme.tech/requests \
   -H "Content-Type: application/json" \
   -d '{
     "verificationTypes": ["NATIONAL_ID", "SELFIE"],
-    "phoneNumber": "+59165890904",
+    "phoneNumber": "+59166666666",
     "description": "Validación KYC",
     "category": "DOCUMENT_VALIDATION",
     "acceptanceMode": "BUTTON",

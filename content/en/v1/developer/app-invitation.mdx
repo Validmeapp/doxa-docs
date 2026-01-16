@@ -1,0 +1,52 @@
+---
+title: App Invitation
+description: Learn how to send app invitations to users who are not yet registered in ValidMe
+version: v1
+locale: en
+order: 6
+---
+
+# App Invitation
+
+If you receive an `ACCOUNT_NOT_FOUND` error, it means the user is not yet registered in ValidMe. You can use the invitation endpoint to send them an invitation via email to download and register in the ValidMe app.
+
+## When to Use
+
+Use this endpoint when:
+- You receive an `ACCOUNT_NOT_FOUND` error in your request
+- A user doesn't have a ValidMe account yet
+- You want to invite a user to join ValidMe
+
+## Request Body
+
+```json
+{
+  "email": "user@example.com"
+}
+```
+
+## Response
+
+```json
+{
+  "data": {
+    "message": "Invitation sent successfully"
+  },
+  "success": true
+}
+```
+
+## Parameters
+
+- **email** (required): The email address of the user to invite
+
+## What Happens Next
+
+1. An invitation email is sent to the user
+2. The email contains a link to download the ValidMe app
+3. The user registers in the app
+4. Once registered, the user can accept requests from your organization
+
+---
+
+For more information, check the [Request documentation](request/index) and [Authentication guide](authentication).
