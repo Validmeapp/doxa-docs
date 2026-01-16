@@ -146,21 +146,21 @@
   - Test context resolution across different page types
   - _Requirements: 3.2, 3.3_
 
-- [ ] 6. Add comprehensive examples and documentation
+- [x] 6. Add comprehensive examples and documentation
   - Create example images and binary assets for testing
   - Build comprehensive usage examples for both components
   - Document best practices for asset organization and optimization
   - Create migration guide for existing content
   - _Requirements: 8.1, 8.2, 8.3, 8.4_
 
-- [ ] 6.1 Create example assets and usage
+- [x] 6.1 Create example assets and usage
   - Add sample images in different formats to content/en/v1/assets/
   - Create sample binary files (PDF, CSV) for testing
   - Build example MDX content demonstrating asset usage
   - Test examples with both manual components and auto-conversion
   - _Requirements: 8.1, 8.2_
 
-- [ ] 6.2 Write comprehensive documentation
+- [x] 6.2 Write comprehensive documentation
   - Create asset management documentation in docs/
   - Document component APIs and usage patterns
   - Add troubleshooting guide for common issues

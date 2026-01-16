@@ -1,0 +1,317 @@
+---
+title: "Guía de Assets Estáticos"
+description: "Aprende a usar imágenes, documentos y otros recursos estáticos en tu documentación con optimización automática y manejo seguro."
+version: "v1"
+locale: "es"
+order: 4
+category: "developer-guide"
+subcategory: "assets"
+lastUpdated: "2026-01-09"
+icon: "image"
+readTime: "8 min"
+---
+
+# Guía de Assets Estáticos
+
+Esta guía explica cómo usar recursos estáticos (imágenes, PDFs, CSVs y otros archivos) en tu documentación. El pipeline de assets maneja automáticamente la optimización, validación de seguridad y hash de contenido para eficiencia de caché.
+
+---
+
+## Descripción General
+
+El portal de documentación incluye un sistema completo de gestión de assets que proporciona:
+
+- **Optimización Automática de Imágenes**: Las imágenes se procesan con Sharp para calidad óptima y tamaño de archivo
+- **Hash de Contenido**: Los assets se identifican con huella digital para cacheo eficiente del navegador
+- **Validación de Seguridad**: Todas las cargas se escanean en busca de contenido malicioso
+- **Alcance por Idioma/Versión**: Los assets se organizan por idioma y versión de API
+- **Variantes Responsivas**: Generación automática de imágenes @1x y @2x
+- **Formatos Modernos**: Conversión a WebP y AVIF para mejor compresión
+
+---
+
+## Usando Imágenes
+
+### Uso Básico de Imágenes
+
+Para incluir una imagen en tu contenido MDX, usa la sintaxis estándar de Markdown. El sistema convierte automáticamente estas a componentes `<DocImage />` optimizados:
+
+```markdown
+![Diagrama de Flujo API](api-flow-diagram.png)
+```
+
+Esto se renderiza como:
+
+![Diagrama de Flujo API](api-flow-diagram.png)
+
+### Imágenes con Texto Alternativo Personalizado
+
+Siempre proporciona texto alternativo descriptivo para accesibilidad:
+
+```markdown
+![Panel de control mostrando estado de verificación y métricas de usuario](dashboard-screenshot.png)
+```
+
+![Panel de control mostrando estado de verificación y métricas de usuario](dashboard-screenshot.png)
+
+### Usando el Componente DocImage Directamente
+
+Para más control, puedes usar el componente `DocImage` directamente:
+
+```tsx
+import { DocImage } from '@/components/doc-image';
+
+<DocImage
+  src="verification-process.png"
+  alt="Diagrama de flujo del proceso de verificación"
+  width={600}
+  height={400}
+  priority={false}
+/>
+```
+
+### Imágenes SVG
+
+Los archivos SVG son soportados y servidos sin rasterización:
+
+![Logo Validme](logo.svg)
+
+---
+
+## Usando Archivos Binarios
+
+### Documentos Descargables
+
+Enlaza a archivos descargables como PDFs, CSVs o archivos de configuración. El sistema añade automáticamente metadatos del archivo (tamaño, tipo):
+
+```markdown
+Descarga el [CSV de usuarios de ejemplo](sample-users.csv) para ver el formato esperado.
+```
+
+Descarga el [CSV de usuarios de ejemplo](sample-users.csv) para ver el formato esperado.
+
+### Archivos de Configuración
+
+Proporciona archivos de configuración de ejemplo para desarrolladores:
+
+```markdown
+[Descargar Configuración API](api-config.json)
+```
+
+[Descargar Configuración API](api-config.json)
+
+### Documentación de Texto
+
+Incluye documentación de texto suplementaria:
+
+```markdown
+[Guía de Inicio Rápido (TXT)](quickstart-guide.txt)
+```
+
+[Guía de Inicio Rápido (TXT)](quickstart-guide.txt)
+
+### Usando el Componente DocAssetLink
+
+Para más control sobre el comportamiento de descarga y visualización de metadatos:
+
+```tsx
+import { DocAssetLink } from '@/components/doc-asset-link';
+
+<DocAssetLink
+  src="sample-users.csv"
+  download="plantilla-usuarios.csv"
+  showMetadata={true}
+>
+  Descargar Plantilla de Usuarios
+</DocAssetLink>
+```
+
+---
+
+## Organización de Assets
+
+### Estructura de Directorios
+
+Los assets deben colocarse en el directorio `content/{locale}/{version}/assets/`:
+
+```
+content/
+├── en/
+│   └── v1/
+│       ├── assets/
+│       │   ├── images/
+│       │   │   ├── api-flow-diagram.png
+│       │   │   ├── dashboard-screenshot.png
+│       │   │   └── logo.svg
+│       │   └── files/
+│       │       ├── sample-users.csv
+│       │       ├── api-config.json
+│       │       └── quickstart-guide.txt
+│       └── developer-guide/
+│           └── assets-guide.mdx
+├── es/
+│   └── v1/
+│       ├── assets/
+│       │   ├── images/
+│       │   └── files/
+│       └── developer-guide/
+│           └── assets-guide.mdx
+```
+
+### Alcance por Idioma y Versión
+
+Los assets se enfocan automáticamente a su idioma y versión:
+
+- Assets inglés v1: `content/en/v1/assets/`
+- Assets español v1: `content/es/v1/assets/`
+
+El sistema resuelve los assets basándose en el contexto de la página actual. Si un asset no se encuentra en el idioma actual, recurre al idioma predeterminado (inglés).
+
+---
+
+## Tipos de Archivo Soportados
+
+### Imágenes
+
+| Formato | Extensión | Caso de Uso |
+|---------|-----------|-------------|
+| JPEG | `.jpg`, `.jpeg` | Fotografías, imágenes complejas |
+| PNG | `.png` | Capturas de pantalla, diagramas con transparencia |
+| WebP | `.webp` | Navegadores modernos, tamaños de archivo más pequeños |
+| AVIF | `.avif` | Formato más nuevo, mejor compresión |
+| GIF | `.gif` | Animaciones simples |
+| SVG | `.svg` | Logos, iconos, gráficos escalables |
+
+### Documentos
+
+| Formato | Extensión | Caso de Uso |
+|---------|-----------|-------------|
+| PDF | `.pdf` | Documentación, guías, certificados |
+| CSV | `.csv` | Muestras de datos, plantillas |
+| JSON | `.json` | Archivos de configuración, ejemplos de API |
+| Texto | `.txt` | Documentación de texto plano |
+| Excel | `.xls`, `.xlsx` | Plantillas de hoja de cálculo |
+| ZIP | `.zip` | Recursos empaquetados |
+
+---
+
+## Integración con el Proceso de Build
+
+### Procesamiento de Assets
+
+Los assets se procesan automáticamente durante el build:
+
+```bash
+# Procesar assets como parte del build optimizado
+npm run build:optimized
+
+# O procesar assets por separado
+npx tsx scripts/process-assets.ts
+
+# Con salida detallada
+npx tsx scripts/process-assets.ts --verbose
+```
+
+### Manifiesto de Assets
+
+El build genera un `assets-manifest.json` en `public/assets/`:
+
+```json
+{
+  "version": "1.0.0",
+  "generatedAt": "2026-01-09T12:00:00.000Z",
+  "assets": {
+    "en/v1/assets/images/api-flow-diagram.png": {
+      "publicPath": "/public/assets/en/v1/images/api-flow-diagram.a1b2c3d4.png",
+      "hashedFilename": "api-flow-diagram.a1b2c3d4.png",
+      "contentHash": "a1b2c3d4...",
+      "fileSize": 45678,
+      "mimeType": "image/png",
+      "dimensions": { "width": 800, "height": 400 }
+    }
+  },
+  "locales": ["en", "es"],
+  "versions": ["v1"]
+}
+```
+
+---
+
+## Consideraciones de Seguridad
+
+### Tipos de Archivo Permitidos
+
+Solo se aceptan estos tipos de archivo:
+
+**Imágenes**: JPEG, PNG, WebP, AVIF, GIF, SVG
+**Documentos**: PDF, ZIP, JSON, TXT, CSV, XLS, XLSX
+
+### Límites de Tamaño de Archivo
+
+- Tamaño máximo de archivo: **10 MB**
+- Dimensiones máximas de imagen: **4000 x 4000 píxeles**
+
+### Validación de Seguridad
+
+Todos los assets pasan por validación de seguridad:
+
+1. **Verificación de tipo de archivo** - Verifica tipo MIME y extensión
+2. **Escaneo de contenido** - Detecta patrones maliciosos y firmas ejecutables
+3. **Sanitización de ruta** - Previene ataques de traversal de directorios
+
+---
+
+## Solución de Problemas
+
+### Asset No Encontrado
+
+Si un asset no se muestra:
+
+1. Verifica que el archivo exista en `content/{locale}/{version}/assets/`
+2. Comprueba que el nombre del archivo coincida exactamente (sensible a mayúsculas)
+3. Ejecuta `npx tsx scripts/process-assets.ts --verbose` para ver logs de descubrimiento
+4. Revisa `public/assets/assets-manifest.json` para la ruta procesada
+
+### Imagen No Optimizada
+
+Si las imágenes no se están optimizando:
+
+1. Asegúrate de que Sharp esté instalado: `npm install sharp`
+2. Verifica que el formato de archivo sea soportado (PNG, JPEG, WebP)
+3. Ejecuta con el flag `--verbose` para logs detallados de procesamiento
+
+### Fallos de Build
+
+Si el build de assets falla:
+
+```bash
+# Saltar procesamiento de assets temporalmente
+npm run build:optimized -- --skip-assets
+
+# Ejecutar procesamiento de assets con salida detallada
+npx tsx scripts/process-assets.ts --verbose
+```
+
+---
+
+## Mejores Prácticas
+
+1. **Optimiza las imágenes fuente** antes de subir - redimensiona a dimensiones razonables
+2. **Usa nombres de archivo descriptivos** - `flujo-verificacion-usuario.png` no `imagen1.png`
+3. **Proporciona texto alternativo** para todas las imágenes para accesibilidad
+4. **Usa SVG para iconos y logos** - escalan perfectamente
+5. **Mantén tamaños de archivo razonables** - comprime imágenes antes de subir
+6. **Organiza por funcionalidad** - agrupa assets relacionados juntos
+7. **Versiona tus assets** - usa directorios de idioma/versión apropiadamente
+
+---
+
+## Próximos Pasos
+
+- [Referencia de API](/es/docs/v1/developer-guide/api-reference) - Documentación completa de la API
+- [Getting Started](/es/docs/v1/developer-guide/getting-started) - Guía de inicio rápido
+- [Webhooks](/es/docs/v1/developer-guide/webhooks) - Notificaciones de eventos
+
+---
+
+**Última actualización**: 9 de enero, 2026

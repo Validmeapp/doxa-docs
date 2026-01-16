@@ -198,11 +198,17 @@ class ContentValidator {
       }
     });
 
-    // Check for relative links (should be absolute)
+    // Check for relative links (should be absolute, except for asset files)
+    const assetExtensions = ['.png', '.jpg', '.jpeg', '.gif', '.svg', '.webp', '.avif',
+                             '.pdf', '.csv', '.json', '.txt', '.zip', '.xls', '.xlsx'];
     visit(tree, 'link', (node: any) => {
       const url = node.url;
       if (!url.startsWith('http') && !url.startsWith('/') && !url.startsWith('#') && !url.startsWith('mailto:')) {
-        this.addError(filePath, 'link', `Relative link should be absolute: ${url}`);
+        // Allow relative links to asset files (they're resolved by the asset pipeline)
+        const isAssetLink = assetExtensions.some(ext => url.toLowerCase().endsWith(ext));
+        if (!isAssetLink) {
+          this.addError(filePath, 'link', `Relative link should be absolute: ${url}`);
+        }
       }
     });
   }

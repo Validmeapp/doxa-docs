@@ -1,0 +1,15 @@
+# Quick Start Guide
+
+## Step 1: Get Credentials
+Sign up at the developer portal to obtain your API key.
+
+## Step 2: Configure the Client
+Install the SDK and initialize with your credentials.
+
+## Step 3: Make Your First Request
+Use the verification endpoint to validate your setup.
+
+---
+Auto-generated document.
+Version: 1.0.0
+Date: 2026-01-09
