@@ -1,0 +1,27 @@
+name: PR Validation
+on:
+  pull_request:
+    branches: [prod]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: sudo apt-get update && sudo apt-get install -y python3 make g++
+      - run: npm ci
+      - run: npm run db:init && npm run db:migrate
+      - name: Validate content
+        run: npm run validate:content
+      - name: Type check
+        run: npm run type-check
+      - name: Lint
+        run: npm run lint
+      - name: Audit links (English)
+        run: npx tsx scripts/link-auditor-cli.ts audit -l en --content-version v1
+      - name: Audit links (Spanish)
+        run: npx tsx scripts/link-auditor-cli.ts audit -l es --content-version v1
