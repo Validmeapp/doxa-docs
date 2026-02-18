@@ -194,22 +194,22 @@ ${content}`;
     console.log('👀 Watching content files for changes...');
     console.log('Press Ctrl+C to stop\n');
 
-    const chokidar = await import('chokidar');
+    const chokidar = await import('chokidar') as typeof import('chokidar');
     const watcher = chokidar.default.watch(`${this.contentDir}/**/*.mdx`, {
       persistent: true,
       ignoreInitial: true
     });
 
     watcher
-      .on('add', (filePath) => {
+      .on('add', (filePath: string) => {
         console.log(`📄 Added: ${path.relative(this.contentDir, filePath)}`);
         this.validateFile(filePath);
       })
-      .on('change', (filePath) => {
+      .on('change', (filePath: string) => {
         console.log(`📝 Changed: ${path.relative(this.contentDir, filePath)}`);
         this.validateFile(filePath);
       })
-      .on('unlink', (filePath) => {
+      .on('unlink', (filePath: string) => {
         console.log(`🗑️  Removed: ${path.relative(this.contentDir, filePath)}`);
       });
 

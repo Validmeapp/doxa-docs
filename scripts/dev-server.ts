@@ -127,22 +127,22 @@ Press Ctrl+C to stop the server
   private async setupContentWatcher(): Promise<void> {
     console.log('👀 Setting up content file watcher...');
 
-    const chokidar = await import('chokidar');
+    const chokidar = await import('chokidar') as typeof import('chokidar');
     const watcher = chokidar.default.watch('content/**/*.mdx', {
       persistent: true,
       ignoreInitial: true
     });
 
     watcher
-      .on('add', (filePath) => {
+      .on('add', (filePath: string) => {
         console.log(`\n📄 Content added: ${path.relative('content', filePath)}`);
         this.handleContentChange(filePath, 'added');
       })
-      .on('change', (filePath) => {
+      .on('change', (filePath: string) => {
         console.log(`\n📝 Content changed: ${path.relative('content', filePath)}`);
         this.handleContentChange(filePath, 'changed');
       })
-      .on('unlink', (filePath) => {
+      .on('unlink', (filePath: string) => {
         console.log(`\n🗑️  Content removed: ${path.relative('content', filePath)}`);
         this.handleContentChange(filePath, 'removed');
       });
