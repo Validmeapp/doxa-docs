@@ -8,6 +8,12 @@ export function LocaleHtmlAttributes() {
   const pathname = usePathname();
 
   useEffect(() => {
+    if (!pathname) {
+      document.documentElement.lang = 'en';
+      document.documentElement.dir = 'ltr';
+      return;
+    }
+
     // Extract locale from pathname
     const pathSegments = pathname.split('/').filter(Boolean);
     const currentLocale = pathSegments[0];

@@ -87,32 +87,38 @@ export function AssetLinkFallback({
   error
 }: AssetLinkFallbackProps) {
   return (
-    <span 
-      className={`inline-flex items-center gap-2 text-muted-foreground ${className}`}
-      role="link"
+    <div
+      className={`border border-dashed border-destructive/40 rounded bg-destructive/5 p-3 text-sm ${className}`}
+      role="alert"
       aria-label={`Failed to load asset: ${src}`}
     >
-      <File className="w-4 h-4" />
-      <span className="text-sm">
+      <div className="flex items-center gap-2 text-destructive">
+        <File className="w-4 h-4" />
+        <span className="font-medium">404 File Not Found</span>
+      </div>
+      <div className="mt-1 text-muted-foreground">
         {children || src.split('/').pop() || 'Unknown file'}
-      </span>
-      <span className="text-xs text-destructive">(unavailable)</span>
+      </div>
+      <div className="mt-1 text-xs font-mono text-muted-foreground/80">
+        {src}
+      </div>
       {error && (
-        <span className="text-xs text-destructive/70" title={error}>
+        <div className="mt-2 inline-flex items-center gap-1 text-xs text-destructive/80" title={error}>
           <AlertTriangle className="w-3 h-3" />
-        </span>
+          {error}
+        </div>
       )}
       {onRetry && canRetry && (
         <button
           onClick={onRetry}
           disabled={isRetrying}
-          className="text-xs text-primary hover:text-primary/80 underline ml-1 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded disabled:opacity-50"
+          className="mt-2 inline-flex items-center gap-1 text-xs text-primary hover:text-primary/80 underline focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded disabled:opacity-50"
         >
-          <RefreshCw className={`w-3 h-3 inline ${isRetrying ? 'animate-spin' : ''}`} />
+          <RefreshCw className={`w-3 h-3 ${isRetrying ? 'animate-spin' : ''}`} />
           {isRetrying ? 'retrying...' : 'retry'}
         </button>
       )}
-    </span>
+    </div>
   );
 }
 

@@ -171,7 +171,7 @@ class AssetProcessingManager {
       try {
         // Create destination directory structure
         const destPath = path.join(this.options.publicDir, asset.locale, asset.version, 
-          asset.type === 'image' ? 'images' : 'files', asset.hashedFilename);
+          asset.type === 'image' ? 'media' : 'files', asset.hashedFilename);
         
         await this.ensureDirectoryExists(path.dirname(destPath));
 

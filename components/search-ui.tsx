@@ -44,6 +44,50 @@ export function SearchUI({
   const searchInputRef = useRef<HTMLInputElement>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
 
+  const normalizeSearchResultUrl = useCallback((rawUrl: string, resultMeta?: { locale?: string; version?: string }) => {
+    if (!rawUrl) {
+      return `/${locale}/docs`;
+    }
+
+    const targetLocale = resultMeta?.locale || locale;
+    const targetVersion = resultMeta?.version || version;
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'http://localhost';
+
+    try {
+      const parsed = new URL(rawUrl, origin);
+      const isExternal = /^(https?:)?\/\//i.test(rawUrl) && parsed.origin !== origin;
+      if (isExternal) {
+        return rawUrl;
+      }
+
+      let pathname = parsed.pathname || '/';
+      pathname = pathname.replace(/\\/g, '/').replace(/\/+/g, '/');
+
+      // Keep already-correct docs URLs unchanged.
+      if (
+        pathname.startsWith(`/${targetLocale}/docs`) ||
+        /^\/(en|es)\/docs(\/|$)/.test(pathname) ||
+        pathname.startsWith('/docs/')
+      ) {
+        return `${pathname}${parsed.search}${parsed.hash}`;
+      }
+
+      // Convert static Pagefind URLs to app routes.
+      pathname = pathname
+        .replace(/\/index(?:\.html)?$/i, '')
+        .replace(/\.html$/i, '');
+
+      if (!pathname || pathname === '/') {
+        return `/${targetLocale}/docs`;
+      }
+
+      const normalizedPath = pathname.startsWith('/') ? pathname : `/${pathname}`;
+      return `/${targetLocale}/docs/${targetVersion}${normalizedPath}${parsed.search}${parsed.hash}`;
+    } catch {
+      return `/${targetLocale}/docs/${targetVersion}`;
+    }
+  }, [locale, version]);
+
   // Initialize Pagefind from static files (built at build time)
   useEffect(() => {
     const initPagefind = async () => {
@@ -78,6 +122,11 @@ export function SearchUI({
   }, [locale, version]);
 
   const handleResultClick = useCallback(async (result: SearchResult) => {
+    const normalizedUrl = normalizeSearchResultUrl(result.url, {
+      locale: result.meta?.locale,
+      version: result.meta?.version,
+    });
+
     // Log analytics
     try {
       await fetch('/api/search/analytics', {
@@ -90,7 +139,7 @@ export function SearchUI({
           locale,
           version,
           resultsCount: results.length,
-          clickedResultPath: result.url
+          clickedResultPath: normalizedUrl
         })
       });
     } catch (error) {
@@ -99,15 +148,15 @@ export function SearchUI({
 
     // Call analytics callback
     if (onResultClick) {
-      onResultClick(result, query);
+      onResultClick({ ...result, url: normalizedUrl }, query);
     }
 
     // Navigate to the result
-    window.location.href = result.url;
+    window.location.href = normalizedUrl;
     setIsOpen(false);
     setQuery('');
     setResults([]);
-  }, [query, locale, version, results.length, onResultClick]);
+  }, [query, locale, version, results.length, onResultClick, normalizeSearchResultUrl]);
 
   // Handle keyboard shortcuts
   useEffect(() => {
@@ -183,7 +232,11 @@ export function SearchUI({
           const data = await result.data();
 
           // Pagefind returns url or raw_url depending on version
-          const url = data.url || data.raw_url || '';
+          const rawUrl = data.url || data.raw_url || '';
+          const normalizedUrl = normalizeSearchResultUrl(rawUrl, {
+            locale: data.meta?.locale,
+            version: data.meta?.version,
+          });
 
           // Strip HTML tags from excerpt for plain text display
           // Pagefind returns excerpt with <mark> tags for highlighting
@@ -193,7 +246,7 @@ export function SearchUI({
 
           return {
             id: result.id,
-            url: url,
+            url: normalizedUrl,
             title: data.meta?.title || 'Untitled',
             excerpt: plainExcerpt,
             meta: {
@@ -234,7 +287,7 @@ export function SearchUI({
     } finally {
       setIsLoading(false);
     }
-  }, [pagefind, locale, version, onSearch]);
+  }, [pagefind, locale, version, onSearch, normalizeSearchResultUrl]);
 
   // Debounced search
   useEffect(() => {

@@ -3,7 +3,7 @@
         xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
     <loc>http://localhost:3000/es</loc>
-    <lastmod>2026-02-18T01:38:12.690Z</lastmod>
+    <lastmod>2026-02-18T02:55:59.170Z</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1</priority>
     <xhtml:link rel="alternate" hreflang="en" href="http://localhost:3000/en" />
@@ -11,7 +11,7 @@
   </url>
   <url>
     <loc>http://localhost:3000/es/docs</loc>
-    <lastmod>2026-02-18T01:38:12.690Z</lastmod>
+    <lastmod>2026-02-18T02:55:59.170Z</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
     <xhtml:link rel="alternate" hreflang="en" href="http://localhost:3000/en/docs" />
@@ -19,7 +19,7 @@
   </url>
   <url>
     <loc>http://localhost:3000/es/docs/developer-guide/api-reference</loc>
-    <lastmod>2026-02-18T01:38:12.985Z</lastmod>
+    <lastmod>2026-02-18T02:55:59.436Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="en" href="http://localhost:3000/en/docs/developer-guide/api-reference" />
@@ -27,7 +27,7 @@
   </url>
   <url>
     <loc>http://localhost:3000/es/docs/developer-guide/assets-guide</loc>
-    <lastmod>2026-02-18T01:38:13.274Z</lastmod>
+    <lastmod>2026-02-18T02:55:59.710Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="en" href="http://localhost:3000/en/docs/developer-guide/assets-guide" />
@@ -35,7 +35,7 @@
   </url>
   <url>
     <loc>http://localhost:3000/es/docs/developer-guide/getting-started</loc>
-    <lastmod>2026-02-18T01:38:13.556Z</lastmod>
+    <lastmod>2026-02-18T02:55:59.983Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="en" href="http://localhost:3000/en/docs/developer-guide/getting-started" />
@@ -43,7 +43,7 @@
   </url>
   <url>
     <loc>http://localhost:3000/es/docs/developer-guide/webhooks</loc>
-    <lastmod>2026-02-18T01:38:13.832Z</lastmod>
+    <lastmod>2026-02-18T02:56:00.255Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="en" href="http://localhost:3000/en/docs/developer-guide/webhooks" />
@@ -51,7 +51,7 @@
   </url>
   <url>
     <loc>http://localhost:3000/es/docs/</loc>
-    <lastmod>2026-02-18T01:38:13.987Z</lastmod>
+    <lastmod>2026-02-18T02:56:00.393Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="en" href="http://localhost:3000/en/docs/" />
@@ -59,7 +59,7 @@
   </url>
   <url>
     <loc>http://localhost:3000/es/docs/user-guide/billing</loc>
-    <lastmod>2026-02-18T01:38:14.131Z</lastmod>
+    <lastmod>2026-02-18T02:56:00.531Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="en" href="http://localhost:3000/en/docs/user-guide/billing" />
@@ -67,7 +67,7 @@
   </url>
   <url>
     <loc>http://localhost:3000/es/docs/user-guide/onboarding</loc>
-    <lastmod>2026-02-18T01:38:14.413Z</lastmod>
+    <lastmod>2026-02-18T02:56:00.799Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="en" href="http://localhost:3000/en/docs/user-guide/onboarding" />
