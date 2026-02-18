@@ -4,7 +4,6 @@ import { getContentBySlug, getAllContentSlugs, contentLoader } from '@/lib/conte
 import { generateDocumentationMetadata, generateDocumentationJsonLd } from '@/lib/metadata-generator';
 import { generateContentStructuredData, generateRichSnippets } from '@/lib/structured-data-extractor';
 import { StructuredData } from '@/components/structured-data';
-import { SyntaxHighlighter } from '@/components/syntax-highlighter';
 import { MissingHomePage } from '@/components/missing-home-page';
 import { ContentRenderer } from '@/components/content-renderer';
 
@@ -186,7 +185,6 @@ export default async function DocumentationPage({
       <>
         <StructuredData data={allStructuredData} />
         <article className="prose dark:prose-invert max-w-none prose-gray">
-          <SyntaxHighlighter />
           <header className="space-y-4 not-prose mb-8">
             <h1 className="text-4xl font-bold tracking-tight text-gray-900 dark:text-gray-100">
               {content.frontmatter.title}

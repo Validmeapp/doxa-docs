@@ -48,47 +48,24 @@ export function SearchUI({
   useEffect(() => {
     const initPagefind = async () => {
       try {
-        // Load Pagefind from the pre-built static search index
-        // The index is built during the build process and stored in /public/search/{locale}/{version}/
         const pagefindPath = `/search/${locale}/${version}/pagefind.js`;
+        // Pagefind bundles are ESM and rely on import.meta.
+        // They must be loaded with dynamic import, not a classic <script>.
+        const pagefindModule: any = await import(
+          /* webpackIgnore: true */ pagefindPath
+        );
 
-        // Dynamically import Pagefind from the static files
-        // Pagefind exposes itself on the window object when loaded
-        const existingScript = document.querySelector(`script[src="${pagefindPath}"]`);
-
-        if (!existingScript) {
-          const script = document.createElement('script');
-          script.src = pagefindPath;
-          script.async = true;
-
-          await new Promise<void>((resolve, reject) => {
-            script.onload = () => resolve();
-            script.onerror = () => reject(new Error(`Failed to load Pagefind from ${pagefindPath}`));
-            document.head.appendChild(script);
-          });
+        if (!pagefindModule || typeof pagefindModule.search !== 'function') {
+          throw new Error(`Invalid Pagefind module loaded from ${pagefindPath}`);
         }
 
-        // Wait for Pagefind to be available on window
-        let attempts = 0;
-        const maxAttempts = 50; // 5 seconds max wait
+        await pagefindModule.options({
+          excerptLength: 30,
+          highlightParam: 'highlight'
+        });
 
-        while (!(window as any).pagefind && attempts < maxAttempts) {
-          await new Promise(resolve => setTimeout(resolve, 100));
-          attempts++;
-        }
-
-        if ((window as any).pagefind) {
-          // Initialize Pagefind with options
-          await (window as any).pagefind.options({
-            excerptLength: 30,
-            highlightParam: 'highlight'
-          });
-
-          setPagefind((window as any).pagefind);
-          setError(null);
-        } else {
-          throw new Error('Pagefind failed to initialize');
-        }
+        setPagefind(pagefindModule);
+        setError(null);
       } catch (error) {
         console.warn('Could not initialize Pagefind search:', error);
         setError('Search index not available. Run npm run search:build first.');

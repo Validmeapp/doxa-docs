@@ -17,25 +17,28 @@ export function ContentRenderer({ content, className = '' }: ContentRendererProp
   const containerRef = useRef<HTMLDivElement>(null);
   const rootsRef = useRef<Array<{ root: any; element: HTMLElement }>>([]);
 
+  const decodeBase64Utf8 = (encoded: string): string => {
+    // atob returns a latin1-style binary string. Convert bytes to UTF-8 text
+    // so JSON payloads with non-ASCII characters parse correctly.
+    const binary = atob(encoded);
+    const bytes = Uint8Array.from(binary, (char) => char.charCodeAt(0));
+    return new TextDecoder('utf-8').decode(bytes);
+  };
+
   useEffect(() => {
     if (!containerRef.current) return;
 
-    // Clean up previous roots asynchronously to avoid race conditions
-    const previousRoots = rootsRef.current;
-    rootsRef.current = [];
-    
-    // Schedule cleanup for next tick to avoid synchronous unmounting during render
-    if (previousRoots.length > 0) {
-      setTimeout(() => {
-        previousRoots.forEach(({ root }) => {
-          try {
-            root.unmount();
-          } catch (error) {
-            // Ignore unmount errors as the root might already be unmounted
-            console.debug('Root already unmounted:', error);
-          }
-        });
-      }, 0);
+    // Unmount previous roots synchronously before mounting new ones.
+    // This avoids StrictMode races that can leave empty containers.
+    if (rootsRef.current.length > 0) {
+      rootsRef.current.forEach(({ root }) => {
+        try {
+          root.unmount();
+        } catch (error) {
+          console.debug('Root already unmounted:', error);
+        }
+      });
+      rootsRef.current = [];
     }
 
     // Find all MDX code block markers
@@ -48,16 +51,13 @@ export function ContentRenderer({ content, className = '' }: ContentRendererProp
 
       try {
         // Decode the code block data (using atob for browser compatibility)
-        const codeBlockData = JSON.parse(atob(encodedData));
+        const codeBlockData = JSON.parse(decodeBase64Utf8(encodedData));
         
         const { language, code, filename, highlightLines, showLineNumbers, ...otherProps } = codeBlockData;
         
-        // Create a new div to replace the marker
-        const newDiv = document.createElement('div');
-        marker.parentNode?.replaceChild(newDiv, marker);
-        
-        // Create a React root and render the MDXCodeBlock component
-        const root = createRoot(newDiv);
+        // Mount directly on marker so re-renders can find and remount markers.
+        const element = marker as HTMLElement;
+        const root = createRoot(element);
         root.render(
           <MDXCodeBlock
             className={`language-${language}`}
@@ -71,31 +71,38 @@ export function ContentRenderer({ content, className = '' }: ContentRendererProp
         );
         
         // Store the root for cleanup
-        rootsRef.current.push({ root, element: newDiv });
+        rootsRef.current.push({ root, element });
       } catch (error) {
         console.error('Failed to parse code block data:', error);
-        // Leave the marker as-is if parsing fails
+        const element = marker as HTMLElement;
+        const encoded = marker.getAttribute('data-mdx-code-block');
+        if (encoded) {
+          try {
+            const data = JSON.parse(decodeBase64Utf8(encoded));
+            const fallbackCode = typeof data.code === 'string' ? data.code : '';
+            element.innerHTML = `<pre><code>${fallbackCode
+              .replace(/&/g, '&amp;')
+              .replace(/</g, '&lt;')
+              .replace(/>/g, '&gt;')}</code></pre>`;
+          } catch {
+            // Keep marker unchanged if fallback decode also fails.
+          }
+        }
       }
     });
 
     // Cleanup function
     return () => {
-      // Schedule cleanup asynchronously to avoid race conditions
       const currentRoots = rootsRef.current;
       rootsRef.current = [];
-      
-      if (currentRoots.length > 0) {
-        setTimeout(() => {
-          currentRoots.forEach(({ root }) => {
-            try {
-              root.unmount();
-            } catch (error) {
-              // Ignore unmount errors as the root might already be unmounted
-              console.debug('Root already unmounted:', error);
-            }
-          });
-        }, 0);
-      }
+
+      currentRoots.forEach(({ root }) => {
+        try {
+          root.unmount();
+        } catch (error) {
+          console.debug('Root already unmounted:', error);
+        }
+      });
     };
   }, [content]);
 

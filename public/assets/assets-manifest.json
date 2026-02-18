@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "generatedAt": "2026-01-11T21:40:11.969Z",
+  "generatedAt": "2026-02-18T01:38:01.612Z",
   "assets": {
     "en/v1/assets/files/api-config.json": {
       "publicPath": "/public/assets/en/v1/files/api-config.1cf1facc.json",
@@ -13,7 +13,7 @@
       "version": "v1",
       "derivatives": {},
       "metadata": {
-        "lastModified": "2026-01-11T21:40:11.970Z",
+        "lastModified": "2026-02-18T01:38:01.615Z",
         "referencedBy": [],
         "optimized": false,
         "securityScanned": true
@@ -30,7 +30,7 @@
       "version": "v1",
       "derivatives": {},
       "metadata": {
-        "lastModified": "2026-01-11T21:40:11.970Z",
+        "lastModified": "2026-02-18T01:38:01.615Z",
         "referencedBy": [],
         "optimized": false,
         "securityScanned": true
@@ -47,7 +47,7 @@
       "version": "v1",
       "derivatives": {},
       "metadata": {
-        "lastModified": "2026-01-11T21:40:11.970Z",
+        "lastModified": "2026-02-18T01:38:01.615Z",
         "referencedBy": [],
         "optimized": false,
         "securityScanned": true
@@ -109,7 +109,7 @@
         }
       },
       "metadata": {
-        "lastModified": "2026-01-11T21:40:11.970Z",
+        "lastModified": "2026-02-18T01:38:01.615Z",
         "referencedBy": [],
         "optimized": false,
         "securityScanned": true
@@ -171,7 +171,7 @@
         }
       },
       "metadata": {
-        "lastModified": "2026-01-11T21:40:11.970Z",
+        "lastModified": "2026-02-18T01:38:01.615Z",
         "referencedBy": [],
         "optimized": false,
         "securityScanned": true
@@ -213,7 +213,7 @@
         }
       },
       "metadata": {
-        "lastModified": "2026-01-11T21:40:11.970Z",
+        "lastModified": "2026-02-18T01:38:01.615Z",
         "referencedBy": [],
         "optimized": false,
         "securityScanned": true
@@ -275,7 +275,7 @@
         }
       },
       "metadata": {
-        "lastModified": "2026-01-11T21:40:11.970Z",
+        "lastModified": "2026-02-18T01:38:01.615Z",
         "referencedBy": [],
         "optimized": false,
         "securityScanned": true
@@ -292,7 +292,7 @@
       "version": "v1",
       "derivatives": {},
       "metadata": {
-        "lastModified": "2026-01-11T21:40:11.970Z",
+        "lastModified": "2026-02-18T01:38:01.615Z",
         "referencedBy": [],
         "optimized": false,
         "securityScanned": true
@@ -309,7 +309,7 @@
       "version": "v1",
       "derivatives": {},
       "metadata": {
-        "lastModified": "2026-01-11T21:40:11.970Z",
+        "lastModified": "2026-02-18T01:38:01.615Z",
         "referencedBy": [],
         "optimized": false,
         "securityScanned": true
@@ -326,7 +326,7 @@
       "version": "v1",
       "derivatives": {},
       "metadata": {
-        "lastModified": "2026-01-11T21:40:11.970Z",
+        "lastModified": "2026-02-18T01:38:01.615Z",
         "referencedBy": [],
         "optimized": false,
         "securityScanned": true
@@ -388,7 +388,7 @@
         }
       },
       "metadata": {
-        "lastModified": "2026-01-11T21:40:11.970Z",
+        "lastModified": "2026-02-18T01:38:01.615Z",
         "referencedBy": [],
         "optimized": false,
         "securityScanned": true
@@ -450,7 +450,7 @@
         }
       },
       "metadata": {
-        "lastModified": "2026-01-11T21:40:11.970Z",
+        "lastModified": "2026-02-18T01:38:01.615Z",
         "referencedBy": [],
         "optimized": false,
         "securityScanned": true
@@ -492,7 +492,7 @@
         }
       },
       "metadata": {
-        "lastModified": "2026-01-11T21:40:11.970Z",
+        "lastModified": "2026-02-18T01:38:01.615Z",
         "referencedBy": [],
         "optimized": false,
         "securityScanned": true
@@ -554,7 +554,7 @@
         }
       },
       "metadata": {
-        "lastModified": "2026-01-11T21:40:11.970Z",
+        "lastModified": "2026-02-18T01:38:01.615Z",
         "referencedBy": [],
         "optimized": false,
         "securityScanned": true

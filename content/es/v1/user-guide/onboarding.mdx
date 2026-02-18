@@ -25,7 +25,7 @@ Antes de comenzar, asegúrate de tener:
 
 ## 🎯 Resumen del Proceso
 
-```
+```text
 Invitación por Email
         ↓
 Crear Cuenta
@@ -49,7 +49,7 @@ Deberías haber recibido un email de invitación a tu bandeja de entrada.
 
 ### Contenido del Email
 
-```
+```text
 De: noreply@validme.tech
 Asunto: "Invitación a ValidMe - [Tu Empresa]"
 
@@ -74,7 +74,7 @@ Incluye:
 
 Te dirigirá a la página de registro.
 
-```
+```text
 URL: https://backoffice.validme.tech/onboarding/verify-invite
 ```
 
@@ -105,7 +105,7 @@ Después de crear la cuenta, recibirás un email de verificación.
 
 ### Email de Verificación
 
-```
+```text
 Asunto: "Verifica tu email en ValidMe"
 
 Contenido:
@@ -192,7 +192,7 @@ Los archivos y datos sensibles que recibes a través de webhooks estarán **encr
 
 ### 📥 Descargar Clave Privada
 
-```
+```text
 Contenido del archivo (ejemplo):
 -----BEGIN PRIVATE KEY-----
 MIIEvQIBADANBgkqhkiG9w0BAQEFAASCA...
@@ -224,7 +224,7 @@ VALIDME_PRIVATE_KEY=tu-clave-privada
 ```
 
 **En Desarrollo Local:**
-```
+```text
 proyecto/
 ├── .env.local (git-ignore)
 ├── keys/
@@ -267,7 +267,7 @@ El API Token es tu credencial para hacer requests a la API.
 
 Una vez creado, **cópialo inmediatamente** porque no se mostrará de nuevo.
 
-```
+```text
 Token: sk_live_7a9k5L2m3nP4qRsTuVwXyZ1a
 ```
 
@@ -316,7 +316,7 @@ Para recibir eventos en tiempo real, configura tu webhook.
 2. Se enviará un event de prueba a tu URL
 3. Deberías recibir un POST HTTP
 
-```
+```text
 POST /webhooks/validme HTTP/1.1
 Content-Type: application/json
 
@@ -343,7 +343,7 @@ Content-Type: application/json
 
 Una vez completado, verás:
 
-```
+```text
 Welcome to ValidMe!
 
 Tu información:

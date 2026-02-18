@@ -64,6 +64,10 @@ function remarkToc() {
 function remarkLinkValidator(contentPages: Map<string, string>) {
   return (tree: any, file: any) => {
     const errors: string[] = [];
+    const assetExtensions = [
+      '.png', '.jpg', '.jpeg', '.gif', '.svg', '.webp', '.avif',
+      '.pdf', '.csv', '.json', '.txt', '.zip', '.xls', '.xlsx'
+    ];
 
     visit(tree, 'link', (node: any) => {
       const url = node.url;
@@ -78,9 +82,21 @@ function remarkLinkValidator(contentPages: Map<string, string>) {
         return;
       }
 
+      // Strip hash for slug validation.
+      const cleanUrl = url.split('#')[0];
+      if (!cleanUrl) {
+        return;
+      }
+
+      // Skip asset/document links handled by the asset pipeline.
+      const isAssetLink = assetExtensions.some(ext => cleanUrl.toLowerCase().endsWith(ext));
+      if (isAssetLink) {
+        return;
+      }
+
       // Check if internal link exists
       // Extract slug from URL pattern: /locale/docs/version/slug -> slug
-      const urlParts = url.replace(/^\//, '').replace(/\/$/, '').split('/');
+      const urlParts = cleanUrl.replace(/^\//, '').replace(/\/$/, '').split('/');
       let slug = '';
       
       // Handle different URL patterns
@@ -282,28 +298,6 @@ function remarkRenderCodeBlocks() {
       const code = node.value || '';
       const meta = node.meta || '';
       
-      // Handle empty code blocks
-      if (!code.trim()) {
-        const html = `
-          <div class="code-block-wrapper" style="margin: 1.5rem 0; border: 1px solid #e5e7eb; border-radius: 0.5rem; overflow: hidden; background: #f9fafb;">
-            <div class="code-block-header" style="display: flex; align-items: center; justify-content: space-between; padding: 0.5rem 1rem; background: #f3f4f6; border-bottom: 1px solid #e5e7eb;">
-              <span style="background: #6b7280; color: white; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem; font-weight: 500;">
-                Empty Code Block
-              </span>
-            </div>
-            <div style="padding: 1rem; color: #6b7280; font-style: italic; text-align: center;">
-              This code block is empty
-            </div>
-          </div>
-        `;
-        
-        node.type = 'html';
-        node.value = html;
-        delete node.lang;
-        delete node.meta;
-        return;
-      }
-      
       // Determine if this is a typed or untyped code block
       // Handle case where metadata attributes are mistakenly parsed as language
       const isMetadataAsLang = originalLang && (
@@ -335,202 +329,19 @@ function remarkRenderCodeBlocks() {
           }
         }
       }
-      
-      // Get language display name with enhanced support for untyped blocks
-      const getLanguageDisplayName = (language: string, isTypedBlock: boolean): string => {
-        if (!isTypedBlock) {
-          return 'Plain Text';
-        }
-        
-        const languageMap: { [key: string]: string } = {
-          js: 'JavaScript',
-          javascript: 'JavaScript',
-          ts: 'TypeScript',
-          typescript: 'TypeScript',
-          jsx: 'React JSX',
-          tsx: 'React TSX',
-          py: 'Python',
-          python: 'Python',
-          bash: 'Bash',
-          shell: 'Shell',
-          sh: 'Shell',
-          zsh: 'Zsh',
-          fish: 'Fish',
-          powershell: 'PowerShell',
-          json: 'JSON',
-          yaml: 'YAML',
-          yml: 'YAML',
-          xml: 'XML',
-          html: 'HTML',
-          css: 'CSS',
-          scss: 'SCSS',
-          sass: 'Sass',
-          sql: 'SQL',
-          md: 'Markdown',
-          markdown: 'Markdown',
-          text: 'Plain Text',
-          txt: 'Plain Text',
-          log: 'Log',
-          diff: 'Diff',
-          patch: 'Patch',
-          ini: 'INI',
-          conf: 'Config',
-          env: 'Environment',
-          dockerfile: 'Dockerfile',
-          docker: 'Dockerfile',
-          makefile: 'Makefile',
-          make: 'Makefile',
-          c: 'C',
-          cpp: 'C++',
-          'c++': 'C++',
-          java: 'Java',
-          kotlin: 'Kotlin',
-          swift: 'Swift',
-          go: 'Go',
-          rust: 'Rust',
-          php: 'PHP',
-          ruby: 'Ruby',
-          rb: 'Ruby',
-          perl: 'Perl',
-          r: 'R',
-          matlab: 'MATLAB',
-          scala: 'Scala',
-          clojure: 'Clojure',
-          haskell: 'Haskell',
-          elm: 'Elm',
-          erlang: 'Erlang',
-          elixir: 'Elixir',
-          lua: 'Lua',
-          vim: 'Vim Script',
-          toml: 'TOML',
-          graphql: 'GraphQL',
-          protobuf: 'Protocol Buffers',
-          thrift: 'Thrift',
-          avro: 'Avro',
-        };
-        return languageMap[language.toLowerCase()] || language.toUpperCase();
+
+      // Render through the React code-block pipeline via marker placeholders.
+      const codeBlockPayload = {
+        language: lang,
+        code,
+        filename: metaAttributes.filename || undefined,
+        highlightLines: metaAttributes.highlightLines || undefined,
+        showLineNumbers: metaAttributes.showLineNumbers || undefined,
       };
-      
-      // Escape HTML in code with enhanced handling
-      const escapeHtml = (text: string): string => {
-        return text
-          .replace(/&/g, '&amp;')
-          .replace(/</g, '&lt;')
-          .replace(/>/g, '&gt;')
-          .replace(/"/g, '&quot;')
-          .replace(/'/g, '&#039;');
-      };
-      
-      // Create enhanced HTML code block with consistent styling for both typed and untyped
-      const filename = metaAttributes.filename;
-      const languageDisplay = getLanguageDisplayName(lang, isTyped);
-      const escapedCode = escapeHtml(code);
-      
-      // Determine styling based on whether block is typed or untyped
-      const headerBadgeStyle = isTyped 
-        ? 'background: #3b82f6; color: white;' 
-        : 'background: #6b7280; color: white;';
-      
-      const codeBlockClass = isTyped ? `language-${lang}` : 'language-text';
-      
-      // Enhanced copy functionality that works reliably
-      const copyButtonScript = `
-        (function(button) {
-          const code = button.getAttribute('data-code');
-          if (navigator.clipboard && navigator.clipboard.writeText) {
-            navigator.clipboard.writeText(code).then(function() {
-              const originalText = button.innerHTML;
-              button.innerHTML = 'Copied!';
-              button.style.color = '#10b981';
-              setTimeout(function() {
-                button.innerHTML = originalText;
-                button.style.color = '#6b7280';
-              }, 2000);
-            }).catch(function() {
-              // Fallback for clipboard API failure
-              const textArea = document.createElement('textarea');
-              textArea.value = code;
-              textArea.style.position = 'fixed';
-              textArea.style.left = '-999999px';
-              textArea.style.top = '-999999px';
-              document.body.appendChild(textArea);
-              textArea.focus();
-              textArea.select();
-              try {
-                document.execCommand('copy');
-                const originalText = button.innerHTML;
-                button.innerHTML = 'Copied!';
-                button.style.color = '#10b981';
-                setTimeout(function() {
-                  button.innerHTML = originalText;
-                  button.style.color = '#6b7280';
-                }, 2000);
-              } catch (err) {
-                console.error('Copy failed:', err);
-                button.innerHTML = 'Copy failed';
-                button.style.color = '#ef4444';
-                setTimeout(function() {
-                  button.innerHTML = 'Copy';
-                  button.style.color = '#6b7280';
-                }, 2000);
-              } finally {
-                document.body.removeChild(textArea);
-              }
-            });
-          } else {
-            // Fallback for browsers without clipboard API
-            const textArea = document.createElement('textarea');
-            textArea.value = code;
-            textArea.style.position = 'fixed';
-            textArea.style.left = '-999999px';
-            textArea.style.top = '-999999px';
-            document.body.appendChild(textArea);
-            textArea.focus();
-            textArea.select();
-            try {
-              document.execCommand('copy');
-              const originalText = button.innerHTML;
-              button.innerHTML = 'Copied!';
-              button.style.color = '#10b981';
-              setTimeout(function() {
-                button.innerHTML = originalText;
-                button.style.color = '#6b7280';
-              }, 2000);
-            } catch (err) {
-              console.error('Copy failed:', err);
-              button.innerHTML = 'Copy failed';
-              button.style.color = '#ef4444';
-              setTimeout(function() {
-                button.innerHTML = 'Copy';
-                button.style.color = '#6b7280';
-              }, 2000);
-            } finally {
-              document.body.removeChild(textArea);
-            }
-          }
-        })(this)
-      `;
-      
-      const html = `
-        <div class="code-block-wrapper" style="margin: 1.5rem 0; border: 1px solid #e5e7eb; border-radius: 0.5rem; overflow: hidden; background: #f9fafb;" data-code-block-type="${isTyped ? 'typed' : 'untyped'}">
-          <div class="code-block-header" style="display: flex; align-items: center; justify-content: space-between; padding: 0.5rem 1rem; background: #f3f4f6; border-bottom: 1px solid #e5e7eb;">
-            <div style="display: flex; align-items: center; gap: 0.5rem;">
-              <span style="${headerBadgeStyle} padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem; font-weight: 500;">
-                ${languageDisplay}
-              </span>
-              ${filename ? `<span style="font-size: 0.75rem; color: #6b7280;">${filename}</span>` : ''}
-              ${!isTyped ? '<span style="font-size: 0.75rem; color: #6b7280; font-style: italic;">No syntax highlighting</span>' : ''}
-            </div>
-            <button onclick="${copyButtonScript}" data-code="${escapeHtml(code)}" style="background: none; border: none; color: #6b7280; cursor: pointer; font-size: 0.75rem; padding: 0.25rem 0.5rem; border-radius: 0.25rem; transition: background-color 0.2s;" onmouseover="this.style.background='#e5e7eb'" onmouseout="this.style.background='none'" title="Copy code to clipboard" aria-label="Copy code to clipboard">
-              Copy
-            </button>
-          </div>
-          <pre style="margin: 0; padding: 1rem; overflow-x: auto; font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace; font-size: 0.875rem; line-height: 1.5; background: #ffffff; white-space: pre-wrap; word-wrap: break-word;"><code class="${codeBlockClass}" style="color: ${isTyped ? 'inherit' : '#374151'};">${escapedCode}</code></pre>
-        </div>
-      `;
-      
+      const encodedPayload = Buffer.from(JSON.stringify(codeBlockPayload)).toString('base64');
+
       node.type = 'html';
-      node.value = html;
+      node.value = `<div data-mdx-code-block="${encodedPayload}"></div>`;
       delete node.lang;
       delete node.meta;
     });
