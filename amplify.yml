@@ -9,8 +9,11 @@ frontend:
         - nvm install 20
         - nvm use 20
         - node --version
-        # Deterministic dependency install from lockfile
-        - npm ci
+        # Install ALL deps (including devDependencies needed for build tooling:
+        # tsx, chokidar, eslint, tailwindcss, etc.)
+        # NODE_ENV=production is set as an Amplify env var, which causes npm ci
+        # to skip devDependencies — override it here for the install step only.
+        - NODE_ENV=development npm ci
         # Initialize build-time database (search indexer needs it)
         - npm run db:init
         - npm run db:migrate
