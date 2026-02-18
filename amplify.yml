@@ -1,0 +1,43 @@
+version: 1
+frontend:
+  phases:
+    preBuild:
+      commands:
+        # Native build deps for better-sqlite3 and sharp
+        - yum install -y python3 make gcc-c++ 2>/dev/null || true
+        # Pin Node.js 20 (matches Dockerfile and README recommendation)
+        - nvm install 20
+        - nvm use 20
+        - node --version
+        # Deterministic dependency install from lockfile
+        - npm ci
+        # Initialize build-time database (search indexer needs it)
+        - npm run db:init
+        - npm run db:migrate
+    build:
+      commands:
+        # Full optimized build with all validations
+        # --skip-performance: skip Lighthouse (not available in CI)
+        # --verbose: pipe all subprocess output to Amplify build logs
+        - NODE_ENV=production npm run build:optimized -- --skip-performance --verbose
+  artifacts:
+    baseDirectory: out
+    files:
+      - '**/*'
+  cache:
+    paths:
+      - 'node_modules/**/*'
+      - '.next/cache/**/*'
+  customHeaders:
+    - pattern: '**/*.wasm'
+      headers:
+        - key: Content-Type
+          value: application/wasm
+    - pattern: '/search/**/*'
+      headers:
+        - key: Cache-Control
+          value: 'public, max-age=3600, stale-while-revalidate=86400'
+    - pattern: '/_next/static/**/*'
+      headers:
+        - key: Cache-Control
+          value: 'public, max-age=31536000, immutable'
