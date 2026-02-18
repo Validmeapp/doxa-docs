@@ -1,12 +1,35 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { createRoot } from 'react-dom/client';
+import { createRoot, type Root } from 'react-dom/client';
 import { MDXCodeBlock } from './mdx-code-block';
 
 interface ContentRendererProps {
   content: string;
   className?: string;
+}
+
+interface ManagedRoot {
+  root: Root;
+  unmountTimer: ReturnType<typeof setTimeout> | null;
+}
+
+// Shared registry across StrictMode mount/unmount cycles in dev.
+const rootRegistry = new WeakMap<HTMLElement, ManagedRoot>();
+
+function scheduleUnmount(element: HTMLElement, managed: ManagedRoot) {
+  if (managed.unmountTimer) return;
+
+  managed.unmountTimer = setTimeout(() => {
+    try {
+      managed.root.unmount();
+    } catch (error) {
+      console.debug('Root already unmounted:', error);
+    } finally {
+      rootRegistry.delete(element);
+      managed.unmountTimer = null;
+    }
+  }, 0);
 }
 
 /**
@@ -15,7 +38,7 @@ interface ContentRendererProps {
  */
 export function ContentRenderer({ content, className = '' }: ContentRendererProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const rootsRef = useRef<Array<{ root: any; element: HTMLElement }>>([]);
+  const rootsRef = useRef<Map<HTMLElement, ManagedRoot>>(new Map());
 
   const decodeBase64Utf8 = (encoded: string): string => {
     // atob returns a latin1-style binary string. Convert bytes to UTF-8 text
@@ -28,23 +51,13 @@ export function ContentRenderer({ content, className = '' }: ContentRendererProp
   useEffect(() => {
     if (!containerRef.current) return;
 
-    // Unmount previous roots synchronously before mounting new ones.
-    // This avoids StrictMode races that can leave empty containers.
-    if (rootsRef.current.length > 0) {
-      rootsRef.current.forEach(({ root }) => {
-        try {
-          root.unmount();
-        } catch (error) {
-          console.debug('Root already unmounted:', error);
-        }
-      });
-      rootsRef.current = [];
-    }
-
     // Find all MDX code block markers
-    const codeBlockMarkers = containerRef.current.querySelectorAll('div[data-mdx-code-block]');
+    const codeBlockMarkers = Array.from(
+      containerRef.current.querySelectorAll('div[data-mdx-code-block]')
+    ) as HTMLElement[];
+    const activeMarkers = new Set(codeBlockMarkers);
     
-    codeBlockMarkers.forEach((marker, index) => {
+    codeBlockMarkers.forEach((marker) => {
       const encodedData = marker.getAttribute('data-mdx-code-block');
       
       if (!encodedData) return;
@@ -55,10 +68,23 @@ export function ContentRenderer({ content, className = '' }: ContentRendererProp
         
         const { language, code, filename, highlightLines, showLineNumbers, ...otherProps } = codeBlockData;
         
-        // Mount directly on marker so re-renders can find and remount markers.
         const element = marker as HTMLElement;
-        const root = createRoot(element);
-        root.render(
+        let managed = rootsRef.current.get(element) || rootRegistry.get(element);
+        if (managed?.unmountTimer) {
+          clearTimeout(managed.unmountTimer);
+          managed.unmountTimer = null;
+        }
+
+        if (!managed) {
+          managed = {
+            root: createRoot(element),
+            unmountTimer: null,
+          };
+          rootRegistry.set(element, managed);
+        }
+        rootsRef.current.set(element, managed);
+
+        managed.root.render(
           <MDXCodeBlock
             className={`language-${language}`}
             filename={filename}
@@ -69,9 +95,6 @@ export function ContentRenderer({ content, className = '' }: ContentRendererProp
             {code}
           </MDXCodeBlock>
         );
-        
-        // Store the root for cleanup
-        rootsRef.current.push({ root, element });
       } catch (error) {
         console.error('Failed to parse code block data:', error);
         const element = marker as HTMLElement;
@@ -91,20 +114,25 @@ export function ContentRenderer({ content, className = '' }: ContentRendererProp
       }
     });
 
-    // Cleanup function
-    return () => {
-      const currentRoots = rootsRef.current;
-      rootsRef.current = [];
+    // Cleanup roots for markers that no longer exist after content refresh.
+    for (const [element, managed] of rootsRef.current.entries()) {
+      if (!activeMarkers.has(element) || !element.isConnected) {
+        scheduleUnmount(element, managed);
+        rootsRef.current.delete(element);
+      }
+    }
+  }, [content]);
 
-      currentRoots.forEach(({ root }) => {
-        try {
-          root.unmount();
-        } catch (error) {
-          console.debug('Root already unmounted:', error);
-        }
+  useEffect(() => {
+    return () => {
+      const currentRoots = Array.from(rootsRef.current.entries());
+      rootsRef.current.clear();
+
+      currentRoots.forEach(([element, managed]) => {
+        scheduleUnmount(element, managed);
       });
     };
-  }, [content]);
+  }, []);
 
   return (
     <div 
