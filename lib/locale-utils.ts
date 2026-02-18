@@ -10,7 +10,11 @@ export function isValidLocale(locale: string): locale is Locale {
 /**
  * Get locale from pathname
  */
-export function getLocaleFromPathname(pathname: string): Locale {
+export function getLocaleFromPathname(pathname: string | null | undefined): Locale {
+  if (!pathname) {
+    return defaultLocale;
+  }
+
   const segments = pathname.split('/');
   const potentialLocale = segments[1];
   

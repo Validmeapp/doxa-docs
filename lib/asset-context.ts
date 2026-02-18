@@ -23,7 +23,11 @@ export interface AssetResolutionResult {
  * Extract version from pathname
  * This can be enhanced based on the actual routing structure
  */
-export function getVersionFromPathname(pathname: string): string {
+export function getVersionFromPathname(pathname: string | null | undefined): string {
+  if (!pathname) {
+    return 'v1';
+  }
+
   // Look for version patterns in the pathname
   // For now, we'll default to 'v1' but this can be enhanced
   // to parse actual version from URL structure
@@ -44,7 +48,7 @@ export function getVersionFromPathname(pathname: string): string {
 /**
  * Get asset context from pathname
  */
-export function getAssetContextFromPathname(pathname: string): AssetContext {
+export function getAssetContextFromPathname(pathname: string | null | undefined): AssetContext {
   const locale = getLocaleFromPathname(pathname);
   const version = getVersionFromPathname(pathname);
   
@@ -65,25 +69,44 @@ export function resolveAssetWithFallback(
   // Strategy 1: Try exact match with current context
   const exactResult = tryExactMatch(normalizedSrc, context, manifest);
   if (exactResult) {
-    return { ...exactResult, fallbackUsed: false };
+    return {
+      ...exactResult,
+      publicPath: normalizePublicAssetPath(exactResult.publicPath),
+      fallbackUsed: false,
+    };
   }
   
   // Strategy 2: Try fallback to other versions in same locale
   const versionFallbackResult = tryVersionFallback(normalizedSrc, context, manifest);
   if (versionFallbackResult) {
-    return { ...versionFallbackResult, fallbackUsed: true, fallbackType: 'version' };
+    return {
+      ...versionFallbackResult,
+      publicPath: normalizePublicAssetPath(versionFallbackResult.publicPath),
+      fallbackUsed: true,
+      fallbackType: 'version',
+    };
   }
   
   // Strategy 3: Try fallback to default locale with same version
   const localeFallbackResult = tryLocaleFallback(normalizedSrc, context, manifest);
   if (localeFallbackResult) {
-    return { ...localeFallbackResult, fallbackUsed: true, fallbackType: 'locale' };
+    return {
+      ...localeFallbackResult,
+      publicPath: normalizePublicAssetPath(localeFallbackResult.publicPath),
+      fallbackUsed: true,
+      fallbackType: 'locale',
+    };
   }
   
   // Strategy 4: Try fallback to default locale and any version
   const defaultFallbackResult = tryDefaultFallback(normalizedSrc, manifest);
   if (defaultFallbackResult) {
-    return { ...defaultFallbackResult, fallbackUsed: true, fallbackType: 'locale' };
+    return {
+      ...defaultFallbackResult,
+      publicPath: normalizePublicAssetPath(defaultFallbackResult.publicPath),
+      fallbackUsed: true,
+      fallbackType: 'locale',
+    };
   }
   
   return null;
@@ -101,6 +124,7 @@ function tryExactMatch(
   const possibleKeys = [
     `${context.locale}/${context.version}/assets/${normalizedSrc}`,
     `${context.locale}/${context.version}/assets/images/${normalizedSrc}`,
+    `${context.locale}/${context.version}/assets/media/${normalizedSrc}`,
     `${context.locale}/${context.version}/assets/files/${normalizedSrc}`,
     normalizedSrc,
   ];
@@ -226,7 +250,13 @@ export function generateDirectAssetPath(
   
   // Determine if it's likely an image or binary file based on extension
   const isImage = /\.(jpg|jpeg|png|gif|webp|avif|svg)$/i.test(filename);
-  const assetType = isImage ? 'images' : 'files';
+  const assetType = isImage ? 'media' : 'files';
   
-  return `/public/assets/${context.locale}/${context.version}/${assetType}/${filename}`;
+  return `/assets/${context.locale}/${context.version}/${assetType}/${filename}`;
+}
+
+function normalizePublicAssetPath(publicPath: string): string {
+  let normalized = publicPath.replace(/\\/g, '/');
+  normalized = normalized.replace(/^\/?public\//, '/');
+  return normalized.startsWith('/') ? normalized : `/${normalized}`;
 }

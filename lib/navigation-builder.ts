@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import { pathToFileURL } from 'url';
 import { NavigationItem, NavigationTree, ContentPage, SidebarConfig, SidebarGroup } from './content-types';
 import { contentLoader } from './content-loader';
 
@@ -162,9 +163,14 @@ export class NavigationBuilder {
     const mjsConfigPath = path.join(contentPath, '_sidebar.mjs');
     if (fs.existsSync(mjsConfigPath)) {
       try {
-        // Use dynamic import for .mjs files with proper path resolution
+        // Keep import dynamic at runtime so Next/Turbopack does not try to resolve
+        // an arbitrary absolute filesystem path at build time.
         const absolutePath = path.resolve(mjsConfigPath);
-        const configModule = await import(absolutePath);
+        const moduleUrl = pathToFileURL(absolutePath).href;
+        const dynamicImport = new Function('modulePath', 'return import(modulePath);') as (
+          modulePath: string
+        ) => Promise<{ default?: SidebarConfig } & SidebarConfig>;
+        const configModule = await dynamicImport(moduleUrl);
         const config = configModule.default || configModule;
         
         // Validate the configuration

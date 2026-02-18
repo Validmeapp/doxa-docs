@@ -44,51 +44,72 @@ export function SearchUI({
   const searchInputRef = useRef<HTMLInputElement>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
 
+  const normalizeSearchResultUrl = useCallback((rawUrl: string, resultMeta?: { locale?: string; version?: string }) => {
+    if (!rawUrl) {
+      return `/${locale}/docs`;
+    }
+
+    const targetLocale = resultMeta?.locale || locale;
+    const targetVersion = resultMeta?.version || version;
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'http://localhost';
+
+    try {
+      const parsed = new URL(rawUrl, origin);
+      const isExternal = /^(https?:)?\/\//i.test(rawUrl) && parsed.origin !== origin;
+      if (isExternal) {
+        return rawUrl;
+      }
+
+      let pathname = parsed.pathname || '/';
+      pathname = pathname.replace(/\\/g, '/').replace(/\/+/g, '/');
+
+      // Keep already-correct docs URLs unchanged.
+      if (
+        pathname.startsWith(`/${targetLocale}/docs`) ||
+        /^\/(en|es)\/docs(\/|$)/.test(pathname) ||
+        pathname.startsWith('/docs/')
+      ) {
+        return `${pathname}${parsed.search}${parsed.hash}`;
+      }
+
+      // Convert static Pagefind URLs to app routes.
+      pathname = pathname
+        .replace(/\/index(?:\.html)?$/i, '')
+        .replace(/\.html$/i, '');
+
+      if (!pathname || pathname === '/') {
+        return `/${targetLocale}/docs`;
+      }
+
+      const normalizedPath = pathname.startsWith('/') ? pathname : `/${pathname}`;
+      return `/${targetLocale}/docs/${targetVersion}${normalizedPath}${parsed.search}${parsed.hash}`;
+    } catch {
+      return `/${targetLocale}/docs/${targetVersion}`;
+    }
+  }, [locale, version]);
+
   // Initialize Pagefind from static files (built at build time)
   useEffect(() => {
     const initPagefind = async () => {
       try {
-        // Load Pagefind from the pre-built static search index
-        // The index is built during the build process and stored in /public/search/{locale}/{version}/
         const pagefindPath = `/search/${locale}/${version}/pagefind.js`;
+        // Pagefind bundles are ESM and rely on import.meta.
+        // They must be loaded with dynamic import, not a classic <script>.
+        const pagefindModule: any = await import(
+          /* webpackIgnore: true */ pagefindPath
+        );
 
-        // Dynamically import Pagefind from the static files
-        // Pagefind exposes itself on the window object when loaded
-        const existingScript = document.querySelector(`script[src="${pagefindPath}"]`);
-
-        if (!existingScript) {
-          const script = document.createElement('script');
-          script.src = pagefindPath;
-          script.async = true;
-
-          await new Promise<void>((resolve, reject) => {
-            script.onload = () => resolve();
-            script.onerror = () => reject(new Error(`Failed to load Pagefind from ${pagefindPath}`));
-            document.head.appendChild(script);
-          });
+        if (!pagefindModule || typeof pagefindModule.search !== 'function') {
+          throw new Error(`Invalid Pagefind module loaded from ${pagefindPath}`);
         }
 
-        // Wait for Pagefind to be available on window
-        let attempts = 0;
-        const maxAttempts = 50; // 5 seconds max wait
+        await pagefindModule.options({
+          excerptLength: 30,
+          highlightParam: 'highlight'
+        });
 
-        while (!(window as any).pagefind && attempts < maxAttempts) {
-          await new Promise(resolve => setTimeout(resolve, 100));
-          attempts++;
-        }
-
-        if ((window as any).pagefind) {
-          // Initialize Pagefind with options
-          await (window as any).pagefind.options({
-            excerptLength: 30,
-            highlightParam: 'highlight'
-          });
-
-          setPagefind((window as any).pagefind);
-          setError(null);
-        } else {
-          throw new Error('Pagefind failed to initialize');
-        }
+        setPagefind(pagefindModule);
+        setError(null);
       } catch (error) {
         console.warn('Could not initialize Pagefind search:', error);
         setError('Search index not available. Run npm run search:build first.');
@@ -101,6 +122,11 @@ export function SearchUI({
   }, [locale, version]);
 
   const handleResultClick = useCallback(async (result: SearchResult) => {
+    const normalizedUrl = normalizeSearchResultUrl(result.url, {
+      locale: result.meta?.locale,
+      version: result.meta?.version,
+    });
+
     // Log analytics
     try {
       await fetch('/api/search/analytics', {
@@ -113,7 +139,7 @@ export function SearchUI({
           locale,
           version,
           resultsCount: results.length,
-          clickedResultPath: result.url
+          clickedResultPath: normalizedUrl
         })
       });
     } catch (error) {
@@ -122,15 +148,15 @@ export function SearchUI({
 
     // Call analytics callback
     if (onResultClick) {
-      onResultClick(result, query);
+      onResultClick({ ...result, url: normalizedUrl }, query);
     }
 
     // Navigate to the result
-    window.location.href = result.url;
+    window.location.href = normalizedUrl;
     setIsOpen(false);
     setQuery('');
     setResults([]);
-  }, [query, locale, version, results.length, onResultClick]);
+  }, [query, locale, version, results.length, onResultClick, normalizeSearchResultUrl]);
 
   // Handle keyboard shortcuts
   useEffect(() => {
@@ -206,7 +232,11 @@ export function SearchUI({
           const data = await result.data();
 
           // Pagefind returns url or raw_url depending on version
-          const url = data.url || data.raw_url || '';
+          const rawUrl = data.url || data.raw_url || '';
+          const normalizedUrl = normalizeSearchResultUrl(rawUrl, {
+            locale: data.meta?.locale,
+            version: data.meta?.version,
+          });
 
           // Strip HTML tags from excerpt for plain text display
           // Pagefind returns excerpt with <mark> tags for highlighting
@@ -216,7 +246,7 @@ export function SearchUI({
 
           return {
             id: result.id,
-            url: url,
+            url: normalizedUrl,
             title: data.meta?.title || 'Untitled',
             excerpt: plainExcerpt,
             meta: {
@@ -257,7 +287,7 @@ export function SearchUI({
     } finally {
       setIsLoading(false);
     }
-  }, [pagefind, locale, version, onSearch]);
+  }, [pagefind, locale, version, onSearch, normalizeSearchResultUrl]);
 
   // Debounced search
   useEffect(() => {

@@ -1,9 +1,9 @@
 {
   "version": "1.0.0",
-  "generatedAt": "2026-01-11T21:40:11.969Z",
+  "generatedAt": "2026-02-18T02:55:48.620Z",
   "assets": {
     "en/v1/assets/files/api-config.json": {
-      "publicPath": "/public/assets/en/v1/files/api-config.1cf1facc.json",
+      "publicPath": "/assets/en/v1/files/api-config.1cf1facc.json",
       "hashedFilename": "api-config.1cf1facc.json",
       "contentHash": "1cf1facc10179fbe77e0cb55fb9a88e307604722063811da40a0a469f6068f6d",
       "originalPath": "en/v1/assets/files/api-config.json",
@@ -13,14 +13,14 @@
       "version": "v1",
       "derivatives": {},
       "metadata": {
-        "lastModified": "2026-01-11T21:40:11.970Z",
+        "lastModified": "2026-02-18T02:55:48.621Z",
         "referencedBy": [],
         "optimized": false,
         "securityScanned": true
       }
     },
     "en/v1/assets/files/quickstart-guide.txt": {
-      "publicPath": "/public/assets/en/v1/files/quickstart-guide.7e392896.txt",
+      "publicPath": "/assets/en/v1/files/quickstart-guide.7e392896.txt",
       "hashedFilename": "quickstart-guide.7e392896.txt",
       "contentHash": "7e39289641bc66e7d4f6861fcfa6aa3780f11a5bcb70ced6e520ff9fc99f1ad8",
       "originalPath": "en/v1/assets/files/quickstart-guide.txt",
@@ -30,14 +30,14 @@
       "version": "v1",
       "derivatives": {},
       "metadata": {
-        "lastModified": "2026-01-11T21:40:11.970Z",
+        "lastModified": "2026-02-18T02:55:48.621Z",
         "referencedBy": [],
         "optimized": false,
         "securityScanned": true
       }
     },
     "en/v1/assets/files/sample-users.csv": {
-      "publicPath": "/public/assets/en/v1/files/sample-users.155425b4.csv",
+      "publicPath": "/assets/en/v1/files/sample-users.155425b4.csv",
       "hashedFilename": "sample-users.155425b4.csv",
       "contentHash": "155425b4d7b5f634056a0a336bc0588ff7c252d367c58185c45842a6f8fca498",
       "originalPath": "en/v1/assets/files/sample-users.csv",
@@ -47,14 +47,14 @@
       "version": "v1",
       "derivatives": {},
       "metadata": {
-        "lastModified": "2026-01-11T21:40:11.970Z",
+        "lastModified": "2026-02-18T02:55:48.621Z",
         "referencedBy": [],
         "optimized": false,
         "securityScanned": true
       }
     },
     "en/v1/assets/images/api-flow-diagram.png": {
-      "publicPath": "/public/assets/en/v1/images/api-flow-diagram.233d0ef7.png",
+      "publicPath": "/assets/en/v1/media/api-flow-diagram.233d0ef7.png",
       "hashedFilename": "api-flow-diagram.233d0ef7.png",
       "contentHash": "233d0ef7f17a5f8ea5efb30e7747463e4ab9c6209766c04c78040a63f66a7037",
       "originalPath": "en/v1/assets/images/api-flow-diagram.png",
@@ -109,14 +109,14 @@
         }
       },
       "metadata": {
-        "lastModified": "2026-01-11T21:40:11.970Z",
+        "lastModified": "2026-02-18T02:55:48.621Z",
         "referencedBy": [],
         "optimized": false,
         "securityScanned": true
       }
     },
     "en/v1/assets/images/dashboard-screenshot.png": {
-      "publicPath": "/public/assets/en/v1/images/dashboard-screenshot.a31f5fc7.png",
+      "publicPath": "/assets/en/v1/media/dashboard-screenshot.a31f5fc7.png",
       "hashedFilename": "dashboard-screenshot.a31f5fc7.png",
       "contentHash": "a31f5fc77ae165acf1c38619364f4f33b2db61089494eb0b17071ff8686a796e",
       "originalPath": "en/v1/assets/images/dashboard-screenshot.png",
@@ -171,14 +171,14 @@
         }
       },
       "metadata": {
-        "lastModified": "2026-01-11T21:40:11.970Z",
+        "lastModified": "2026-02-18T02:55:48.621Z",
         "referencedBy": [],
         "optimized": false,
         "securityScanned": true
       }
     },
     "en/v1/assets/images/logo.svg": {
-      "publicPath": "/public/assets/en/v1/images/logo.6a1ee464.svg",
+      "publicPath": "/assets/en/v1/media/logo.6a1ee464.svg",
       "hashedFilename": "logo.6a1ee464.svg",
       "contentHash": "6a1ee464eec91bee4a4be52958f67145deb4737c6c5801f3457453f6b084ef5c",
       "originalPath": "en/v1/assets/images/logo.svg",
@@ -213,14 +213,14 @@
         }
       },
       "metadata": {
-        "lastModified": "2026-01-11T21:40:11.970Z",
+        "lastModified": "2026-02-18T02:55:48.621Z",
         "referencedBy": [],
         "optimized": false,
         "securityScanned": true
       }
     },
     "en/v1/assets/images/verification-process.png": {
-      "publicPath": "/public/assets/en/v1/images/verification-process.add94a30.png",
+      "publicPath": "/assets/en/v1/media/verification-process.add94a30.png",
       "hashedFilename": "verification-process.add94a30.png",
       "contentHash": "add94a309dc665bfa6266979ac24abc0da8ae153bf9e3fe3d9246f2b14b586f0",
       "originalPath": "en/v1/assets/images/verification-process.png",
@@ -275,14 +275,14 @@
         }
       },
       "metadata": {
-        "lastModified": "2026-01-11T21:40:11.970Z",
+        "lastModified": "2026-02-18T02:55:48.621Z",
         "referencedBy": [],
         "optimized": false,
         "securityScanned": true
       }
     },
     "es/v1/assets/files/api-config.json": {
-      "publicPath": "/public/assets/es/v1/files/api-config.05da96ae.json",
+      "publicPath": "/assets/es/v1/files/api-config.05da96ae.json",
       "hashedFilename": "api-config.05da96ae.json",
       "contentHash": "05da96ae3cc33549449a1ea902f5f00365102230a287702bc74a30bec8d821eb",
       "originalPath": "es/v1/assets/files/api-config.json",
@@ -292,14 +292,14 @@
       "version": "v1",
       "derivatives": {},
       "metadata": {
-        "lastModified": "2026-01-11T21:40:11.970Z",
+        "lastModified": "2026-02-18T02:55:48.621Z",
         "referencedBy": [],
         "optimized": false,
         "securityScanned": true
       }
     },
     "es/v1/assets/files/quickstart-guide.txt": {
-      "publicPath": "/public/assets/es/v1/files/quickstart-guide.63959687.txt",
+      "publicPath": "/assets/es/v1/files/quickstart-guide.63959687.txt",
       "hashedFilename": "quickstart-guide.63959687.txt",
       "contentHash": "63959687fd3d51b7cf5794084401df1ce68665ee052ffd70258d9077d10fb71a",
       "originalPath": "es/v1/assets/files/quickstart-guide.txt",
@@ -309,14 +309,14 @@
       "version": "v1",
       "derivatives": {},
       "metadata": {
-        "lastModified": "2026-01-11T21:40:11.970Z",
+        "lastModified": "2026-02-18T02:55:48.621Z",
         "referencedBy": [],
         "optimized": false,
         "securityScanned": true
       }
     },
     "es/v1/assets/files/sample-users.csv": {
-      "publicPath": "/public/assets/es/v1/files/sample-users.0aee2df3.csv",
+      "publicPath": "/assets/es/v1/files/sample-users.0aee2df3.csv",
       "hashedFilename": "sample-users.0aee2df3.csv",
       "contentHash": "0aee2df389d71fd3b94fb6f59756928def26b1b2c03d5472d843358bf3b87d19",
       "originalPath": "es/v1/assets/files/sample-users.csv",
@@ -326,14 +326,14 @@
       "version": "v1",
       "derivatives": {},
       "metadata": {
-        "lastModified": "2026-01-11T21:40:11.970Z",
+        "lastModified": "2026-02-18T02:55:48.621Z",
         "referencedBy": [],
         "optimized": false,
         "securityScanned": true
       }
     },
     "es/v1/assets/images/api-flow-diagram.png": {
-      "publicPath": "/public/assets/es/v1/images/api-flow-diagram.233d0ef7.png",
+      "publicPath": "/assets/es/v1/media/api-flow-diagram.233d0ef7.png",
       "hashedFilename": "api-flow-diagram.233d0ef7.png",
       "contentHash": "233d0ef7f17a5f8ea5efb30e7747463e4ab9c6209766c04c78040a63f66a7037",
       "originalPath": "es/v1/assets/images/api-flow-diagram.png",
@@ -388,14 +388,14 @@
         }
       },
       "metadata": {
-        "lastModified": "2026-01-11T21:40:11.970Z",
+        "lastModified": "2026-02-18T02:55:48.621Z",
         "referencedBy": [],
         "optimized": false,
         "securityScanned": true
       }
     },
     "es/v1/assets/images/dashboard-screenshot.png": {
-      "publicPath": "/public/assets/es/v1/images/dashboard-screenshot.a31f5fc7.png",
+      "publicPath": "/assets/es/v1/media/dashboard-screenshot.a31f5fc7.png",
       "hashedFilename": "dashboard-screenshot.a31f5fc7.png",
       "contentHash": "a31f5fc77ae165acf1c38619364f4f33b2db61089494eb0b17071ff8686a796e",
       "originalPath": "es/v1/assets/images/dashboard-screenshot.png",
@@ -450,14 +450,14 @@
         }
       },
       "metadata": {
-        "lastModified": "2026-01-11T21:40:11.970Z",
+        "lastModified": "2026-02-18T02:55:48.621Z",
         "referencedBy": [],
         "optimized": false,
         "securityScanned": true
       }
     },
     "es/v1/assets/images/logo.svg": {
-      "publicPath": "/public/assets/es/v1/images/logo.6a1ee464.svg",
+      "publicPath": "/assets/es/v1/media/logo.6a1ee464.svg",
       "hashedFilename": "logo.6a1ee464.svg",
       "contentHash": "6a1ee464eec91bee4a4be52958f67145deb4737c6c5801f3457453f6b084ef5c",
       "originalPath": "es/v1/assets/images/logo.svg",
@@ -492,14 +492,14 @@
         }
       },
       "metadata": {
-        "lastModified": "2026-01-11T21:40:11.970Z",
+        "lastModified": "2026-02-18T02:55:48.621Z",
         "referencedBy": [],
         "optimized": false,
         "securityScanned": true
       }
     },
     "es/v1/assets/images/verification-process.png": {
-      "publicPath": "/public/assets/es/v1/images/verification-process.add94a30.png",
+      "publicPath": "/assets/es/v1/media/verification-process.add94a30.png",
       "hashedFilename": "verification-process.add94a30.png",
       "contentHash": "add94a309dc665bfa6266979ac24abc0da8ae153bf9e3fe3d9246f2b14b586f0",
       "originalPath": "es/v1/assets/images/verification-process.png",
@@ -554,7 +554,7 @@
         }
       },
       "metadata": {
-        "lastModified": "2026-01-11T21:40:11.970Z",
+        "lastModified": "2026-02-18T02:55:48.621Z",
         "referencedBy": [],
         "optimized": false,
         "securityScanned": true

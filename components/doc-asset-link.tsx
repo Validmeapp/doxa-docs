@@ -4,12 +4,15 @@ import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import { Download, File, FileText, Archive, Image as ImageIcon } from 'lucide-react';
 import { 
-  getAssetContextFromPathname, 
-  resolveAssetWithFallback, 
-  generateDirectAssetPath,
+  getAssetContextFromPathname,
   type AssetContext 
 } from '@/lib/asset-context';
 import type { AssetManifest, ManifestEntry } from '@/lib/asset-processor';
+import { AssetLinkFallback } from '@/components/asset-fallbacks';
+import {
+  buildAssetCandidates,
+  pickFirstReachableAssetUrl,
+} from '@/lib/asset-client-resolver';
 
 interface DocAssetLinkProps {
   src: string;
@@ -142,43 +145,6 @@ function AssetLinkSkeleton({ className }: { className?: string }) {
 }
 
 /**
- * Error fallback for failed asset resolution
- */
-function AssetLinkError({ 
-  src, 
-  children, 
-  className, 
-  onRetry 
-}: { 
-  src: string; 
-  children?: React.ReactNode; 
-  className?: string; 
-  onRetry?: () => void;
-}) {
-  return (
-    <span 
-      className={`inline-flex items-center gap-2 text-muted-foreground ${className}`}
-      role="link"
-      aria-label={`Failed to load asset: ${src}`}
-    >
-      <File className="w-4 h-4" />
-      <span className="text-sm">
-        {children || src}
-      </span>
-      <span className="text-xs text-destructive">(unavailable)</span>
-      {onRetry && (
-        <button
-          onClick={onRetry}
-          className="text-xs text-primary hover:text-primary/80 underline ml-1 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded"
-        >
-          retry
-        </button>
-      )}
-    </span>
-  );
-}
-
-/**
  * DocAssetLink component for displaying downloadable asset links with metadata
  */
 export function DocAssetLink({
@@ -193,7 +159,6 @@ export function DocAssetLink({
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [retryCount, setRetryCount] = useState(0);
-  const [fallbackInfo, setFallbackInfo] = useState<{ used: boolean; type?: string } | null>(null);
   
   const context = useAssetContext();
 
@@ -206,33 +171,27 @@ export function DocAssetLink({
         setIsLoading(true);
         setError(null);
 
-        // Load the asset manifest
-        const manifest = await loadAssetManifest();
-        
+        let manifest: AssetManifest | undefined;
+        try {
+          manifest = await loadAssetManifest();
+        } catch (manifestError) {
+          console.warn('DocAssetLink: assets manifest not available, using direct resolution.', manifestError);
+        }
+
         if (!isMounted) return;
 
-        // Resolve the asset path with fallback logic
-        const resolved = resolveAssetWithFallback(src, context, manifest);
-        
+        const { candidates, manifestEntry } = buildAssetCandidates(src, context, 'file', manifest);
+        const resolved = await pickFirstReachableAssetUrl(candidates);
+
+        if (!isMounted) return;
+
         if (resolved) {
-          setResolvedSrc(resolved.publicPath);
-          setAssetEntry(resolved.entry);
-          setFallbackInfo({ 
-            used: resolved.fallbackUsed || false, 
-            type: resolved.fallbackType 
-          });
-          
-          // Log fallback usage for debugging
-          if (resolved.fallbackUsed) {
-            console.info(`Asset fallback used for ${src}: ${resolved.fallbackType} fallback to ${resolved.publicPath}`);
-          }
+          setResolvedSrc(resolved);
+          setAssetEntry(manifestEntry);
         } else {
-          // Asset not found in manifest, use direct path
-          // This is expected when assets haven't been processed yet or when using external URLs
-          const directPath = generateDirectAssetPath(src, context);
-          setResolvedSrc(directPath);
+          setResolvedSrc(null);
           setAssetEntry(null);
-          setFallbackInfo({ used: true, type: 'direct' });
+          setError(`404 Not Found: ${src}`);
         }
       } catch (err) {
         if (!isMounted) return;
@@ -240,9 +199,7 @@ export function DocAssetLink({
         const errorMessage = err instanceof Error ? err.message : 'Failed to resolve asset';
         console.error('DocAssetLink: Failed to resolve asset:', errorMessage);
         setError(errorMessage);
-        
-        // Fallback to original src
-        setResolvedSrc(src);
+        setResolvedSrc(null);
         setAssetEntry(null);
       } finally {
         if (isMounted) {
@@ -268,16 +225,16 @@ export function DocAssetLink({
     return <AssetLinkSkeleton className={className} />;
   }
 
-  // Show error state if resolution failed and no fallback src
-  if (error && !resolvedSrc) {
+  if (!resolvedSrc) {
     return (
-      <AssetLinkError
+      <AssetLinkFallback
         src={src}
         className={className}
         onRetry={handleRetry}
+        error={error || '404 Not Found'}
       >
         {children}
-      </AssetLinkError>
+      </AssetLinkFallback>
     );
   }
 

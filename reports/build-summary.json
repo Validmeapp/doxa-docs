@@ -1,6 +1,6 @@
 {
-  "timestamp": "2026-01-11T21:40:27.109Z",
-  "buildTime": 16084,
+  "timestamp": "2026-02-18T02:56:22.183Z",
+  "buildTime": 34584,
   "nodeVersion": "v22.18.0",
   "platform": "darwin",
   "options": {
@@ -8,7 +8,7 @@
     "skipAssetProcessing": false,
     "skipPerformanceAnalysis": false,
     "enableAnalyzer": false,
-    "generateLighthouse": false,
+    "generateLighthouse": true,
     "verbose": false
   },
   "environment": {}

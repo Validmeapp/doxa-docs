@@ -23,6 +23,11 @@
   --input: 214.3 31.8% 91.4%;
   --ring: 222.2 84% 4.9%;
   --radius: 0.5rem;
+  --code-bg: 210 40% 98%;
+  --code-fg: 222.2 47.4% 11.2%;
+  --code-border: 214.3 31.8% 84%;
+  --code-header-bg: 210 40% 95%;
+  --code-muted: 215.4 16.3% 36%;
   --chart-1: 12 76% 61%;
   --chart-2: 173 58% 39%;
   --chart-3: 197 37% 24%;
@@ -50,6 +55,11 @@
   --border: 217.2 32.6% 17.5%;
   --input: 217.2 32.6% 17.5%;
   --ring: 212.7 26.8% 83.9%;
+  --code-bg: 222 47% 11%;
+  --code-fg: 210 40% 96%;
+  --code-border: 217.2 32.6% 30%;
+  --code-header-bg: 220 36% 17%;
+  --code-muted: 215 20.2% 78%;
   --chart-1: 220 70% 50%;
   --chart-2: 160 60% 45%;
   --chart-3: 30 80% 55%;
@@ -725,6 +735,51 @@ button:disabled,
   padding: 0 !important;
   border: none !important;
   border-radius: 0 !important;
+}
+
+/* Unified code block contrast and theme behavior */
+.code-block-shell {
+  border-color: hsl(var(--code-border)) !important;
+  background-color: hsl(var(--code-bg) / 0.72) !important;
+}
+
+.code-block-shell .code-block-header {
+  border-color: hsl(var(--code-border)) !important;
+  background-color: hsl(var(--code-header-bg)) !important;
+}
+
+.code-block-shell .code-block-content {
+  background-color: hsl(var(--code-bg)) !important;
+  color: hsl(var(--code-fg)) !important;
+}
+
+.code-block-shell .code-block-content pre,
+.code-block-shell .code-block-content code {
+  background: transparent !important;
+  color: inherit !important;
+}
+
+.code-block-shell .code-block-content.neutral-styling,
+.code-block-shell .code-block-content.neutral-styling pre,
+.code-block-shell .code-block-content.neutral-styling code {
+  color: hsl(var(--code-fg)) !important;
+}
+
+.code-block-shell .code-block-content .shiki {
+  background-color: transparent !important;
+  color: var(--shiki-light) !important;
+}
+
+.dark .code-block-shell .code-block-content .shiki {
+  color: var(--shiki-dark) !important;
+}
+
+.code-block-shell .code-block-content .shiki span {
+  color: var(--shiki-light) !important;
+}
+
+.dark .code-block-shell .code-block-content .shiki span {
+  color: var(--shiki-dark) !important;
 }
 
 /* Highlighted lines */

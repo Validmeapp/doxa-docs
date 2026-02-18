@@ -1,0 +1,55 @@
+---
+title: Verification Flows
+description: Learn how to create and manage verification flows for document collection and validation
+version: v1
+locale: en
+order: 3
+---
+
+# Creating a Verification Flow
+
+A Verification Flow defines which documents users must submit during their validation process (for example, onboarding new users).
+
+## What is a Flow?
+
+Flows allow you to:
+
+- Define which documents to request from your users
+- Adapt requirements based on country
+- Reuse the same configuration across multiple verifications
+
+## How to Create a Flow
+
+1. **Sign in to your BackOffice account**
+
+2. **Navigate to Validation Flows and select Create Flow**
+
+3. **Complete the flow information:**
+   - **Name**: A descriptive name to identify the flow (e.g., Onboarding)
+   - **Description** (optional): Briefly explain the purpose of the flow
+
+4. **In the Required Documents section:**
+   - Click **Add**
+   - Select the type of document required
+   - Select the corresponding country
+   - You can add multiple documents if necessary
+
+5. **Click Create Flow** to save the flow, after you will see the Flow ID, you'll need it to reference this flow in API requests.
+
+## Using a Flow in a Verification
+
+The same flow can be reused across different types of requests by referencing its Flow ID:
+
+- **Document Validation** → the user uploads the documents
+- **Session or Consent** → the system verifies that documents are already validated
+
+## Example
+
+An Onboarding flow might require:
+
+- **Document Type**: National ID
+- **Country**: Bolivia
+
+---
+
+Once your flows are created, you can reference them when making API requests to validate user documents.

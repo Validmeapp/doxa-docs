@@ -86,34 +86,36 @@ export function DocsLayout({
         aria-label="Site header"
       >
         <div className="container flex h-14 items-center">
-          {/* Mobile menu button */}
-          <button
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground h-10 w-10 lg:hidden"
-            aria-label={sidebarOpen ? "Close navigation menu" : "Open navigation menu"}
-            aria-expanded={sidebarOpen}
-            aria-controls="sidebar-navigation"
-          >
-            {sidebarOpen ? (
-              <X className="h-6 w-6" aria-hidden="true" />
-            ) : (
-              <Menu className="h-6 w-6" aria-hidden="true" />
-            )}
-          </button>
+          <div className="flex items-center gap-2 min-w-0">
+            {/* Mobile menu button */}
+            <button
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground h-10 w-10 lg:hidden"
+              aria-label={sidebarOpen ? "Close navigation menu" : "Open navigation menu"}
+              aria-expanded={sidebarOpen}
+              aria-controls="sidebar-navigation"
+            >
+              {sidebarOpen ? (
+                <X className="h-6 w-6" aria-hidden="true" />
+              ) : (
+                <Menu className="h-6 w-6" aria-hidden="true" />
+              )}
+            </button>
 
-          {/* Logo/Title - Hidden on desktop, shown on mobile */}
-          <div className="flex items-center space-x-2 lg:hidden">
-            <h1 className="text-lg font-semibold">
-              <Link 
-                href={`/${locale}/docs`}
-                className="hover:text-primary transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-sm px-1"
-              >
-                Documentation
-              </Link>
-            </h1>
+            {/* Site logo */}
+            <a
+              href="https://validme.tech"
+              className="inline-flex items-center rounded-md bg-white/95 px-2 py-1 shadow-sm ring-1 ring-border/60 hover:opacity-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              aria-label="Go to ValidMe website"
+            >
+              <img
+                src="/brand/validme-banner.svg"
+                alt="ValidMe"
+                className="h-7 w-auto sm:h-8"
+              />
+            </a>
           </div>
 
-          {/* Spacer */}
           <div className="flex-1" />
 
           {/* Header controls */}

@@ -274,9 +274,9 @@ function CodeBlockTabs({
   };
 
   return (
-    <div className={`relative rounded-lg border bg-muted/50 ${className}`}>
+    <div className={`code-block-shell relative rounded-lg border ${className}`}>
       {/* Tab Headers */}
-      <div className="flex items-center border-b bg-muted/30">
+      <div className="code-block-header flex items-center border-b">
         <div className="flex" role="tablist" aria-label="Code examples">
           {tabs.map((tab, index) => (
             <button
@@ -392,7 +392,7 @@ function SingleCodeBlock({
         // Handle untyped code blocks with neutral styling (requirement 3.2, 3.3)
         if (isUntypedBlock || language === 'text' || !language) {
           // Use consistent neutral styling for untyped blocks
-          const neutralHtml = `<pre class="neutral-code-block" style="margin: 0; padding: 0; background: transparent; font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace; font-size: inherit; line-height: inherit; color: var(--foreground, #374151); white-space: pre-wrap; word-wrap: break-word; overflow-wrap: break-word;"><code class="language-text">${escapeHtml(code)}</code></pre>`;
+          const neutralHtml = `<pre class="neutral-code-block" style="margin: 0; padding: 0; background: transparent; font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace; font-size: inherit; line-height: inherit; color: inherit; white-space: pre-wrap; word-wrap: break-word; overflow-wrap: break-word;"><code class="language-text">${escapeHtml(code)}</code></pre>`;
           setHighlightedCode(neutralHtml);
           setIsLoading(false);
           return;
@@ -427,7 +427,7 @@ function SingleCodeBlock({
         
         // Enhanced fallback with consistent styling (requirement 6.3)
         // Fall back to plain text rendering without breaking the page
-        const fallbackHtml = `<pre class="fallback-code-block neutral-code-block" style="margin: 0; padding: 0; background: transparent; font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace; font-size: inherit; line-height: inherit; color: var(--foreground, #374151); white-space: pre-wrap; word-wrap: break-word; overflow-wrap: break-word;"><code class="language-text">${escapeHtml(code)}</code></pre>`;
+        const fallbackHtml = `<pre class="fallback-code-block neutral-code-block" style="margin: 0; padding: 0; background: transparent; font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace; font-size: inherit; line-height: inherit; color: inherit; white-space: pre-wrap; word-wrap: break-word; overflow-wrap: break-word;"><code class="language-text">${escapeHtml(code)}</code></pre>`;
         setHighlightedCode(fallbackHtml);
       } finally {
         setIsLoading(false);
@@ -610,9 +610,9 @@ function SingleCodeBlock({
   // Handle empty code blocks with clear message (requirement 6.5)
   if (isCodeEmpty) {
     return (
-      <div className={`rounded-lg border bg-muted/50 p-4 ${className}`}>
+      <div className={`code-block-shell rounded-lg border p-4 ${className}`}>
         {!hideHeader && (
-          <div className="flex items-center justify-between border-b bg-muted/30 px-4 py-2 -mx-4 -mt-4 mb-4">
+          <div className="code-block-header flex items-center justify-between border-b px-4 py-2 -mx-4 -mt-4 mb-4">
             <span className="rounded bg-muted px-2 py-1 text-xs font-medium text-muted-foreground">
               Empty Code Block
             </span>
@@ -627,9 +627,9 @@ function SingleCodeBlock({
 
   if (isLoading) {
     return (
-      <div className={`relative rounded-lg border bg-muted/50 ${className}`}>
+      <div className={`code-block-shell relative rounded-lg border ${className}`}>
         {!hideHeader && (
-          <div className="flex items-center justify-between border-b bg-muted/30 px-4 py-2">
+          <div className="code-block-header flex items-center justify-between border-b px-4 py-2">
             <div className="flex items-center gap-2">
               <div className="h-4 w-16 animate-pulse rounded bg-muted"></div>
               {filename && (
@@ -656,10 +656,10 @@ function SingleCodeBlock({
   }
 
   return (
-    <div className={`group relative rounded-lg border bg-muted/50 ${className}`}>
+    <div className={`code-block-shell group relative rounded-lg border ${className}`}>
       {/* Header with language badge and copy button */}
       {!hideHeader && (
-        <div className="flex items-center justify-between border-b bg-muted/30 px-4 py-2">
+        <div className="code-block-header flex items-center justify-between border-b px-4 py-2">
           <div className="flex items-center gap-2">
             <span className={`rounded px-2 py-1 text-xs font-medium ${
               error 
@@ -715,8 +715,6 @@ function SingleCodeBlock({
             fontFamily: 'SF Mono, Monaco, Cascadia Code, Roboto Mono, Consolas, Courier New, monospace',
             fontSize: '0.875rem',
             lineHeight: '1.5',
-            background: 'var(--code-background, #ffffff)',
-            color: 'var(--code-foreground, inherit)',
             overflowX: 'auto',
             whiteSpace: 'pre-wrap',
             wordWrap: 'break-word',

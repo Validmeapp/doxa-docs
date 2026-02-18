@@ -1,0 +1,6 @@
+name,email,role,registration_date
+John Smith,john@example.com,admin,2025-01-01
+Jane Doe,jane@example.com,user,2025-01-02
+Bob Wilson,bob@example.com,editor,2025-01-03
+Alice Brown,alice@example.com,user,2025-01-04
+Charlie Davis,charlie@example.com,moderator,2025-01-05

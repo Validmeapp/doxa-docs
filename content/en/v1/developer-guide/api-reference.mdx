@@ -18,7 +18,7 @@ Complete technical reference for working with validation requests.
 
 ## 📍 Base URL
 
-```
+```text
 Development: https://dev.api.validme.tech
 Production: https://api.validme.tech
 ```
@@ -27,7 +27,7 @@ Production: https://api.validme.tech
 
 All requests require the following header:
 
-```
+```text
 x-vm-authorization: Bearer YOUR_API_TOKEN
 Content-Type: application/json
 ```
@@ -41,12 +41,12 @@ Content-Type: application/json
 Start a new validation.
 
 **Endpoint:**
-```
+```text
 POST https://api.validme.tech/requests
 ```
 
 **Headers:**
-```
+```text
 x-vm-authorization: Bearer sk_live_...
 Content-Type: application/json
 ```
@@ -65,12 +65,12 @@ Content-Type: application/json
 #### Conditional Parameters
 
 **Option A: Specify verification types**
-```
+```text
 "verificationTypes": ["NATIONAL_ID", "SELFIE"]
 ```
 
 **Option B: Use predefined flow**
-```
+```text
 "flowId": "flow_68d85ee81c623d111e303c5e"
 ```
 
@@ -165,12 +165,12 @@ Content-Type: application/json
 Retrieve the status and details of a request.
 
 **Endpoint:**
-```
+```text
 GET https://api.validme.tech/requests/68f41f9221765dd7a4102dd6
 ```
 
 **Headers:**
-```
+```text
 x-vm-authorization: Bearer sk_live_...
 ```
 
@@ -232,7 +232,7 @@ x-vm-authorization: Bearer sk_live_...
 Retrieve a list of requests with pagination.
 
 **Endpoint:**
-```
+```text
 GET https://api.validme.tech/requests
 ```
 
@@ -250,7 +250,7 @@ GET https://api.validme.tech/requests
 
 ### Query Example
 
-```
+```text
 GET https://api.validme.tech/requests?page=1&limit=20&status=SUCCESS&from=2025-10-01&to=2025-10-31&sortBy=createdAt&order=desc
 ```
 
@@ -299,12 +299,12 @@ GET https://api.validme.tech/requests?page=1&limit=20&status=SUCCESS&from=2025-1
 Cancel a pending request (before user confirms).
 
 **Endpoint:**
-```
+```text
 DELETE https://api.validme.tech/requests/68f41f9221765dd7a4102dd6
 ```
 
 **Headers:**
-```
+```text
 x-vm-authorization: Bearer sk_live_...
 ```
 
@@ -324,7 +324,7 @@ x-vm-authorization: Bearer sk_live_...
 
 ### Cancellable Statuses
 
-```
+```text
 ✓ PENDING - You can cancel
 ✓ CONFIRMED - You can cancel
 ✗ SENDING - You cannot cancel
@@ -340,7 +340,7 @@ x-vm-authorization: Bearer sk_live_...
 
 ### State Diagram
 
-```
+```text
 PENDING ─────────→ CONFIRMED ────────→ SENDING ────────→ SUCCESS
   ↓                                                          ✓
   └────────────────────────────────────────────────────────┘
@@ -554,7 +554,7 @@ curl -X POST https://api.validme.tech/requests \
 
 ### Limits
 
-```
+```text
 Starter Plan: 100 requests/min
 Professional Plan: 500 requests/min
 Enterprise Plan: Unlimited (custom)
@@ -562,7 +562,7 @@ Enterprise Plan: Unlimited (custom)
 
 ### Rate Limit Headers
 
-```
+```text
 X-RateLimit-Limit: 500
 X-RateLimit-Remaining: 487
 X-RateLimit-Reset: 2025-10-26T16:05:00Z
@@ -570,7 +570,7 @@ X-RateLimit-Reset: 2025-10-26T16:05:00Z
 
 ### Exceeding Limit
 
-```
+```text
 HTTP/1.1 429 Too Many Requests
 
 {
