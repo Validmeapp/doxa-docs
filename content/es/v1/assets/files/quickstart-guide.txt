@@ -1,0 +1,15 @@
+# Guía de Inicio Rápido
+
+## Paso 1: Obtener Credenciales
+Regístrese en el portal de desarrolladores para obtener su API key.
+
+## Paso 2: Configurar el Cliente
+Instale el SDK e inicialice con sus credenciales.
+
+## Paso 3: Hacer su Primera Solicitud
+Use el endpoint de verificación para validar su configuración.
+
+---
+Documento generado automáticamente.
+Versión: 1.0.0
+Fecha: 2026-01-09

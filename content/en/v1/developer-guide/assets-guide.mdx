@@ -1,0 +1,317 @@
+---
+title: "Static Assets Guide"
+description: "Learn how to use images, documents, and other static assets in your documentation with automatic optimization and secure handling."
+version: "v1"
+locale: "en"
+order: 4
+category: "developer-guide"
+subcategory: "assets"
+lastUpdated: "2026-01-09"
+icon: "image"
+readTime: "8 min"
+---
+
+# Static Assets Guide
+
+This guide explains how to use static assets (images, PDFs, CSVs, and other files) in your documentation. The asset pipeline automatically handles optimization, security validation, and content hashing for cache efficiency.
+
+---
+
+## Overview
+
+The documentation portal includes a comprehensive asset management system that provides:
+
+- **Automatic Image Optimization**: Images are processed with Sharp for optimal quality and file size
+- **Content Hashing**: Assets are fingerprinted for efficient browser caching
+- **Security Validation**: All uploads are scanned for malicious content
+- **Locale/Version Scoping**: Assets are organized by language and API version
+- **Responsive Variants**: Automatic generation of @1x and @2x images
+- **Modern Formats**: WebP and AVIF conversion for better compression
+
+---
+
+## Using Images
+
+### Basic Image Usage
+
+To include an image in your MDX content, use standard Markdown syntax. The system automatically converts these to optimized `<DocImage />` components:
+
+```markdown
+![API Flow Diagram](api-flow-diagram.png)
+```
+
+This renders as:
+
+![API Flow Diagram](api-flow-diagram.png)
+
+### Images with Custom Alt Text
+
+Always provide descriptive alt text for accessibility:
+
+```markdown
+![Dashboard showing verification status and user metrics](dashboard-screenshot.png)
+```
+
+![Dashboard showing verification status and user metrics](dashboard-screenshot.png)
+
+### Using the DocImage Component Directly
+
+For more control, you can use the `DocImage` component directly:
+
+```tsx
+import { DocImage } from '@/components/doc-image';
+
+<DocImage
+  src="verification-process.png"
+  alt="Verification process flowchart"
+  width={600}
+  height={400}
+  priority={false}
+/>
+```
+
+### SVG Images
+
+SVG files are supported and served without rasterization:
+
+![Validme Logo](logo.svg)
+
+---
+
+## Using Binary Files
+
+### Downloadable Documents
+
+Link to downloadable files like PDFs, CSVs, or configuration files. The system automatically adds file metadata (size, type):
+
+```markdown
+Download the [sample users CSV](sample-users.csv) to see the expected format.
+```
+
+Download the [sample users CSV](sample-users.csv) to see the expected format.
+
+### Configuration Files
+
+Provide sample configuration files for developers:
+
+```markdown
+[Download API Configuration](api-config.json)
+```
+
+[Download API Configuration](api-config.json)
+
+### Text Documentation
+
+Include supplementary text documentation:
+
+```markdown
+[Quick Start Guide (TXT)](quickstart-guide.txt)
+```
+
+[Quick Start Guide (TXT)](quickstart-guide.txt)
+
+### Using DocAssetLink Component
+
+For more control over download behavior and metadata display:
+
+```tsx
+import { DocAssetLink } from '@/components/doc-asset-link';
+
+<DocAssetLink
+  src="sample-users.csv"
+  download="users-template.csv"
+  showMetadata={true}
+>
+  Download User Template
+</DocAssetLink>
+```
+
+---
+
+## Asset Organization
+
+### Directory Structure
+
+Assets should be placed in the `content/{locale}/{version}/assets/` directory:
+
+```
+content/
+├── en/
+│   └── v1/
+│       ├── assets/
+│       │   ├── images/
+│       │   │   ├── api-flow-diagram.png
+│       │   │   ├── dashboard-screenshot.png
+│       │   │   └── logo.svg
+│       │   └── files/
+│       │       ├── sample-users.csv
+│       │       ├── api-config.json
+│       │       └── quickstart-guide.txt
+│       └── developer-guide/
+│           └── assets-guide.mdx
+├── es/
+│   └── v1/
+│       ├── assets/
+│       │   ├── images/
+│       │   └── files/
+│       └── developer-guide/
+│           └── assets-guide.mdx
+```
+
+### Locale and Version Scoping
+
+Assets are automatically scoped to their locale and version:
+
+- English v1 assets: `content/en/v1/assets/`
+- Spanish v1 assets: `content/es/v1/assets/`
+
+The system resolves assets based on the current page context. If an asset isn't found in the current locale, it falls back to the default locale (English).
+
+---
+
+## Supported File Types
+
+### Images
+
+| Format | Extension | Use Case |
+|--------|-----------|----------|
+| JPEG | `.jpg`, `.jpeg` | Photographs, complex images |
+| PNG | `.png` | Screenshots, diagrams with transparency |
+| WebP | `.webp` | Modern browsers, smaller file sizes |
+| AVIF | `.avif` | Newest format, best compression |
+| GIF | `.gif` | Simple animations |
+| SVG | `.svg` | Logos, icons, scalable graphics |
+
+### Documents
+
+| Format | Extension | Use Case |
+|--------|-----------|----------|
+| PDF | `.pdf` | Documentation, guides, certificates |
+| CSV | `.csv` | Data samples, templates |
+| JSON | `.json` | Configuration files, API examples |
+| Text | `.txt` | Plain text documentation |
+| Excel | `.xls`, `.xlsx` | Spreadsheet templates |
+| ZIP | `.zip` | Bundled resources |
+
+---
+
+## Build Process Integration
+
+### Processing Assets
+
+Assets are automatically processed during the build:
+
+```bash
+# Process assets as part of optimized build
+npm run build:optimized
+
+# Or process assets separately
+npx tsx scripts/process-assets.ts
+
+# With verbose output
+npx tsx scripts/process-assets.ts --verbose
+```
+
+### Asset Manifest
+
+The build generates an `assets-manifest.json` in `public/assets/`:
+
+```json
+{
+  "version": "1.0.0",
+  "generatedAt": "2026-01-09T12:00:00.000Z",
+  "assets": {
+    "en/v1/assets/images/api-flow-diagram.png": {
+      "publicPath": "/public/assets/en/v1/images/api-flow-diagram.a1b2c3d4.png",
+      "hashedFilename": "api-flow-diagram.a1b2c3d4.png",
+      "contentHash": "a1b2c3d4...",
+      "fileSize": 45678,
+      "mimeType": "image/png",
+      "dimensions": { "width": 800, "height": 400 }
+    }
+  },
+  "locales": ["en", "es"],
+  "versions": ["v1"]
+}
+```
+
+---
+
+## Security Considerations
+
+### Allowed File Types
+
+Only these file types are accepted:
+
+**Images**: JPEG, PNG, WebP, AVIF, GIF, SVG
+**Documents**: PDF, ZIP, JSON, TXT, CSV, XLS, XLSX
+
+### File Size Limits
+
+- Maximum file size: **10 MB**
+- Maximum image dimensions: **4000 x 4000 pixels**
+
+### Security Validation
+
+All assets undergo security validation:
+
+1. **File type verification** - Checks MIME type and extension
+2. **Content scanning** - Detects malicious patterns and executable signatures
+3. **Path sanitization** - Prevents directory traversal attacks
+
+---
+
+## Troubleshooting
+
+### Asset Not Found
+
+If an asset isn't displaying:
+
+1. Verify the file exists in `content/{locale}/{version}/assets/`
+2. Check the filename matches exactly (case-sensitive)
+3. Run `npx tsx scripts/process-assets.ts --verbose` to see discovery logs
+4. Check `public/assets/assets-manifest.json` for the processed path
+
+### Image Not Optimized
+
+If images aren't being optimized:
+
+1. Ensure Sharp is installed: `npm install sharp`
+2. Check file format is supported (PNG, JPEG, WebP)
+3. Run with `--verbose` flag for detailed processing logs
+
+### Build Failures
+
+If the asset build fails:
+
+```bash
+# Skip asset processing temporarily
+npm run build:optimized -- --skip-assets
+
+# Run asset processing with verbose output
+npx tsx scripts/process-assets.ts --verbose
+```
+
+---
+
+## Best Practices
+
+1. **Optimize source images** before uploading - resize to reasonable dimensions
+2. **Use descriptive filenames** - `user-verification-flow.png` not `image1.png`
+3. **Provide alt text** for all images for accessibility
+4. **Use SVG for icons and logos** - they scale perfectly
+5. **Keep file sizes reasonable** - compress images before upload
+6. **Organize by feature** - group related assets together
+7. **Version your assets** - use locale/version directories properly
+
+---
+
+## Next Steps
+
+- [API Reference](/en/docs/v1/developer-guide/api-reference) - Complete API documentation
+- [Getting Started](/en/docs/v1/developer-guide/getting-started) - Quick start guide
+- [Webhooks](/en/docs/v1/developer-guide/webhooks) - Event notifications
+
+---
+
+**Last updated**: January 9, 2026

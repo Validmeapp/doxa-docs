@@ -283,6 +283,23 @@ export class LinkAuditor {
   }
 
   /**
+   * Asset file extensions that should be skipped by link auditor
+   * These are handled by the asset pipeline, not as internal document links
+   */
+  private static readonly ASSET_EXTENSIONS = [
+    '.png', '.jpg', '.jpeg', '.gif', '.svg', '.webp', '.avif',
+    '.pdf', '.csv', '.json', '.txt', '.zip', '.xls', '.xlsx'
+  ];
+
+  /**
+   * Check if a URL points to an asset file
+   */
+  private isAssetLink(url: string): boolean {
+    const lowerUrl = url.toLowerCase();
+    return LinkAuditor.ASSET_EXTENSIONS.some(ext => lowerUrl.endsWith(ext));
+  }
+
+  /**
    * Extract markdown links from file content
    */
   private extractMarkdownLinks(content: string, filePath: string): Array<{
@@ -294,14 +311,15 @@ export class LinkAuditor {
     const links: Array<{ text: string; url: string; filePath: string; lineNumber?: number }> = [];
     const linkRegex = /\[([^\]]*)\]\(([^)]+)\)/g;
     const lines = content.split('\n');
-    
+
     lines.forEach((line, index) => {
       let match;
       while ((match = linkRegex.exec(line)) !== null) {
         const [, text, url] = match;
-        
-        // Skip external links and anchors for internal validation
-        if (!url.startsWith('http://') && !url.startsWith('https://') && !url.startsWith('//') && !url.startsWith('#')) {
+
+        // Skip external links, anchors, and asset files for internal validation
+        // Asset files are handled by the asset pipeline (DocImage, DocAssetLink components)
+        if (!url.startsWith('http://') && !url.startsWith('https://') && !url.startsWith('//') && !url.startsWith('#') && !this.isAssetLink(url)) {
           links.push({
             text,
             url,
@@ -311,7 +329,7 @@ export class LinkAuditor {
         }
       }
     });
-    
+
     return links;
   }
 

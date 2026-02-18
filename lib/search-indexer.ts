@@ -1,5 +1,5 @@
 import { execSync } from 'child_process';
-import { existsSync, mkdirSync, writeFileSync, readFileSync } from 'fs';
+import { existsSync, mkdirSync, writeFileSync, readFileSync, rmSync } from 'fs';
 import path from 'path';
 import { getDatabase } from './database';
 
@@ -30,10 +30,11 @@ export class SearchIndexer {
     
     console.log(`Generating search index for ${locale}/${version}...`);
 
-    // Ensure output directory exists
-    if (!existsSync(outputDir)) {
-      mkdirSync(outputDir, { recursive: true });
+    // Always rebuild index output from scratch to avoid stale fragments/metadata.
+    if (existsSync(outputDir)) {
+      rmSync(outputDir, { recursive: true, force: true });
     }
+    mkdirSync(outputDir, { recursive: true });
 
     // Create a temporary HTML file structure for Pagefind to index
     const tempDir = path.join(process.cwd(), '.temp-search', locale, version);
@@ -123,12 +124,20 @@ export class SearchIndexer {
         continue;
       }
 
+      const pageLocale = frontmatter.locale || locale;
+      const pageVersion = frontmatter.version || version;
+      const slug = this.generateSearchSlug(mdxFile, frontmatter.slug);
+      const pageUrl = slug
+        ? `/${pageLocale}/docs/${pageVersion}/${slug}`
+        : `/${pageLocale}/docs`;
+
       // Convert MDX to searchable HTML
-      const htmlContent = this.convertMdxToSearchableHtml(mdxContent, frontmatter);
+      const htmlContent = this.convertMdxToSearchableHtml(mdxContent, frontmatter, pageUrl);
       
-      // Create HTML file path
-      const htmlFileName = mdxFile.replace('.mdx', '.html');
-      const htmlFilePath = path.join(tempDir, htmlFileName);
+      // Create HTML file path aligned with route structure so Pagefind derives valid URLs
+      const htmlFilePath = slug
+        ? path.join(tempDir, pageLocale, 'docs', pageVersion, slug, 'index.html')
+        : path.join(tempDir, pageLocale, 'docs', 'index.html');
       
       // Ensure directory exists
       const htmlFileDir = path.dirname(htmlFilePath);
@@ -141,9 +150,32 @@ export class SearchIndexer {
   }
 
   /**
+   * Generate route slug for a search document.
+   */
+  private generateSearchSlug(mdxFile: string, customSlug?: string): string {
+    if (typeof customSlug === 'string' && customSlug.trim().length > 0) {
+      return customSlug
+        .trim()
+        .replace(/^\/+|\/+$/g, '')
+        .replace(/\.html?$/i, '');
+    }
+
+    let slug = mdxFile
+      .replace(/\\/g, '/')
+      .replace(/\.mdx$/i, '')
+      .replace(/\/index$/i, '');
+
+    if (slug === 'index') {
+      slug = '';
+    }
+
+    return slug;
+  }
+
+  /**
    * Convert MDX content to searchable HTML
    */
-  private convertMdxToSearchableHtml(content: string, frontmatter: any): string {
+  private convertMdxToSearchableHtml(content: string, frontmatter: any, pageUrl: string): string {
     // Define binary file extensions that should be excluded from search
     const binaryExtensions = [
       '.pdf', '.zip', '.tar', '.gz', '.rar', '.7z',
@@ -217,13 +249,9 @@ export class SearchIndexer {
       return `<p>${trimmed.replace(/\n/g, ' ')}</p>`;
     }).filter(p => p).join('\n');
 
-    // Generate URL for the page
-    const slug = frontmatter.slug || frontmatter.title?.toLowerCase().replace(/\s+/g, '-') || 'page';
-    const pageUrl = `/${frontmatter.locale}/docs/v1/${slug}`;
-
     // Create full HTML document
     return `<!DOCTYPE html>
-<html lang="${frontmatter.locale || 'en'}">
+<html lang="${frontmatter.locale || 'en'}" data-pagefind-url="${pageUrl}">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -234,7 +262,7 @@ export class SearchIndexer {
   <meta data-pagefind-meta="tags" content="${(frontmatter.tags || []).join(', ')}">
   <meta data-pagefind-url="${pageUrl}">
 </head>
-<body>
+<body data-pagefind-url="${pageUrl}">
   <main data-pagefind-body>
     <h1>${frontmatter.title || 'Documentation'}</h1>
     ${paragraphs}

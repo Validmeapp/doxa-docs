@@ -4,12 +4,15 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { 
-  getAssetContextFromPathname, 
-  resolveAssetWithFallback, 
-  generateDirectAssetPath,
+  getAssetContextFromPathname,
   type AssetContext 
 } from '@/lib/asset-context';
-import type { AssetManifest, ManifestEntry } from '@/lib/asset-processor';
+import type { AssetManifest } from '@/lib/asset-processor';
+import { ImageFallback } from '@/components/asset-fallbacks';
+import {
+  buildAssetCandidates,
+  pickFirstReachableAssetUrl,
+} from '@/lib/asset-client-resolver';
 
 interface DocImageProps {
   src: string;
@@ -97,48 +100,6 @@ function ImageSkeleton({ className }: { className?: string }) {
 }
 
 /**
- * Error fallback component for failed image loads
- */
-function ImageError({ 
-  alt, 
-  src, 
-  className, 
-  onRetry 
-}: { 
-  alt: string; 
-  src: string; 
-  className?: string; 
-  onRetry?: () => void;
-}) {
-  return (
-    <div 
-      className={`border border-dashed border-muted-foreground/30 rounded bg-muted/20 p-8 text-center ${className}`}
-      role="img"
-      aria-label={`Failed to load image: ${alt}`}
-    >
-      <div className="text-muted-foreground">
-        <div className="text-4xl mb-2">🖼️</div>
-        <div className="text-sm font-medium mb-1">Image not available</div>
-        <div className="text-xs text-muted-foreground/70 mb-3">
-          {alt || 'No description provided'}
-        </div>
-        <div className="text-xs text-muted-foreground/50 mb-3">
-          Source: {src}
-        </div>
-        {onRetry && (
-          <button
-            onClick={onRetry}
-            className="text-xs text-primary hover:text-primary/80 underline focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded"
-          >
-            Try again
-          </button>
-        )}
-      </div>
-    </div>
-  );
-}
-
-/**
  * DocImage component for displaying images with asset manifest resolution
  */
 export function DocImage({
@@ -155,8 +116,8 @@ export function DocImage({
   const [dimensions, setDimensions] = useState<{ width: number; height: number } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [loadFailed, setLoadFailed] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
-  const [fallbackInfo, setFallbackInfo] = useState<{ used: boolean; type?: string } | null>(null);
   
   const context = useAssetContext();
 
@@ -168,37 +129,33 @@ export function DocImage({
       try {
         setIsLoading(true);
         setError(null);
+        setLoadFailed(false);
 
-        // Load the asset manifest
-        const manifest = await loadAssetManifest();
-        
+        let manifest: AssetManifest | undefined;
+        try {
+          manifest = await loadAssetManifest();
+        } catch (manifestError) {
+          console.warn('DocImage: assets manifest not available, using direct resolution.', manifestError);
+        }
+
         if (!isMounted) return;
 
-        // Resolve the asset path with fallback logic
-        const resolved = resolveAssetWithFallback(src, context, manifest);
-        
-        if (resolved) {
-          setResolvedSrc(resolved.publicPath);
-          setFallbackInfo({ 
-            used: resolved.fallbackUsed || false, 
-            type: resolved.fallbackType 
-          });
-          
-          // Set dimensions if available in manifest
-          if (resolved.entry.dimensions) {
-            setDimensions(resolved.entry.dimensions);
-          }
-          
-          // Log fallback usage for debugging
-          if (resolved.fallbackUsed) {
-            console.info(`Asset fallback used for ${src}: ${resolved.fallbackType} fallback to ${resolved.publicPath}`);
-          }
+        const { candidates, manifestEntry } = buildAssetCandidates(src, context, 'media', manifest);
+        const resolved = await pickFirstReachableAssetUrl(candidates);
+
+        if (!isMounted) return;
+
+        if (manifestEntry?.dimensions) {
+          setDimensions(manifestEntry.dimensions);
         } else {
-          // Asset not found in manifest, use direct path
-          // This is expected when assets haven't been processed yet or when using external URLs
-          const directPath = generateDirectAssetPath(src, context);
-          setResolvedSrc(directPath);
-          setFallbackInfo({ used: true, type: 'direct' });
+          setDimensions(null);
+        }
+
+        if (resolved) {
+          setResolvedSrc(resolved);
+        } else {
+          setResolvedSrc(null);
+          setError(`404 Not Found: ${src}`);
         }
       } catch (err) {
         if (!isMounted) return;
@@ -206,9 +163,7 @@ export function DocImage({
         const errorMessage = err instanceof Error ? err.message : 'Failed to resolve asset';
         console.error('DocImage: Failed to resolve asset:', errorMessage);
         setError(errorMessage);
-        
-        // Fallback to original src
-        setResolvedSrc(src);
+        setResolvedSrc(null);
       } finally {
         if (isMounted) {
           setIsLoading(false);
@@ -233,15 +188,37 @@ export function DocImage({
     return <ImageSkeleton className={className} />;
   }
 
-  // Show error state if resolution failed and no fallback src
-  if (error && !resolvedSrc) {
+  if (!resolvedSrc || loadFailed) {
     return (
-      <ImageError 
+      <ImageFallback 
         alt={alt} 
         src={src} 
         className={className} 
         onRetry={handleRetry}
+        error={error || (loadFailed ? '404 Not Found' : undefined)}
       />
+    );
+  }
+
+  const isVideoAsset = /\.(mp4|webm|ogg|mov|m4v)(\?.*)?$/i.test(resolvedSrc);
+
+  if (isVideoAsset) {
+    return (
+      <video
+        src={resolvedSrc}
+        controls
+        className={className}
+        onError={() => {
+          setLoadFailed(true);
+          setError(`404 Not Found: ${resolvedSrc}`);
+        }}
+        style={{
+          maxWidth: '100%',
+          height: 'auto',
+        }}
+      >
+        Your browser does not support the video tag.
+      </video>
     );
   }
 
@@ -262,7 +239,8 @@ export function DocImage({
         sizes={sizes}
         placeholder={placeholder}
         onError={() => {
-          console.error(`Failed to load image: ${resolvedSrc || src}`);
+          setLoadFailed(true);
+          setError(`404 Not Found: ${resolvedSrc}`);
         }}
         style={{
           maxWidth: '100%',
@@ -284,7 +262,8 @@ export function DocImage({
         placeholder={placeholder}
         className="object-contain"
         onError={() => {
-          console.error(`Failed to load image: ${resolvedSrc || src}`);
+          setLoadFailed(true);
+          setError(`404 Not Found: ${resolvedSrc}`);
         }}
       />
     </div>

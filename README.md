@@ -11,7 +11,7 @@ A modern, enterprise-grade multilingual documentation portal built with Next.js 
 | Static Search (Pagefind) | ✅ Complete | Client-side search with locale/version indexes |
 | Content Validation | ✅ Complete | Frontmatter, links, structure validation |
 | Link Auditing | ✅ Complete | Detects and can auto-fix broken internal links |
-| Asset Pipeline | ✅ Complete | Image optimization, hashing, manifest generation |
+| Asset Pipeline | ✅ Complete | Image optimization, hashing, manifest, examples included |
 | Theme Support | ✅ Complete | Dark/Light mode with system preference |
 | Version Switcher | ✅ Complete | Currently v1 only |
 | Optimized Build | ✅ Complete | Pre-build validation, performance analysis |
@@ -291,6 +291,121 @@ npm run lint:content
 # Generate detailed linting report
 npm run lint:content:report
 ```
+
+---
+
+## 🖼️ Static Assets
+
+The documentation portal includes a comprehensive static asset management system for images and binary files with automatic optimization, security validation, and content hashing.
+
+### Quick Start
+
+1. **Place assets in the content directory:**
+   ```
+   content/
+   ├── en/
+   │   └── v1/
+   │       └── assets/
+   │           ├── images/
+   │           │   ├── screenshot.png
+   │           │   └── diagram.svg
+   │           └── files/
+   │               ├── sample.csv
+   │               └── config.json
+   ```
+
+2. **Reference assets in MDX content:**
+   ```markdown
+   <!-- Images - automatically converted to optimized DocImage component -->
+   ![API Flow Diagram](api-flow-diagram.png)
+
+   <!-- Downloadable files - shows file metadata -->
+   Download the [sample data](sample-users.csv) to see the format.
+   ```
+
+3. **Assets are automatically processed during build:**
+   ```bash
+   npm run build:optimized
+   ```
+
+### Supported File Types
+
+**Images**: JPEG, PNG, WebP, AVIF, GIF, SVG (max 10MB, 4000x4000 pixels)
+
+**Documents**: PDF, ZIP, JSON, TXT, CSV, XLS, XLSX (max 10MB)
+
+### Asset Processing
+
+Assets are automatically:
+- **Content-hashed** for cache efficiency (e.g., `image.a1b2c3d4.png`)
+- **Optimized** with Sharp for smaller file sizes
+- **Converted** to modern formats (WebP, AVIF)
+- **Security-validated** for malicious content
+- **Organized** by locale and version
+
+### Asset Commands
+
+```bash
+# Process assets (runs automatically in build:optimized)
+npx tsx scripts/process-assets.ts
+
+# Process with detailed output
+npx tsx scripts/process-assets.ts --verbose
+
+# Dry run (no file copying)
+npx tsx scripts/process-assets.ts --dry-run
+
+# Skip responsive variant generation
+npx tsx scripts/process-assets.ts --skip-responsive
+
+# Skip modern format conversion (WebP, AVIF)
+npx tsx scripts/process-assets.ts --skip-modern-formats
+```
+
+### Asset Manifest
+
+The build generates `public/assets/assets-manifest.json` with:
+- Hashed file paths for cache busting
+- Image dimensions for layout optimization
+- File metadata (size, type, locale, version)
+- Derivative variants (@1x, @2x, WebP, AVIF)
+
+### Using Components Directly
+
+For more control, use the asset components directly in MDX:
+
+```tsx
+import { DocImage } from '@/components/doc-image';
+import { DocAssetLink } from '@/components/doc-asset-link';
+
+// Image with explicit dimensions
+<DocImage
+  src="screenshot.png"
+  alt="Dashboard screenshot"
+  width={800}
+  height={450}
+  priority={true}
+/>
+
+// Downloadable file with custom filename
+<DocAssetLink
+  src="api-config.json"
+  download="my-config.json"
+  showMetadata={true}
+>
+  Download Configuration Template
+</DocAssetLink>
+```
+
+### Locale Fallback
+
+Assets resolve in order:
+1. Current locale + current version
+2. Current locale + other versions
+3. Default locale (English) + current version
+4. Default locale + any version
+
+This allows sharing common assets across languages while supporting locale-specific overrides.
 
 ---
 
@@ -958,6 +1073,14 @@ npm run validate:content       # Validate frontmatter and structure
 npm run links:audit            # Audit internal links
 npm run links:fix              # Auto-fix broken links
 npm run links:normalize        # Test link normalization
+```
+
+#### Asset Processing
+```bash
+# Asset processing runs automatically with build:optimized
+npx tsx scripts/process-assets.ts          # Process static assets
+npx tsx scripts/process-assets.ts --verbose # Detailed processing output
+npx tsx scripts/create-sample-assets.ts    # Generate sample test assets
 ```
 
 #### Quality Assurance

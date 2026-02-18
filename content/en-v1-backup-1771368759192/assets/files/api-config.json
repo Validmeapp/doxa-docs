@@ -1,0 +1,14 @@
+{
+  "name": "Sample API Configuration",
+  "version": "1.0.0",
+  "endpoints": {
+    "users": "/api/v1/users",
+    "verification": "/api/v1/verification",
+    "documents": "/api/v1/documents"
+  },
+  "settings": {
+    "timeout": 30000,
+    "retries": 3,
+    "debug": false
+  }
+}

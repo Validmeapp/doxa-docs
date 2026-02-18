@@ -118,8 +118,9 @@ export class AssetProcessor {
    * Generate scoped asset path for a given locale and version
    */
   generateScopedAssetPath(locale: string, version: string, assetType: AssetType, filename: string): string {
-    const typeDir = assetType === AssetType.IMAGE ? 'images' : 'files';
-    return path.join('/', this.publicDir, locale, version, typeDir, filename).replace(/\\/g, '/');
+    const typeDir = assetType === AssetType.IMAGE ? 'media' : 'files';
+    const normalizedPublicDir = this.publicDir.replace(/^\/?public\/?/, '').replace(/^\/+/, '');
+    return path.join('/', normalizedPublicDir, locale, version, typeDir, filename).replace(/\\/g, '/');
   }
 
   /**

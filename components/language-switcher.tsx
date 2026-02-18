@@ -40,6 +40,10 @@ export function LanguageSwitcher({ currentLocale }: LanguageSwitcherProps) {
   // Switch language while preserving the current path
   const switchLanguage = (newLocale: Locale) => {
     setIsOpen(false);
+
+    // Persist preferred locale for both client-side and middleware redirects
+    localStorage.setItem('preferred-locale', newLocale);
+    document.cookie = `preferred-locale=${newLocale}; path=/; max-age=31536000; samesite=lax`;
     
     // Extract the path without the current locale
     const pathWithoutLocale = pathname.replace(`/${currentLocale}`, '') || '/';

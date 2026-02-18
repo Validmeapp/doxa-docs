@@ -1,12 +1,45 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { createRoot } from 'react-dom/client';
+import { createRoot, type Root } from 'react-dom/client';
 import { MDXCodeBlock } from './mdx-code-block';
+import { DocImage } from './doc-image';
+import { DocAssetLink } from './doc-asset-link';
 
 interface ContentRendererProps {
   content: string;
   className?: string;
+}
+
+interface ManagedRoot {
+  root: Root;
+  unmountTimer: ReturnType<typeof setTimeout> | null;
+}
+
+// Shared registry across StrictMode mount/unmount cycles in dev.
+const rootRegistry = new WeakMap<HTMLElement, ManagedRoot>();
+
+function scheduleUnmount(element: HTMLElement, managed: ManagedRoot) {
+  if (managed.unmountTimer) return;
+
+  managed.unmountTimer = setTimeout(() => {
+    try {
+      managed.root.unmount();
+    } catch (error) {
+      console.debug('Root already unmounted:', error);
+    } finally {
+      rootRegistry.delete(element);
+      managed.unmountTimer = null;
+    }
+  }, 0);
+}
+
+function parseBooleanAttribute(value: string | null, defaultValue: boolean): boolean {
+  if (value === null) return defaultValue;
+  const normalized = value.trim().toLowerCase();
+  if (normalized === '' || normalized === 'true' || normalized === '{true}') return true;
+  if (normalized === 'false' || normalized === '{false}') return false;
+  return defaultValue;
 }
 
 /**
@@ -15,89 +48,170 @@ interface ContentRendererProps {
  */
 export function ContentRenderer({ content, className = '' }: ContentRendererProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const rootsRef = useRef<Array<{ root: any; element: HTMLElement }>>([]);
+  const rootsRef = useRef<Map<HTMLElement, ManagedRoot>>(new Map());
+
+  const decodeBase64Utf8 = (encoded: string): string => {
+    // atob returns a latin1-style binary string. Convert bytes to UTF-8 text
+    // so JSON payloads with non-ASCII characters parse correctly.
+    const binary = atob(encoded);
+    const bytes = Uint8Array.from(binary, (char) => char.charCodeAt(0));
+    return new TextDecoder('utf-8').decode(bytes);
+  };
 
   useEffect(() => {
     if (!containerRef.current) return;
 
-    // Clean up previous roots asynchronously to avoid race conditions
-    const previousRoots = rootsRef.current;
-    rootsRef.current = [];
-    
-    // Schedule cleanup for next tick to avoid synchronous unmounting during render
-    if (previousRoots.length > 0) {
-      setTimeout(() => {
-        previousRoots.forEach(({ root }) => {
-          try {
-            root.unmount();
-          } catch (error) {
-            // Ignore unmount errors as the root might already be unmounted
-            console.debug('Root already unmounted:', error);
-          }
-        });
-      }, 0);
-    }
+    const activeElements = new Set<HTMLElement>();
+
+    const mountElement = (element: HTMLElement, render: (root: Root) => void) => {
+      activeElements.add(element);
+
+      let managed = rootsRef.current.get(element) || rootRegistry.get(element);
+      if (managed?.unmountTimer) {
+        clearTimeout(managed.unmountTimer);
+        managed.unmountTimer = null;
+      }
+
+      if (!managed) {
+        managed = {
+          root: createRoot(element),
+          unmountTimer: null,
+        };
+        rootRegistry.set(element, managed);
+      }
+
+      rootsRef.current.set(element, managed);
+      render(managed.root);
+    };
 
     // Find all MDX code block markers
-    const codeBlockMarkers = containerRef.current.querySelectorAll('div[data-mdx-code-block]');
+    const codeBlockMarkers = Array.from(
+      containerRef.current.querySelectorAll('div[data-mdx-code-block]')
+    ) as HTMLElement[];
     
-    codeBlockMarkers.forEach((marker, index) => {
+    codeBlockMarkers.forEach((marker) => {
       const encodedData = marker.getAttribute('data-mdx-code-block');
       
       if (!encodedData) return;
 
       try {
         // Decode the code block data (using atob for browser compatibility)
-        const codeBlockData = JSON.parse(atob(encodedData));
+        const codeBlockData = JSON.parse(decodeBase64Utf8(encodedData));
         
         const { language, code, filename, highlightLines, showLineNumbers, ...otherProps } = codeBlockData;
-        
-        // Create a new div to replace the marker
-        const newDiv = document.createElement('div');
-        marker.parentNode?.replaceChild(newDiv, marker);
-        
-        // Create a React root and render the MDXCodeBlock component
-        const root = createRoot(newDiv);
-        root.render(
-          <MDXCodeBlock
-            className={`language-${language}`}
-            filename={filename}
-            highlightLines={highlightLines}
-            showLineNumbers={showLineNumbers === 'true' || showLineNumbers === true}
-            {...otherProps}
-          >
-            {code}
-          </MDXCodeBlock>
-        );
-        
-        // Store the root for cleanup
-        rootsRef.current.push({ root, element: newDiv });
+
+        mountElement(marker, (root) => {
+          root.render(
+            <MDXCodeBlock
+              className={`language-${language}`}
+              filename={filename}
+              highlightLines={highlightLines}
+              showLineNumbers={showLineNumbers === 'true' || showLineNumbers === true}
+              {...otherProps}
+            >
+              {code}
+            </MDXCodeBlock>
+          );
+        });
       } catch (error) {
         console.error('Failed to parse code block data:', error);
-        // Leave the marker as-is if parsing fails
+        const element = marker as HTMLElement;
+        const encoded = marker.getAttribute('data-mdx-code-block');
+        if (encoded) {
+          try {
+            const data = JSON.parse(decodeBase64Utf8(encoded));
+            const fallbackCode = typeof data.code === 'string' ? data.code : '';
+            element.innerHTML = `<pre><code>${fallbackCode
+              .replace(/&/g, '&amp;')
+              .replace(/</g, '&lt;')
+              .replace(/>/g, '&gt;')}</code></pre>`;
+          } catch {
+            // Keep marker unchanged if fallback decode also fails.
+          }
+        }
       }
     });
 
-    // Cleanup function
-    return () => {
-      // Schedule cleanup asynchronously to avoid race conditions
-      const currentRoots = rootsRef.current;
-      rootsRef.current = [];
-      
-      if (currentRoots.length > 0) {
-        setTimeout(() => {
-          currentRoots.forEach(({ root }) => {
-            try {
-              root.unmount();
-            } catch (error) {
-              // Ignore unmount errors as the root might already be unmounted
-              console.debug('Root already unmounted:', error);
-            }
-          });
-        }, 0);
+    // Convert and mount DocImage placeholders generated by MDX processing.
+    const docImageNodes = Array.from(
+      containerRef.current.querySelectorAll('docimage')
+    ) as HTMLElement[];
+
+    docImageNodes.forEach((node) => {
+      const src = node.getAttribute('src') || '';
+      const alt = node.getAttribute('alt') || '';
+      const width = Number.parseInt(node.getAttribute('width') || '', 10);
+      const height = Number.parseInt(node.getAttribute('height') || '', 10);
+      const priority = parseBooleanAttribute(node.getAttribute('priority'), false);
+      const className = node.getAttribute('class') || '';
+      const sizes = node.getAttribute('sizes') || undefined;
+
+      if (!src) return;
+
+      mountElement(node, (root) => {
+        root.render(
+          <DocImage
+            src={src}
+            alt={alt}
+            width={Number.isFinite(width) ? width : undefined}
+            height={Number.isFinite(height) ? height : undefined}
+            priority={priority}
+            className={className}
+            sizes={sizes}
+          />
+        );
+      });
+    });
+
+    // Convert and mount DocAssetLink placeholders generated by MDX processing.
+    const docAssetLinkNodes = Array.from(
+      containerRef.current.querySelectorAll('docassetlink')
+    ) as HTMLElement[];
+
+    docAssetLinkNodes.forEach((node) => {
+      const src = node.getAttribute('src') || '';
+      if (!src) return;
+
+      const className = node.getAttribute('class') || '';
+      const downloadAttr = node.getAttribute('download');
+      const showMetadataAttr = node.getAttribute('showmetadata');
+      const download = parseBooleanAttribute(downloadAttr, true);
+      const showMetadata = parseBooleanAttribute(showMetadataAttr, true);
+      const linkText = node.textContent?.trim();
+
+      mountElement(node, (root) => {
+        root.render(
+          <DocAssetLink
+            src={src}
+            className={className}
+            download={download}
+            showMetadata={showMetadata}
+          >
+            {linkText || undefined}
+          </DocAssetLink>
+        );
+      });
+    });
+
+    // Cleanup roots for elements that no longer exist after content refresh.
+    for (const [element, managed] of rootsRef.current.entries()) {
+      if (!activeElements.has(element) || !element.isConnected) {
+        scheduleUnmount(element, managed);
+        rootsRef.current.delete(element);
       }
-    };
+    }
   }, [content]);
+
+  useEffect(() => {
+    return () => {
+      const currentRoots = Array.from(rootsRef.current.entries());
+      rootsRef.current.clear();
+
+      currentRoots.forEach(([element, managed]) => {
+        scheduleUnmount(element, managed);
+      });
+    };
+  }, []);
 
   return (
     <div 

@@ -1,0 +1,14 @@
+{
+  "nombre": "Ejemplo de Configuración API",
+  "version": "1.0.0",
+  "endpoints": {
+    "usuarios": "/api/v1/usuarios",
+    "verificacion": "/api/v1/verificacion",
+    "documentos": "/api/v1/documentos"
+  },
+  "configuracion": {
+    "tiempo_espera": 30000,
+    "reintentos": 3,
+    "modo_debug": false
+  }
+}
