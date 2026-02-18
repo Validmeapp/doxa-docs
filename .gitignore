@@ -16,6 +16,9 @@
 # production
 /build
 
+# build-time database (recreated by db:init + db:migrate)
+/data/
+
 # misc
 .DS_Store
 *.pem
